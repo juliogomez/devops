@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myhero-spark
+  labels:
+    app: myhero
+    tier: spark
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: myhero
+    tier: spark
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myhero-spark
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: myhero
+        tier: spark
+    spec:
+      containers:
+      - name: myhero-spark
+        image: juliocisco/pi-myhero-spark:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        ports:
+        - containerPort: 5000
+          name: http
+          protocol: TCP
+        env:
+          - name: myhero_app_server
+            value: http://myhero-app
+          - name: myhero_app_key
+            value: SecureApp
+          - name: myhero_spark_bot_email
+            value: 
+          - name: spark_token
+            value:
+          - name: myhero_spark_bot_url
+            value: 
+          - name: myhero_spark_bot_secret
+            value: SecureBot
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 100m
+            memory: 64M
+      restartPolicy: Always

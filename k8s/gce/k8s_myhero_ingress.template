@@ -1,0 +1,34 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: myhero-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    dns.alpha.kubernetes.io/external: "true"
+
+spec:
+  rules:
+  - host: INSERT_HERE_YOUR_APP_HOSTNAME_FROM_NOIP
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: myhero-app
+          servicePort: 80
+
+  - host: INSERT_HERE_YOUR_SPARK_HOSTNAME_FROM_NOIP
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: myhero-spark
+          servicePort: 80
+
+  - host: INSERT_HERE_YOUR_UI_HOSTNAME_FROM_NOIP
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: myhero-ui
+          servicePort: 80

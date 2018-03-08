@@ -1,0 +1,29 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: myhero-ingress
+  namespace: default
+spec:
+  rules:
+  - host: 
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myhero-ui
+          servicePort: 80
+  - host: 
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myhero-app
+          servicePort: 80
+  - host: 
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myhero-spark
+          servicePort: 80

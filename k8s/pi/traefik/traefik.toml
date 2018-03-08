@@ -1,0 +1,9 @@
+defaultEntryPoints = ["http"]
+debug = false
+logLevel = "INFO"
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+  compress = true
+

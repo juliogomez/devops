@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myhero-app
+  labels:
+    app: myhero
+    tier: app
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: myhero
+    tier: app
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myhero-app
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: myhero
+        tier: app
+    spec:
+      containers:
+      - name: myhero-app
+        image: juliocisco/myhero-app:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        ports:
+        - containerPort: 5000
+          name: http
+          protocol: TCP
+        env:
+          - name: myhero_mqtt_host
+            value: myhero-mosca
+          - name: myhero_mqtt_port
+            value: "1883"
+          - name: myhero_app_mode
+            value: queue
+          - name: myhero_data_srv
+            value: myhero-data
+          - name: myhero_data_key
+            value: SecureData
+          - name: myhero_app_key
+            value: SecureApp
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 200m
+            memory: 48M
+      restartPolicy: Always

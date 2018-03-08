@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myhero-mosca
+  labels:
+    app: myhero
+    tier: mosca
+spec:
+  ports:
+  - port: 1883
+    targetPort: 1883
+  selector:
+    app: myhero
+    tier: mosca
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myhero-mosca
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: myhero
+        tier: mosca
+    spec:
+      containers:
+      - name: myhero-mosca
+        image: matteocollina/mosca:latest
+        livenessProbe:
+          tcpSocket:
+            port: 1883
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 1883
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        ports:
+        - containerPort: 1883
+          name: mqtt
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 64M
+      restartPolicy: Always

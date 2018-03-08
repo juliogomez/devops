@@ -1,0 +1,31 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myhero-ernst
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: myhero
+        tier: ernst
+    spec:
+      containers:
+      - name: myhero-ernst
+        image: juliocisco/myhero-ernst:latest
+        env:
+          - name: myhero_mqtt_host
+            value: myhero-mosca
+          - name: myhero_mqtt_port
+            value: "1883"
+          - name: myhero_data_srv
+            value: myhero-data
+          - name: myhero_data_key
+            value: SecureData
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 200m
+            memory: 32M
+      restartPolicy: Always
