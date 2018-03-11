@@ -51,8 +51,8 @@ spec:
             value: myhero-mosca
           - name: myhero_mqtt_port
             value: "1883"
-          - name: myhero_app_mode
-            value: queue
+#          - name: myhero_app_mode
+#            value: queue
           - name: myhero_data_srv
             value: myhero-data
           - name: myhero_data_key
