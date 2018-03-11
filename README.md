@@ -51,6 +51,7 @@
     - [Telepresence](#telepresence)
         - [Additional deployment](#additional-deployment)
         - [Swap deployments](#swap-deployments)
+- [Conclusions](#conclusions)
 
 <!-- /TOC -->
 
@@ -2042,7 +2043,7 @@ This window will continue logging the output from your microservice. Please note
 
 `Connecting to your app...SUCCESS...Connect to your app on localhost:57025`
 
-Go ahead and open another window to test it on that <localhost:port>:
+Go ahead and open another window to test it on that \<localhost:port>\:
 
 `curl -X GET -H "key: SecureData" http://localhost:57025/options`
 
@@ -2077,7 +2078,7 @@ When you are ready you can try Telepresence in a couple of different ways:
 * Additional local deployment that communicates with the existing remote ones.
 * Replace an existing remote deployment with a local one.
 
-### Additional deployment
+### Additional deployment
 
 In the first case you could run an additional container locally, and have full connectivity to the remote cluster, as if it were actually there. Let's try with *Alpine* and make it interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our laptop. But with Telepresence we can do it!
 
@@ -2147,4 +2148,26 @@ Let's review what is happening: requests going to *myhero-ui* service **public**
 
 Ain't it amazing?!?
 
+When you are happy with all code changes you could rebuild and publish the image for future use:
+
+```
+cd myhero-ui
+docker build -t <your_DockerHub_user>/myhero-ui
+docker push <your_DockerHub_user>/myhero-ui
+```
+
 When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your laptop password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
+
+# Conclusions
+
+Kudos to you, we have travelled a **really** long path since we started! We covered how Developers work in their local environment and what are some of the challenges they face on a daily basis. You built and published your first set of containers, and deployed them locally to build a real microservices-based application.
+
+Later we covered two different options for Operations teams working on remote environments: on-premises and public Cloud. For on-prem we saw how you can build your own miniDC and deploy a real application on it. We deployed different user interfaces and solved some scalability challenges suffered by real applications. Then you got familiar with public Cloud environments and how deployments work there vs on-prem.
+
+Later on we moved to the benefits of CI/CD/CD and how to implement the required infrastructure in your own setup. We created a pipeline for our application and saw it working. Finally we discussed additional tools that provide multiple benefits for DevOps teams.
+
+By now you have quite an understanding of DevOps challenges and possible solutions. What are their concerns and what are some of the tools we can use to address them. You are now one of us, congratulations!
+
+<p align="center"> 
+<img src="./images/learning-never-ends.jpg">
+</p>
