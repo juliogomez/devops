@@ -46,6 +46,11 @@
         - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
         - [Pipeline implementation](#pipeline-implementation)
         - [Running your pipeline](#running-your-pipeline)
+- [Additional tools](#additional-tools-1)
+    - [Draft](#draft)
+    - [Telepresence](#telepresence)
+        - [Additional deployment](#additional-deployment)
+        - [Swap deployments](#swap-deployments)
 
 <!-- /TOC -->
 
@@ -53,25 +58,25 @@
 
 # Introduction to DevOps
 
-Would you like to explore how is the life of DevOps teams, and what are some of their specific concerns? You might already be familiar with other environments like networking, but DevOps is a different world and in many aspects they think in a totally different way.
+Would you like to explore how is the life of DevOps teams and what are some of their specific concerns? You might already be familiar with other environments like networking, but DevOps is a different world and in many aspects they think in a totally different way.
 
 Let's explore some of the challenges DevOps teams have today:
 
-* All software needs to run on a platform, so that it can provide a service. And the lifecycle of that software, from its inception to the moment it runs on a production environment, includes a number of steps with their own challenges. One of them is that many times these steps involve human interaction, which is slow and prone to errors. Being able to *automate* part, or all, of these steps would definitely improve how effective processes are, and ultimately the quality of the service provided by that software.
+* All software needs to run on a platform, so that it can provide a service. And software lifecycle, from its inception to the moment it runs on a production environment, includes a number of steps with their own challenges. One of them is that many times these steps involve human interaction, which is slow and prone to errors. Being able to *automate* part, or all, of these steps would definitely improve how effective processes are and ultimately the quality of the service provided by that software.
 
-* Another factor is the *friction* between Development and Operations teams. There is this classic scenario where developers make software work in their development environment, pass it to the operations team so they can test it (QA) and deploy the Production environment... **and nothing works**. The main reason for this is that these environments will be somehow different. Not only they might use different kernel versions (or even OS), but they could simply be using different library versions to test new functionality. Isolating software dependencies from the running environment would bring great improvements to this area.
+* Another factor is the *friction* between Development and Operations teams. A classic scenario where developers make software work in their development environment, pass it to the operations team so they can test it (QA) and deploy into their Production environment... **and nothing works**. The main reason for this is that these environments will be *somehow* different. Not only they might use different kernel versions (or even OS), but they could simply be using different library versions to test new functionality. Isolating software dependencies from the running environment would bring great improvements to this area.
 
 <p align="center"> 
 <img src="./images/devops.jpg">
 </p>
 
-* And then there is the *time-to-market* factor, where usually it is IT who becomes the bottleneck for a new service, or feature, to be implemented in production. The *smoother* the process to go from development to production, the easier and safer it will be be to accelerate the deployment of new functionality.
+* And then there is the *time-to-market* factor, where usually it is IT who becomes the *bottleneck* for a new service, or feature, to be implemented in production. The *smoother* the process to go from development to production, the easier and safer it will be be to accelerate the deployment of new functionalities.
 
 Wouldn't it be nice to have both teams, Dev and Ops, working together to alleviate these issues and accelerate the introduction of new software capabilities in your applications? Well, that is what [DevOps](https://en.wikipedia.org/wiki/DevOps) is about. DevOps wants both teams to manage together the whole lifecycle of software, so that it becomes easier, faster and safer to deploy.
 
-One of the ideas DevOps promote is why can't Ops teams use the same approach to systems as Dev uses for code? Modern development uses [Agile](https://en.wikipedia.org/wiki/Agile_software_development) methodology for software, so why can't we use that also for systems?
+One of the ideas DevOps promote is, why can't Ops teams use the same approach to systems as Dev uses for code? Modern development uses [Agile](https://en.wikipedia.org/wiki/Agile_software_development) methodology for software, so why can't we use that also for systems?
 
-And although DevOps has a very important cultural side on how companies need to change, in this document we will focus on some of the processes, technologies and solutions that DevOps teams coul use to improve their daily work.
+And although DevOps has a very important cultural side on how companies need to change, in this document we will focus on some of the processes, technologies and solutions that DevOps teams could use to improve their daily work.
 
 Let's start at the beginning of everything, where developers... develop.
 
@@ -79,19 +84,19 @@ Let's start at the beginning of everything, where developers... develop.
 
 # Development
 
-Sometimes developers work on a common server for a number of individuals, but many times they will be working in their own workstations or laptops. And of course that local system will be *unique* in terms of installed software, libraries, drivers, kernel, OS, etc. As discussed in the previous section, this will often lead to software that works perfectly in their local system, but does *not* in a similar system run by a colleague (even another developer).
+Sometimes developers work on a common server for a number of individuals, but quite often they might be working in their own workstations or laptops. And of course that local system will be *unique* in terms of installed software, libraries, drivers, kernel, OS, etc. As discussed in the previous section, this will often lead to software that works perfectly in their local system, but does *not* in a similar system run by a colleague (even another developer with a similar environment).
 
 ## Containers and Docker
 
-We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter their current *de facto* implementation, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Cisco Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to really get your hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to configure them.
+We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter their current *de facto* implementation, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to really get some foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to configure them.
 
-But containers are not only another virtualisation technology. They provide capabilities required to implement modern application architectures based on microservices. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
+But containers are not only another virtualisation technology. They provide capabilities required to implement modern application architectures based on *microservices*. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
 
 On top of that microservices provide fault isolation, so that a failure or bug in one microservice does not affect other parts of the application (other microservices).
 
 ## Modern application development with containers
 
-First things first: if you want to understand how *modern* developers work in their own laptops, you will of course need to install Docker in yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, command prompt or putty on Windows), and please check that Docker is correctly installed in your system with `docker version` (please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use similar tools and obtain a similar output in your own system).
+First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker in yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, command prompt or putty on Windows), and please check that Docker is correctly installed in your system with `docker version` (please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system).
 
 Now we need a microservices-based application, but instead of developing one from scratch we will leverage an existing one. And while we are at it we will be able to determine who is the best superhero!
 
@@ -103,7 +108,7 @@ Now we need a microservices-based application, but instead of developing one fro
 
 As the diagram indicates *myhero* has three layers: Data, Applications and Presentation.
 * *Data* layer, a microservice composed by a single container that stores the list of available superheros and the number of votes received for each of them.
-* *Application* layer, composed by three different microservices. The first and main one is the middleware that processes votes from several user interfaces, and stores them in the Data layer. It includes a variable number of load-balanced containers depending on the needs of the system. The second and third microservices in this layer (mosca and ernst) are optional, and implement a queueing system to alleviate the pressure when there are multiple votes waiting to be stored in the Data layer.
+* *Application* layer, composed by three different microservices. The first and main one is the middleware that processes votes from several user interfaces, and stores them in the Data layer. It includes a variable number of load-balanced containers depending on the needs of the system. The second and third microservices in this layer (*mosca* and *ernst*) are optional, and implement a queueing system to alleviate the pressure when there are multiple votes waiting to be stored in the Data layer.
 * *Presentation* layer, composed by several microservices that interact directly with end users. We will use two of them: a Web User Interface for users to vote via a webpage, and a Spark Interface for users to vote via Spark (whether from the App or from Spark website). Each one of these microservices will also be composed by a variable number of load-balanced containers depending on the required load for each of them.
 
 Once you understand the architecture of *myhero* let's get the source code for its three main microservices (*myhero-ui*, *myhero-app* and *myhero-data*) and build a simplified version in our laptop.
@@ -116,7 +121,7 @@ Once you understand the architecture of *myhero* let's get the source code for i
 
 All the required code to build your *myhero* application is stored in [GitHub](https://github.com), a [repository hosting service](https://en.wikipedia.org/wiki/GitHub) that supports [Git Version Control System](https://en.wikipedia.org/wiki/Git). You can easily [register for a free GitHub account](https://github.com/join), and you will need to [install the Git CLI](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) in your laptop.
 
-Go and check that Git is correctly installed in your system by running in a terminal:
+Once installation is complete, go and check that Git is correctly installed in your system by running the following command in a terminal window:
 
 `git version`
 
@@ -127,7 +132,7 @@ mkdir devops_tutorial
 cd devops_tutorial
 ```
 
-Inside this new directory you will now clone the content from GitHub repositories (aka *repos*) that host all code for each *myhero* container.
+Inside this new directory you will now clone the content from GitHub repositories (aka *repos*) that host all required code for each *myhero* container.
 
 ```
 git clone https://github.com/juliogomez/myhero_ui.git
@@ -137,7 +142,7 @@ git clone https://github.com/juliogomez/myhero_data.git
 
 If you run `ls` now you will find that you have three new directories, one for each repo you cloned.
 
-Please clone also the repo hosting the content of this tutorial, as you will need a number of its files later on:
+Please also clone the repo hosting the content of this tutorial, as you will need a number of its files later on:
 
 `git clone https://github.com/juliogomez/devops`
 
@@ -153,7 +158,7 @@ And then to see its contents:
 
 The *myhero_data/myhero_data* directory stores all the Python code that implements the functionality of this layer. Please feel free to explore it, although it is not required for the purpose of this tutorial.
 
-But we are more interested in the *docker-compose.yml* file. While you check its content you might be interested in learning about its [YAML format](https://en.wikipedia.org/wiki/YAML).
+We are more interested in the *docker-compose.yml* file. While you check its content you might be interested in learning about its [YAML format](https://en.wikipedia.org/wiki/YAML).
 
 Please edit you `docker-compose.yml` and replace the image *name* in *\<name>/\<image>* with your own DockerHub username (if you don't have one you can easily register and get one [here](https://hub.docker.com/)):
 
@@ -172,20 +177,20 @@ services:
      -  myhero_data_dir=/app/data/
 ```
 
-*(Please note you should replace my username with yours for any reference you find along this tutorial)*
-
-[docker-compose](https://docs.docker.com/compose/overview/) is a tool to define and run Docker applications. It should be included by default in your standard Docker CE laptop installation, and you can check if it is correctly installed in your system (if not you can always check the [installation page](https://docs.docker.com/compose/install/)) by running:
+[docker-compose](https://docs.docker.com/compose/overview/) is a tool to define and run Docker applications. It should be included by default in your standard Docker CE laptop installation, and you can check if it is correctly installed in your system by running:
 
 `docker-compose version`
+
+If is not installed you can always check its [installation page](https://docs.docker.com/compose/install/).
 
 As you can see that *docker-compose.yml* file specifies a number of parameters on how docker should run our *myhero-data* container. It includes a version number (2 for compatibility with further steps later in the tutorial), and then a *services* category where there is a single service defined: *myhero-data*. So basically this YAML file will tell docker how to build and run locally a *myhero-data* container in your laptop.
 
 *myhero-data* service definition in your *docker-compose.yml* file includes several statements:
 
-* *build* specifies how to actually build your own *myhero-data* image (you instantiate an image to create a container), and its value is a simple *"."* (a period). This tells docker-compose it should automatically build the image with the instructions contained in a file located in the *local* directory ("./"). The name of the local file to use for that build is *Dockerfile* and you will find it in the same directory you are in. We will get back to it soon.
+* *build* specifies how to actually build your own *myhero-data* image (you instantiate an image to create a container), and its value is a simple *"."* (a period). This tells docker-compose it should automatically build the image with the instructions contained in a file located in the *local* directory ("./"). The default name of the local file to use for that build is *Dockerfile* and you will find it in the same directory you are in. We will get back to it soon.
 * *image* defines the name of the image to create when building it.
 * *ports* defines the required mapping of the port where the container provides its service (for *myhero-data* that is 5000, but this port is only accessible from other containers, not from external systems like our laptop terminal), to the port we want to use in our computer to access that service (in this case port 15000). This way we can access the service provided by this container via calls to `localhost:15000`.
-* *volumes* maps a directory in your laptop (in this case the local directory, identified by ".") to a directory inside the container (/app/data in this case). This mapping provides a simple method for data persistency, as all votes will be stored by the container in its '/app/data' directory, which is the same as the local directory for *myhero-data* in your laptop. No matter what happens to your *myhero-data* container, your voting data will always be available in your computer. If you kill the container and create a new one, it will still be able to access the same data, so you do not loose any of your votes.
+* *volumes* maps a directory in your laptop (in this case the local directory, identified by ".") to a directory inside the container (/app/data in this case). This mapping provides a simple method for data persistency, as all votes will be stored by the container in its */app/data* directory, which is the same as the local directory for *myhero-data* in your laptop. No matter what happens to your *myhero-data* container, your voting data will always be available in your computer. If you kill the container and create a new one, it will still be able to access the same data, so you do not loose any of your votes.
 * *environment* defines a couple of variables we want to pass to the container. Why did we not include these values in the code itself, and that way avoid having to define them here? Because there are certain guidelines that we want to follow when developing modern software, things we have learned that work better and provide better results and improved security like in this case. You may learn about them by visiting [12factor](https://12factor.net), and you will see [number III](https://12factor.net/config) talks about how configuration values should be stored in environment variables. This helps us reusing exactly the same code in different environments (ie. dev, qa or prod), but run it differently based on environment variables. It also provides better security as you can upload your software to a public repo without including any confidential secrets or configuration. For example in this case with *myhero-data* you have cloned a public repo with all code, but we will now provide a couple of environment variables. The first one is the private shared *key* ('myhero_data_key') that other containers (like *myhero-app*) should use to interact with it. As long as this container will eventually be running in a public environment you want to make sure that its data are only available to a certain subset of other containers. This shared key provide this kind of authentication. You will see we assign it the value of a variable called *MYHERO_DATA_KEY*, which is defined in the *.env* file also available in your local directory. We have pre-populated that file with a sample key for you to use (check it out and you will see it has a value of *DevData*), but you could modify that *.env* file with your own customised value. You would just need to make sure that other containers use that same value when trying to access *myhero-data* container. For now let's leave it like this. The second environment variable defined in our *docker-compose.yml* file is 'myhero_data_dir' and we have assigned it the name of the directory where we would like the code to store all data. This parameter gives us the flexibility to later on change very easily the location where our container stores its voting data, if we need to.
 
 0k, now that you know about *docker-compose.yml* let's explore that file we saw earlier, *Dockerfile*. As discussed it is a local file in the same *myhero-data* directory that defines how to build the required image instantiated by our container.
@@ -214,13 +219,13 @@ RUN pip install --requirement ./requirements.txt
 CMD [ "python", "./myhero_data/myhero_data.py" ]
 ```
 
-Each one of these lines define a sequential step to create our own image. *FROM* specifies the base image we will use, in this case [Alpine](https://alpinelinux.org/about/) (a minimal Linux image). Then it defines the port to *EXPOSE* by the container (5000) and who is the *MAINTAINER* of this image. *VOLUME* creates a mount point so that it can be used by your host in the *docker-compose.yml* file. Then it *RUN* some installations and cleans the cache to avoid unnecessary data in the image, that could affect its final size. *ADD* copies files from the host local directory to '/app' inside the container, while *WORKDIR* sets the working directory for subsequent commands (like a `cd`). *RUN* installs our pre-defined Python requirements for *myhero-data*, and finally *CMD* executes the command our container will run by default when instantiated.
+Each one of these lines define a sequential step to create your own image. *FROM* specifies the base image we will use, in this case [Alpine](https://alpinelinux.org/about/) (a minimal Linux image). Then it defines the port to *EXPOSE* by the container (5000) and who is the *MAINTAINER* of this image. *VOLUME* creates a mount point so that it can be used by your host in the *docker-compose.yml* file. Then it *RUN* some installations and cleans the cache to avoid unnecessary data in the image, that could affect its final size. *ADD* copies files from the host local directory to '/app' inside the container, while *WORKDIR* sets the working directory for subsequent commands (like a `cd`). *RUN* installs our pre-defined Python requirements for *myhero-data*, and finally *CMD* executes the command our container will run by default when instantiated.
 
 So when *docker-compose.yml* includes a line that says `build: .` that means docker-compose should look for a file called *Dockerfile* in the local directory, and create an image by running all the steps defined in it.
 
 (Note: as a curiosity you will find a couple of *.txt* files in your *myhero-data* directory. *myhero_options.txt* is the source for superhero options that you can vote, and  *votes.txt* is where the microservice stores all received votes. Not the best database implementation, but perfectly valid for our demonstration.)
 
-Fantastic! Now that you understand this whole process and the interaction between *docker-compose.yml* and *Dockerfile* it is time to build the image and run our first *myhero-data* container. 
+Fantastic! Now that you understand this whole process and the interaction between *docker-compose.yml* and *Dockerfile* it is time to actually build the image and run our first *myhero-data* container. 
 
 The good thing is that everything is ready for you, so you just need to run...
 
@@ -244,9 +249,9 @@ f7a2117df5df        myherodata_myhero-data   "python ./myhero_dat…"   25 minut
 
 As long as we are creating a multi-layer, multi-microservice, multi-container architecture, we have just initiated one of them (*myhero-data*) but not any others. In a few minutes we will follow the same process for other containers, but before doing that let's verify that our *myhero-data* container is working fine.
 
-You might remember we discussed at the beginning of this document that microservices interact via APIs. Specifically these are [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) APIs, which provide a uniform and small predefined set of stateless operations (methods) accessible via HTTP URLs. The main benefits this provides are that these are truly loosely coupled APIs (service implementation can change along time without disruption) and they are language-agnostic.
+You might remember we discussed at the beginning of this document that microservices interact via APIs. Specifically these are [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) APIs, which provide a uniform and small predefined set of stateless operations (methods) accessible via HTTP URLs. The main benefits this provides is that these are truly loosely coupled APIs (service implementation can change along time without disruption) and they are language-agnostic.
 
-It is easier to understand with an example, so let's interact with our *myhero-data* container via its RESTful API. As you probably remember the container exposed its service in port 5000, but container ports are only accessible from other containers, not from systems external to the container environment, like our laptop terminal. So that is why we mapped *myhero-data* port 5000 to port 15000 in our laptop. That way we can access *myhero-data* via `localhost:15000` from our terminal.
+It is easier to understand with an example, so let's interact with our *myhero-data* container via its RESTful API. As you probably remember the container exposed its service in port 5000, but container ports are only accessible from other containers, not from systems external to the container environment like our laptop terminal. So that is why we mapped *myhero-data* port 5000 to port 15000 in our laptop. That way we can access *myhero-data* via `localhost:15000` from our terminal.
 
 So let's go ahead and emulate an API call to our *myhero-data* container and see if it answers correctly. From your second terminal window run:
 
@@ -275,7 +280,7 @@ You should get a [JSON](https://en.wikipedia.org/wiki/JSON) file with a list of 
 
 [curl](https://curl.haxx.se) is a CLI tool to transfer data with URLs, so it allows us to emulate RESTful API calls to our containers. In this case we use it with `-X` to define a custom request method that will eliminate unnecessary information from the answer message. `GET` will request the specified page and receive the document it asked for. `-H` will include an extra header, in this case specifically the shared private key required to interact with the container. This key is the one we defined in the *docker-compose.yml* and *.env* files. And finally the URL to access the service, formed by `localhost:15000` to access the mapped port inside the container. We append `/options` to define the path of the action we would like to perform (obtain the superhero options users can vote for).
 
-You can use *curl* for additional tasks, like voting:
+You can use *curl* for additional tasks, like voting (using the POST method instead of GET):
 
 ```
 curl -X POST -H "key: DevData" http://localhost:15000/vote/Deadpool
@@ -285,7 +290,7 @@ curl -X POST -H "key: DevData" http://localhost:15000/vote/Deadpool
 }
 ```
 
-You can also review the summary results for all votes:
+You can also review the summary results for all votes (GET method again):
 
 ```
 curl -X GET -H "key: DevData" http://localhost:15000/results
@@ -1399,7 +1404,13 @@ If you are really done with your k8s cluster you can easily delete it with just 
 
 [Helm](https://helm.sh) is a package manager for Kubernetes. It helps defining, installing and upgrading complex k8s applications. Instead of applying individual YAML files, you can package all of them and deploy your application easily. That package is called a *chart*, and its deployment a *release*.
 
-Helm has 2 components: *client* (local agent that communicates with the server) and *server* (called *tiller*, that runs inside the k8s cluster).
+It offers amazing *templating* capabilities as well, but for this tutorial we will only use its help with application *packaging*.
+
+Helm has 2 components: *client* (local agent that communicates with the server) and *server* (called *tiller*, that runs inside the k8s cluster). Tiller is the one that communicates with k8s API server to deploy the required resources in the k8s cluster.
+
+<p align="center"> 
+<img src="./images/helm-arch.png">
+</p>
 
 You will need to [install the Helm client in your laptop](https://github.com/kubernetes/helm/blob/master/docs/quickstart.md).
 
@@ -1416,7 +1427,7 @@ kubectl config get-contexts
 kubectl get nodes
 ```
 
-Use your *helm* client to deploy the *tiller* server in your k8s cluster:
+Use your *helm* client to deploy the *tiller* server in your k8s cluster with a simple command:
 
 `helm init`
 
@@ -1429,7 +1440,7 @@ Or look for a specific one, like for example WordPress:
 
 `helm search wordpress`
 
-Let's use [WordPress](https://wordpress.org) as an example. As you probably know WP isn open-source web/blog platform. It is composed by a web server front-end and a database. If you wanted to deploy it manually you would at least need to manage and configure for interoperability two containers: one webserver and one database. 
+Let's use [WordPress](https://wordpress.org) as an example. As you probably know WP is an open-source web/blog platform. It is composed by a web server front-end and a database. If you wanted to deploy it manually you would at least need to manage and configure for interoperability two containers: one webserver and one database. 
 
 Helm helps you by providing a chart where everything is configured for you, so you can easily deploy the whole application with:
 
@@ -1967,3 +1978,173 @@ You may now start to see how different life would be for a DevOps team that impl
 Every new feature would be tracked by a Version Control Server, then implemented in a new image, tested, and translated into its own deployment. Everything automatic and based on containers to eliminate dependency issues.
 
 This looks like a new world!
+
+# Additional tools
+
+Now you know how Developers and Operations teams work, what are some of the challenges they face, how to work around them and specifically how a CI/CD/CD pipeline might help.
+
+But there are additional tools to address certain needs, that provide multiple benefits and are of great interest to them.
+
+## Draft
+
+[Draft](https://draft.sh) enables developers to easily build applications and run them in k8s. It helps by hiding the complexity of building images, publishing them and creating the deployments. That way developers can focus on code. With only a couple of commands (`draft create` and `draft up`) they are good to go!
+
+Let's imagine there was a team working on our *myhero-data* microservice. They would be [python](https://www.python.org) coders constantly expanding its functionality and testing that it works fine. They would need to test it before going to Production, but testing it correctly implies deploying into a similar k8s cluster. However these coders should not be concerned about k8s management, they just want to code!
+
+So once their code is ready they could use Draft to automatically detect the programming language they use, create the required packaging info, build the required images and automatically create a deployment into a k8s test cluster.
+
+Let's get it working!
+
+First [install Draft, minikube and Helm](https://github.com/Azure/draft/blob/master/docs/install.md). Once done you will even have a 1-node k8s cluster running in your own laptop for testing.
+
+Now go to *devops-tutorial* create a new *draft* directory, clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
+
+```
+cd devops-tutorial
+mkdir draft
+git clone https://github.com/juliogomez/myhero_data.git
+mv myhero_data myherodata
+```
+
+Go into the new directory and containerize the app by creating a draft pack.
+
+```
+cd myherodata
+draft create
+```
+
+This will create the required Helm chart structure and config file (*draft.toml*). It would also create a default Dockerfile, but we already have one with everything we need.
+
+Let's quickly configure this for our specific microservice:
+
+* Edit *myherodata/charts/python/values.yaml* and replace the default service.internalPort from 8080 to 5000, which is the port defined in our Dockerfile.
+* Edit *myherodata/charts/python/templates/deployment.yaml* to include the required environment variable under spec.template.spec.containers:
+
+```
+  env:
+    - name: myhero_data_key
+      value: SecureData
+```
+
+We are all set! Now you just need to run:
+
+`draft up`
+
+And it will automatically initiate the process to build the image, push it to your local registry and deploy the microservice in your local k8s cluster (minikube).
+
+As you can see, no k8s management is required from the developer, Draft does everything for him.
+
+Now you can connect to your deployment (it may take a couple of minutes until Pods are ready):
+
+`draft connect`
+
+This window will continue logging the output from your microservice. Please note the message stating how you can connect to your deployment:
+
+`Connecting to your app...SUCCESS...Connect to your app on localhost:57025`
+
+Go ahead and open another window to test it on that <localhost:port>:
+
+`curl -X GET -H "key: SecureData" http://localhost:57025/options`
+
+Success!
+
+With any further change made to your code, you just need to issue again:
+
+`draft up`
+
+And it will automatically upgrade the deployment in your local k8s cluster (minikube). Easy!
+
+When you are done, you can delete your deployment by pressing 'ctrl+c' in the window where you run `draft connect`, and execute:
+
+`draft delete`
+
+In summary, a python developer creates a microservice called *myhero-data*. Before sending it to production he wants to test it in a similar environment. Using Draft he can test his new code with just a couple of commands, and without having to manage the k8s cluster he is using.
+
+How cool is that?!
+
+## Telepresence
+
+[Telepresence](https://www.telepresence.io) allows you to work from your laptop like you were *inside* a remote k8s cluster. This way you can easily do *live* debugging and testing of a service locally, while it is automatically connected to a remote k8s cluster. For example you could develop on that local service and have it connnected to other remote services deployed in Production.
+
+Let's give it a try to see how it works.
+
+First you need to [install it](https://www.telepresence.io/reference/install), and it will automatically work with the k8s cluster active in your kubectl configuration.
+
+Now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to comment with **#** two lines in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. Please make sure to configure *myhero-ui* and *myhero-app* as LoadBalancer, so that they both get public IP addresses.
+
+When you are ready you can try Telepresence in a couple of different ways:
+
+* Additional local deployment that communicates with the existing remote ones.
+* Replace an existing remote deployment with a local one.
+
+### Additional deployment
+
+In the first case you could run an additional container locally, and have full connectivity to the remote cluster, as if it were actually there. Let's try with *Alpine* and make it interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our laptop. But with Telepresence we can do it!
+
+Start by running Alpine with Telepresence:
+
+`telepresence --docker-run -i -t alpine /bin/sh`
+
+And now from inside the Alpine container you may interact directly with the already deployed *myhero* containers:
+
+```
+apk add --no-cache curl
+curl -X GET -H "key: SecureData" http://myhero-data/options
+curl -X GET -H "key: SecureApp" http://myhero-app/options
+curl http://myhero-ui
+```
+
+As you can see the additional Alpine deployment can query existing microservices using k8s service names, that are only accessible by other containers inside the k8s cluster.
+
+### Swap deployments
+
+For the second case Telepresence allows you to replace an existing remote deployment in your k8s cluster, with a local one in your laptop where you can work **live**.
+
+We will replace the *myhero-ui* microservice running in your k8s cluster with a new *myhero-ui* service deployed locally in your laptop.
+
+Before running the new local deployment please find out what is the public IP address assigned to *myhero-app* in your k8s cluster (you will need it as a parameter when you run the new *myhero-ui*):
+
+`kubectl get service myhero-app`
+
+Now you can replace the remotely deployed *myhero-ui* with your own local *myhero-ui* (please make sure to replace the public IP address of *myhero-app* provided as an environment variable in the command below):
+
+```
+cd myhero_ui/app
+telepresence --swap-deployment myhero-ui --expose 80 --docker-run -p=80 -v $(pwd):/usr/share/nginx/html -e "myhero_app_server=http://<myhero-app_public_IP>" -e "myhero_app_key=SecureApp" <your_DockerHub_user>/myhero-ui
+```
+
+Parameters indicate what is the port used by the remote deployment (*-expose*), what port uses the local container (*-p*), mapping of the application directory from the local host to the container, required environment variables (*myhero-app* URL or public address, and shared private key), and finally your *myhero-ui* image.
+
+You will probably be asked by your laptop password to allow the creation of a new local container. And finally the terminal will start logging your local *myhero-ui* execution.
+
+Open a new terminal and check the public IP address of your *myhero-ui* service:
+
+`kubectl get service myhero-ui`
+
+Now point your browser to that Public IP address and you should see *myhero* app working as before.
+
+From the second terminal window go to the application directory:
+
+`cd myhero_ui/app/views`
+
+Let's modify the code of our *myhero-ui* microservice frontpage, by editing *main.html*:
+
+`vi main.html`
+
+In the second line you will find a line that says:
+
+`<h3>Make your voice heard!</h3>`
+
+Modify it by swapping *voice* to *VOICE*:
+
+`<h3>Make your VOICE heard!</h3>`
+
+Save the file. Please note this is just an example of a simple change in the code, but everything would work in the same way for any other change.
+
+Refresh your browser and you will automatically see the updated header (shift+refresh for a hard refresh) from your **local** *myhero-ui*.
+
+Let's review what is happening: requests going to *myhero-ui* service **public** IP address are automatically redirected to your **local** *myhero-ui* deployment (where you are developing *live*), which in turn transparently interact with all the other *myhero* microservices deployed in the **remote** k8s cluster.
+
+Ain't it amazing?!?
+
+When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your laptop password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
