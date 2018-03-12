@@ -582,7 +582,17 @@ The solution would be to have a *mini* DataCenter with the following features:
 
 With those requirements I built this:
 
-PHOTO!!!
+<p align="center"> 
+<img src="./images/miniDC.jpg">
+</p>
+
+Maybe that single photo does now realy show the *real* size format of our mini DataCenter, so let's add a banana for scale.
+
+<p align="center"> 
+<img src="./images/miniDC-banana.jpg">
+</p>
+
+It **IS** really small!
 
 ### MiniDC features
 
