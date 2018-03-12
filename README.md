@@ -586,7 +586,7 @@ With those requirements I built this:
 <img src="./images/miniDC.jpg">
 </p>
 
-Maybe that single photo does now realy show the *real* size format of our mini DataCenter, so let's add a banana for scale.
+Maybe that single photo does now really show the *real* size format of our mini DataCenter, so let's add a banana for scale.
 
 <p align="center"> 
 <img src="./images/miniDC-banana.jpg">
@@ -783,7 +783,7 @@ Your connection to the outside world is your home router. It is the only one wit
 
 You can find out the actual WAN IP address of your home router by running the following command from your laptop.
 
-`dig +short myip.opendns.com @resolver1.opendns.com` 
+`dig +short myip.opendns.com @resolver1.opendns.com`
 
 The first challenge we find is that a home router WAN IP address can change along time, it is *dynamic*. Your ISP policy might refresh them periodically, or under periods of inactivity, etc. That leads to the fact that your router's public IP address will not always be the same. Relying on that IP to connect to your setup means that eventually you might loose connectivity, so we need a way to make IP changes transparent to us. In order to accomplish this we will use [Dynamic DNS](https://en.wikipedia.org/wiki/Dynamic_DNS).
 
