@@ -61,7 +61,7 @@
 
 Would you like to explore how is the life of DevOps teams and what are some of their specific concerns? You might already be familiar with other environments like networking, but DevOps is a different world and in many aspects they think in a totally different way.
 
-Let's explore some of the challenges DevOps teams have today:
+Let's explore some of the challenges Development and Operations teams have today:
 
 * All software needs to run on a platform, so that it can provide a service. And software lifecycle, from its inception to the moment it runs on a production environment, includes a number of steps with their own challenges. One of them is that many times these steps involve human interaction, which is slow and prone to errors. Being able to *automate* part, or all, of these steps would definitely improve how effective processes are and ultimately the quality of the service provided by that software.
 
