@@ -842,6 +842,8 @@ This is an important foundational feature we will use extensively later in our M
 
 `scp -P 22400 ./test.txt pi@$(dig <hostname> @8.8.8.8 +short):/home/pi/test.txt`
 
+---
+
 ### Additional tools
 
 We will need to install some additional tools, but considering that most Kubernetes commands should be run from the *master* node, we will only focus on installing these tools in it (not in the *worker* nodes).
@@ -1620,7 +1622,7 @@ In order to accomplish the goal of integrating, delivering and deploying code in
 <img src="./images/CICDCD-infra.png">
 </p>
 
-The proposed architecture includes a *Version Control Server* that manages code contributions from multiple developer systems into code repositories. It communicates with an *Integration Server* that follows a pre-defined pipeline of activities for each piece of code. These include testing code, triggering artifacts creation, publishing artifacts to a *Container Registry*, and even automatically creating deployments into a *Container Scheduler*.
+The proposed architecture includes a *Version Control Server* that manages code contributions from multiple developer systems into code repositories. It communicates with an *Integration Server* that follows a pre-defined pipeline of activities for each piece of code. These include testing code (ie. syntax, functional, performance testing, etc), triggering artifacts creation, publishing artifacts to a *Container Registry*, and even automatically creating deployments into a *Container Scheduler*.
 
 You can choose the specific implementations you prefer to use for each of these elements. For our tutorial we have chosen the following:
 
@@ -2167,6 +2169,8 @@ docker push <your_DockerHub_user>/myhero-ui
 ```
 
 When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your laptop password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
+
+---
 
 # Conclusions
 
