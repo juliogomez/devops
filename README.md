@@ -65,7 +65,7 @@ Let's explore some of the challenges Development and Operations teams have today
 
 * All software needs to run on a platform, so that it can provide a service. And software lifecycle, from its inception to the moment it runs on a production environment, includes a number of steps with their own challenges. One of them is that many times these steps involve human interaction, which is slow and prone to errors. Being able to *automate* part, or all, of these steps would definitely improve how effective processes are and ultimately the quality of the service provided by that software.
 
-* Another factor is the *friction* between Development and Operations teams. A classic scenario where developers make software work in their development environment, pass it to the operations team so they can test it (QA) and deploy into their Production environment... **and nothing works**. The main reason for this is that these environments will be *somehow* different. Not only they might use different kernel versions (or even OS), but they could simply be using different library versions to test new functionality. Isolating software dependencies from the running environment would bring great improvements to this area.
+* Another factor is the *friction* between Development and Operations teams. A classic scenario where developers make software work in their development environment, pass it to the operations team so they can test it (QA) and deploy into their Production environment... **and nothing works**. The main reason for this is that these environments will be *somehow* different. Not only they might use different *kernel* versions (or even OS), but they could simply be using different library versions to test new functionality. Isolating software dependencies from the running environment would bring great improvements to this area.
 
 <p align="center"> 
 <img src="./images/devops.jpg">
@@ -73,9 +73,9 @@ Let's explore some of the challenges Development and Operations teams have today
 
 * And then there is the *time-to-market* factor, where usually it is IT who becomes the *bottleneck* for a new service, or feature, to be implemented in production. The *smoother* the process to go from development to production, the easier and safer it will be be to accelerate the deployment of new functionalities.
 
-Wouldn't it be nice to have both teams, Dev and Ops, working together to alleviate these issues and accelerate the introduction of new software capabilities in your applications? Well, that is what [DevOps](https://en.wikipedia.org/wiki/DevOps) is about. DevOps wants both teams to be *equally responsible* for the whole lifecycle of software, from the beginning. so that it becomes easier, faster and safer to deploy.
+Wouldn't it be nice to have both teams, Dev and Ops, working together to alleviate these issues and accelerate the introduction of new software capabilities in your applications? Well, that is what [DevOps](https://en.wikipedia.org/wiki/DevOps) is about. DevOps wants both teams to be *equally responsible* for the whole lifecycle of software, so that it becomes easier, faster and safer to deploy.
 
-One of the ideas DevOps promotes is: Why can't Ops teams use the same approach to systems as Dev uses for code? Modern development uses [Agile](https://en.wikipedia.org/wiki/Agile_software_development) methodology for software, so why can't we use that also for systems?
+One of the ideas DevOps promotes is: why can't Ops teams use the same approach to systems as Dev uses for code? Modern development uses [Agile](https://en.wikipedia.org/wiki/Agile_software_development) methodology for software, so why can't we use that also for systems?
 
 And although DevOps has very important cultural concepts on how companies need to change, in this document we will focus on some of the processes, technologies and solutions that DevOps teams could use to improve their daily work.
 
