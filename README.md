@@ -89,7 +89,7 @@ Sometimes developers work on a common server for a number of individuals, but qu
 
 ## Containers and Docker
 
-We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter their current *de facto* implementation, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to really get some foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to configure them.
+We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter their current *de facto* implementation, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to  get some really nice foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to configure them.
 
 But containers are not only another virtualisation technology. The packaging and portability layer they provide perfectly compliments the needs of modern application architectures based on *microservices*. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
 
@@ -559,19 +559,25 @@ Don't forget to stop *ngrok* as well by pressing Ctrl+C in its own window (the f
 
 # Operations
 
-## On-premises deployment
-
 Once developers feel comfortable with code running in their laptops they need to start thinking about how it will go into production. That production environment might be on-premises (private) or in the Cloud (public), depending on many different factors, like cost, data confidentiality or even local country regulations.
 
-On-prem might also be a QA (Quality Assurance) environment where code is tested, and on successful completion moved to production (whether on-prem as well, or in the Cloud). Or the other way around... There are multiple possible scenarios and it would be great that they were kind of similar, right?
+## On-premises deployment
+
+On-prem might be, for example, a QA (Quality Assurance) environment where code is tested (unit testing). And only on successful completion it would be moved to production (whether on-prem as well, or in the Cloud). Or the other way around... There are multiple possible scenarios and it would be great that they were kind of similar, right?
 
 In any case on-prem environments are very common and they provide total flexibility as they are run by in-company personnel. Of course they come at a cost in terms of purchasing and operating the solution, but the knowledge obtained in the process will allow you to understand and optimize many aspects that will be of ultimate benefit for you, your software and your company.
 
+Don't worry if you have no hardware at all to build your own datacenter. There are several alternatives that might be of interest to you to start learning:
+
+* [Katacoda kubernetes playground](http://katacoda.com/courses/kubernetes/playground): very basic k8s cluster with just 1 master + 1 worker nodes, pre-configured, accessible via web-based terminal, and valid for quick tests, as the environment is very short-lived (5-10 mins).
+* [play-with-kubernetes](https://labs.play-with-k8s.com/): basic k8s cluster with multiple Docker-based nodes ([Docker in Docker](https://hub.docker.com/_/docker/)), you need to initialize all different nodes and required networking yourself, accessible via web-based terminal, short-lived (4-hours).
+* [DevNet k8s sandbox](http://cs.co/SBxK8sContiv): comprehensive environment with 1 master + 3 worker nodes, based on VMs, pre-configured, accessible via SSH, valid for long testing (multi-day reservations) and reliable. It includes other interesting features, like Contiv for networking.
+
 ### No hardware for you?
 
-Wouldn't it be great to have your own on-prem datacenter, where you could install all required components to deploy your recently-created microservices application?
+But wouldn't it be great to have your own on-prem datacenter, where you could install all required components to deploy your recently-created microservices application?
 
-But of course the main problem is what would be cost for the required number of servers, switches, power supplies, cabling, etc? Even power consumption would be significant if you deploy something like that at home. Not even mentioning that would be a noisy and cozy room, so maybe your family would not be *that* happy about this project of yours.
+Of course the main problem is what would be cost for the required number of servers, switches, power supplies, cabling, etc? Even power consumption would be significant if you deploy something like that at home. Not even mentioning that would be a noisy and cozy room, so maybe your family would not be *that* happy about this project of yours.
 
 The solution would be to have a *mini* DataCenter with the following features:
 * Cheap
