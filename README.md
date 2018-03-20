@@ -59,7 +59,7 @@
 
 # Introduction to DevOps
 
-Would you like to explore how is the life of DevOps teams and what are some of their specific concerns? You might already be familiar with other environments like networking, but DevOps is a different world and in many aspects they think in a totally different way.
+Would you like to explore the life of a DevOps team, to understand team specific concerns? You might already be familiar with other environments like networking, but DevOps is a different world, with requirements for success being both technical and social, often requiring the team to think in a totally different way.
 
 Let's explore some of the challenges Development and Operations teams have today:
 
@@ -73,11 +73,11 @@ Let's explore some of the challenges Development and Operations teams have today
 
 * And then there is the *time-to-market* factor, where usually it is IT who becomes the *bottleneck* for a new service, or feature, to be implemented in production. The *smoother* the process to go from development to production, the easier and safer it will be be to accelerate the deployment of new functionalities.
 
-Wouldn't it be nice to have both teams, Dev and Ops, working together to alleviate these issues and accelerate the introduction of new software capabilities in your applications? Well, that is what [DevOps](https://en.wikipedia.org/wiki/DevOps) is about. DevOps wants both teams to manage together the whole lifecycle of software, so that it becomes easier, faster and safer to deploy.
+Wouldn't it be nice to have both teams, Dev and Ops, working together to alleviate these issues and accelerate the introduction of new software capabilities in your applications? Well, that is what [DevOps](https://en.wikipedia.org/wiki/DevOps) is about. DevOps wants both teams to be *equally responsible* for the whole lifecycle of software, from the beginning. so that it becomes easier, faster and safer to deploy.
 
-One of the ideas DevOps promote is, why can't Ops teams use the same approach to systems as Dev uses for code? Modern development uses [Agile](https://en.wikipedia.org/wiki/Agile_software_development) methodology for software, so why can't we use that also for systems?
+One of the ideas DevOps promotes is: Why can't Ops teams use the same approach to systems as Dev uses for code? Modern development uses [Agile](https://en.wikipedia.org/wiki/Agile_software_development) methodology for software, so why can't we use that also for systems?
 
-And although DevOps has a very important cultural side on how companies need to change, in this document we will focus on some of the processes, technologies and solutions that DevOps teams could use to improve their daily work.
+And although DevOps has very important cultural concepts on how companies need to change, in this document we will focus on some of the processes, technologies and solutions that DevOps teams could use to improve their daily work.
 
 Let's start at the beginning of everything, where developers... develop.
 
@@ -85,19 +85,21 @@ Let's start at the beginning of everything, where developers... develop.
 
 # Development
 
-Sometimes developers work on a common server for a number of individuals, but quite often they might be working in their own workstations or laptops. And of course that local system will be *unique* in terms of installed software, libraries, drivers, kernel, OS, etc. As discussed in the previous section, this will often lead to software that works perfectly in their local system, but does *not* in a similar system run by a colleague (even another developer with a similar environment).
+Sometimes developers work on a common server for a number of individuals, but quite often they might be working in their own workstations or laptops. And of course that local system will be *unique* in terms of installed software, libraries, drivers, kernel, OS, etc. As discussed in the previous section, this will often lead to software that works perfectly in their local system, but does *not* work on a similar system run by a colleague (even another developer with a similar environment).
 
 ## Containers and Docker
 
 We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter their current *de facto* implementation, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to really get some foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to configure them.
 
-But containers are not only another virtualisation technology. They provide capabilities required to implement modern application architectures based on *microservices*. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
+But containers are not only another virtualisation technology. The packaging and portability layer they provide perfectly compliments the needs of modern application architectures based on *microservices*. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
+
+It also allows developers to add value while understanding a much smaller part of the overall code base for an application, allowing new members of the team to get upto speed and start contributing more quickly.
 
 On top of that microservices provide fault isolation, so that a failure or bug in one microservice does not affect other parts of the application (other microservices).
 
 ## Modern application development with containers
 
-First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker in yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, command prompt or putty on Windows), and please check that Docker is correctly installed in your system with `docker version` (please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system).
+First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, command prompt or putty on Windows), and please check that Docker is correctly installed in your system with `docker version` (please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system).
 
 Now we need a microservices-based application, but instead of developing one from scratch we will leverage an existing one. And while we are at it we will be able to determine who is the best superhero!
 
