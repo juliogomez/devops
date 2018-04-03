@@ -71,7 +71,7 @@ Let's explore some of the challenges Development and Operations teams have today
 <img src="./images/devops.jpg">
 </p>
 
-* And then there is the *time-to-market* factor, where usually it is IT who becomes the *bottleneck* for a new service, or feature, to be implemented in production. The *smoother* the process to go from development to production, the easier and safer it will be be to accelerate the deployment of new functionalities.
+* And then there is the *time-to-market* factor, where usually it is IT who becomes the *bottleneck* for a new service, or feature, to be implemented in production. The *smoother* the process to go from development to production, the easier and safer it will be to accelerate the deployment of new functionalities.
 
 Wouldn't it be nice to have both teams, Dev and Ops, working together to alleviate these issues and accelerate the introduction of new software capabilities in your applications? Well, that is what [DevOps](https://en.wikipedia.org/wiki/DevOps) is about. DevOps wants both teams to be *equally responsible* for the whole lifecycle of software, so that it becomes easier, faster and safer to deploy.
 
