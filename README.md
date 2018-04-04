@@ -1514,7 +1514,7 @@ ls
 
 Now you can deploy *myhero* with a single command:
 
-`helm install --name helm-myhero myhero-0.1.0.tgz``
+`helm install --name helm-myhero myhero-0.1.0.tgz`
 
 Watch pods, services and ingress being created:
 
