@@ -1283,6 +1283,10 @@ And as long as we have built a container scheduler, why don't we make the dashbo
 
 But yes, that's a good and easy way to deploy it. So let's start by taking a look at [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), a nice and simple web-based dashboard that gives you visibility of applications running in your cluster.
 
+<center><src="http://ia.media-imdb.com/images/M/MV5BMTg4NzEyNzQ5OF5BMl5BanBnXkFtZTYwNTY3NDg4._V1._CR24,0,293,443_SX214_AL_.jpg"></center>
+
+![Kubernetes Dashboard](https://github.com/kubernetes/dashboard/blob/master/docs/dashboard-ui.png?raw=true "Kubernetes Dashboard")
+
 Instead of describing it, let's quickly deploy it and you will see what it offers. 
 
 Open a new terminal, connect to your master node, and go to the dashboard directory:
