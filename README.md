@@ -1304,7 +1304,7 @@ Now you can deploy the dashboard itself:
 We are deploying it as a *NodePort* service, so you should be able to access it with your browser pointing to the IP address of any of your nodes, and the port assigned by the service. For example:
 
 ```
-kubectl get services kubernetes-dashboard -n kube-system
+pi@master:~ $kubectl get services kubernetes-dashboard -n kube-system
 NAME                   TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 kubernetes-dashboard   NodePort   10.108.203.74   <none>        80:31383/TCP   23h
 ```
@@ -1332,7 +1332,7 @@ Once done, apply the ingress resource:
 Check that it has been correctly applied:
 
 ```
-kubectl get ingress -n kube-system
+pi@master:~ $kubectl get ingress -n kube-system
 NAME                   HOSTS                          ADDRESS   PORTS     AGE
 kubernetes-dashboard   dashboard.internal.julio.com
 ```
