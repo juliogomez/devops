@@ -26,6 +26,7 @@
         - [Deploying your application](#deploying-your-application)
         - [What about Web and Spark?](#what-about-web-and-spark)
         - [Now we need queues](#now-we-need-queues)
+        - [A Dashboard to rule them all](#a-dashboard-to-rule-them-all)
     - [Public Cloud deployment](#public-cloud-deployment)
         - [GKE setup](#gke-setup)
         - [Disable DDNS](#disable-ddns)
@@ -1271,6 +1272,169 @@ Now *myhero-app* will publish votes to *myhero-mosca*, and then *myhero-ernst* w
 </p>
 
 Please go ahead and test that your application still works, by voting with the Web Interface and Spark. Its functionality should be the same, but now it will be able to process a higher number of concurrent users!
+
+### A Dashboard to rule them all
+
+Now that your cluster is all set and your application is deployed you might be wondering how you can monitor the whole system. We can be CLI guys and want to run `top` or `htop` in each server, but that does not really go well with the *modern* approach we are following for everything else.
+
+We need a dasboard. And while we are at it, let's please have a *good* one. Something that shows comprehensive information about our deployments, but also on the cluster itself.
+
+And as long as we have built a container scheduler, why don't we make the dashboard available via... containers? Wow, let that sink in. So the dashboard that monitors my containers and my cluster is actually a container itself? Talk about [Inception](http://www.imdb.com/title/tt1375666/)...
+
+But yes, that's a good and easy way to deploy it. So let's start by taking a look at [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), a nice and simple web-based dashboard that gives you visibility of applications running in your cluster.
+
+Instead of describing it, let's quickly deploy it and you will see what it offers. 
+
+Open a new terminal, connect to your master node, and go to the dashboard directory:
+
+`cd devops/dashboard`
+
+First thing you need to do is to create a new *admin* account for the dashboard to use. This is required because the dashboard will need special access to the cluster. Think about it, containers usually do not have access to cluster info or other deployments, so we need to enable that.
+
+`kubectl apply -f dashboard-admin-account.yaml`
+
+Now you can deploy the dashboard itself:
+
+`kubectl apply -f dashboard.yaml`
+
+We are deploying it as *NodePort*, so you should be able to access it with your browser pointing to the IP address of any of your nodes, and the port assigned by the service. You can see it here:
+
+```
+kubectl get services kubernetes-dashboard -n kube-system
+NAME                   TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes-dashboard   NodePort   10.108.203.74   <none>        80:31383/TCP   23h
+```
+
+In my case I could point my browser to `192.168.1.100:31383` and access the dashboard there.
+
+But now you know about *Ingress* so you might probably want to *do it right*. So we can create a new ingress resource that points to the dashboard. That way we will be able to access it with a URL in our browser.
+
+As long as we got to the maximum number of hostnames in NoIP free tier, let's do something different. We will create an ingress resource, but only to be used from the *internal* network. That means the dashboard will not be accessible from the outside world, but let's suppose we only want to manage it locally, so for our case that should be okay.
+
+The most basic name resolution system is the `/etc/hosts` **in your laptop**, so let's edit it and add an entry like this:
+
+`192.168.1.250   dashboard.internal.julio.com`
+
+The specified IP address is the one assigned by MetalLB to Traefik. That way when we put the defined URL in our browser it will be automatically redirected to Traefik, who knows where it should go based on the appropriate *ingress* resource.
+
+Now go back to the terminal connected to the *master* node and edit the ingress file and include the URL you defined as *host*:
+
+`vi dashboard-ingress.yaml`
+
+Once done apply the ingress resource:
+
+`kubectl apply -f dashboard-ingress.yaml`
+
+Check that it has been correctly applied:
+
+```
+kubectl get ingress -n kube-system
+NAME                   HOSTS                          ADDRESS   PORTS     AGE
+kubernetes-dashboard   dashboard.internal.julio.com
+```
+
+Now go to your browser and check you can access the dashboard via `dashboard.internal.julio.com`
+
+Success! Your dashboard is now accessible from the internal network with the URL you defined.
+
+( Optional: if you are bold and have access to your own DNS service, you could try and create an *external* ingress resource, to make the dashboard accessible from Internet. It should be very similar to what we did for *myhero* external accessibility in previous sections of this document. )
+
+Go through the dashboard and see the multiple benefits it offer. But you will soon notice that there is no information on the cluster itself and its nodes. You cannot find those nice graphs on CPU and memory consumption. That is because you need [Heapster](https://github.com/kubernetes/heapster/) to monitor cluster resources usage. 
+
+Heapster needs [InfluxDB](https://github.com/kubernetes/heapster/blob/master/docs/influxdb.md) as a backend, and in time InfluxDB needs [persistent volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) (PV) to be deployed. PV are *consumed* by applications like InfluxDB via persistent volume claims (PVC). PV are provisioned by the system admin and *offered* to applications, that in time *claim* them when required. 
+
+But instead of having to manually provision PVs, we can automate it by creating a [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/). This way applications just request what they need from any available StorageClass, based on their specific requirements.
+
+StorageClasses need a provisioner to define what volume plugin is used for provisioning PVs, so there are multiple options. Many are Cloud native, but we also have options to deploy on-premises.
+
+A simple way is to use [NFS](https://en.wikipedia.org/wiki/Network_File_System) to share a USB hard disk connected to one of the cluster nodes. 
+
+So let's review what we are going to do: in order to have visibility about cluster resources in our k8s dashboard, we are going to deploy Heapster, that requires InfluxDB, that requires PVs, that we will offer with a StorageClass, that we will provision on a HD offered via NFS... **NICE.**
+
+Obviously we need to start *backwards*, so let's start by connecting a USB hard disk to one of your k8s cluster nodes (even better if it is USB powered, so you don't need an additional power supply for it). In my case I plugged it in *worker-01*.
+
+Open a new terminal, connect to the node where you plugged the HD, and check you can see the HD and its partitions:
+
+`ls /dev/sda*`
+
+*sda* will be the HD itself and *sda1*, *sda2* the partitions it includes.
+
+You may check partition format with:
+
+`df -Th`
+
+Choose the partition you would like to use (in my case *sda2*) and format it as [ext4](https://en.wikipedia.org/wiki/Ext4), with:
+
+`sudo mkfs.ext4 /dev/sda2 -L untitled`
+
+Once done mount the partition on a new directory
+
+```
+sudo mkdir /mnt/extusb
+sudo mount /dev/sda2 /mnt/extusb
+ls /mnt/extusb
+sudo fdisk -l
+```
+
+Now we need to install a NFS server:
+
+```
+sudo apt-get install nfs-kernel-server nfs-common
+sudo systemctl enable nfs-kernel-server
+```
+
+Create the folder you would like to share via NFS:
+
+`sudo mkdir kube`
+
+Edit */etc/exports* and include the following line to share that folder in your own IP segment:
+
+```
+/mnt/extusb/kube/ 192.168.1.*(rw,sync,no_subtree_check,no_root_squash)
+```
+
+Enable the export
+
+`sudo exportfs -a`
+
+Congrats! The node where you plugged your HD is now sharing it via NFS.
+
+Next step is to use the NFS external provisioner, [nfs-client-provisioner](https://github.com/kubernetes-incubator/external-storage/tree/master/nfs-client), to create a StorageClass that can dynamically allocate PVs.
+
+From the terminal connected to your *master* node, go to:
+
+`cd devops/nfs`
+
+There you will need to first create a new [service account](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/), with:
+
+`kubectl apply -f auth/.`
+
+Then deploy the *nfs-client-provisioner* pods:
+
+`kubectl apply -f deployment-arm.yaml`
+
+And finally create the new StorageClass:
+
+`kubectl apply -f class.yaml`
+
+Configure your StorageClass to be the default one to use:
+
+`kubectl patch storageclass nfs-ssd-node1 -p '{"metadata":{"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'`
+
+Great! Now you have a working StorageClass that any application can use to request PVs from.
+
+You may now install Heapster and its backend, InfluxDB. From your terminal window connected to the *master* node:
+
+```
+cd devops/heapster
+kubectl apply -f .
+```
+
+Monitor the *heapster* pod until it is running and available (ready 1/1):
+
+`kubectl get pods -n kube-system`
+
+After some minutes refresh your browser while pointing to the k8s dashboard and you will start seeing cluster resource graphs!
 
 Congratulations!!! If you got here you have gone a looong way since we started this tutorial.
 
