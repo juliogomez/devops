@@ -1345,7 +1345,7 @@ Success! Your dashboard is now accessible from the internal network with the URL
 
 Go through the dashboard and see the multiple benefits it offer. But you will soon notice that there is no information on the cluster itself and its nodes. You cannot find those nice graphs on CPU and memory consumption. That is because you need [Heapster](https://github.com/kubernetes/heapster/) to monitor cluster resources usage. 
 
-Heapster needs [InfluxDB](https://github.com/kubernetes/heapster/blob/master/docs/influxdb.md) as a backend, and in time InfluxDB needs [persistent volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) (PV) to be deployed. PV are *consumed* by applications like InfluxDB via persistent volume claims (PVC). PV are provisioned by the system admin and *offered* to applications, that in time *claim* them when required. 
+Heapster needs [InfluxDB](https://github.com/kubernetes/heapster/blob/master/docs/influxdb.md) as a backend, and in time InfluxDB needs [persistent volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) (PV) to be deployed. PVs are *consumed* by applications like InfluxDB via persistent volume claims (PVC). PVs are provisioned by the system admin and *offered* to applications, that in time *claim* them when required. 
 
 But instead of having to manually provision PVs, we can automate it by creating a [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/). This way applications just request what they need from any available StorageClass, based on their specific requirements.
 
@@ -1363,7 +1363,7 @@ Open a new terminal, connect to the node where you plugged the HD, and check you
 
 *sda* will be the HD itself and *sda1*, *sda2* the partitions it includes.
 
-You may check partition format with:
+You may check your partitions format with:
 
 `df -Th`
 
@@ -1371,7 +1371,7 @@ Choose the partition you would like to use (in my case *sda2*) and format it as 
 
 `sudo mkfs.ext4 /dev/sda2 -L untitled`
 
-Once done mount the partition on a new directory
+Once done mount the partition on a new directory:
 
 ```
 sudo mkdir /mnt/extusb
@@ -1397,7 +1397,7 @@ Edit */etc/exports* and include the following line to share that folder in your 
 /mnt/extusb/kube/ 192.168.1.*(rw,sync,no_subtree_check,no_root_squash)
 ```
 
-Enable the export
+Enable the export with:
 
 `sudo exportfs -a`
 
@@ -1438,7 +1438,7 @@ Monitor the *heapster* pod until it is running and available (ready 1/1):
 
 `kubectl get pods -n kube-system`
 
-After some minutes refresh your browser while pointing to the k8s dashboard and you will start seeing cluster resource graphs!
+After some minutes refresh your browser while pointing to the k8s dashboard and you will start seeing those nice cluster resource graphs!
 
 Congratulations!!! If you got here you have gone a looong way since we started this tutorial.
 
