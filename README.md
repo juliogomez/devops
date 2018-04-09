@@ -100,7 +100,9 @@ On top of that microservices provide fault isolation, so that a failure or bug i
 
 ## Modern application development with containers
 
-First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, command prompt or putty on Windows), and please check that Docker is correctly installed in your system with `docker version` (please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system).
+First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, command prompt or putty on Windows), and please check that Docker is correctly installed in your system with `docker version`. Finally, go to Docker Preferences - File Sharing, and include the `/Users` directory so that later on we can mount directories from your laptop into Docker container volumes.
+
+Please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system.
 
 Now we need a microservices-based application, but instead of developing one from scratch we will leverage an existing one. And while we are at it we will be able to determine who is the best superhero!
 
@@ -129,7 +131,7 @@ Once installation is complete, go and check that Git is correctly installed in y
 
 `git version`
 
-Now create a directory where you would like to store all DevOps content related to this tutorial and enter it.
+Now create a directory in your user home directory, where you would like to store all DevOps content related to this tutorial and enter it.
 
 ```
 mkdir devops_tutorial
