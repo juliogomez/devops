@@ -5,6 +5,8 @@ metadata:
   namespace: kube-system
   annotations:
     traefik.frontend.rule.type: PathPrefix
+  labels:
+    k8s-app: traefik-ingress-lb
 spec:
   rules:
   - host: dashboard.internal.julio.com

@@ -26,7 +26,7 @@
         - [Deploying your application](#deploying-your-application)
         - [What about Web and Spark?](#what-about-web-and-spark)
         - [Now we need queues](#now-we-need-queues)
-        - [A Dashboard to rule them all](#a-dashboard-to-rule-them-all)
+        - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
     - [Public Cloud deployment](#public-cloud-deployment)
         - [GKE setup](#gke-setup)
         - [Disable DDNS](#disable-ddns)
@@ -621,7 +621,7 @@ For less than $300 you are all set to build a tiny and quiet, but fully-function
 
 From the hardware perspective it is quite straight-forward, as you only need to mount the RPi boards on the case, connect all power cables to the power supply, and Ethernet cables to the switch. That's it.
 
-Now for the software we need to run a number of tasks, some of them on all nodes but some of them only on certain ones, so please pay attention to the following instructions.
+Now for the software we need to run a number of tasks, some of them on all nodes but some of them only on certain ones, so please pay attention to the following instructions. Many thanks to [Carlos](https://twitter.com/carlosedp) for his guidance on k8s over ARM.
 
 **For all nodes**
 
@@ -907,7 +907,7 @@ Please clone also the repo hosting the content of this tutorial, as you will nee
 
 `git clone https://github.com/juliogomez/devops`
 
-Now you should be able to simply run `docker build` inside each *myhero* directory. Please note we are naming them **pi-**myhero-... to differentiate them from the Mac versions we created before. You may now push your images to DockerHub, so they are available to be used in our Production environment (please remember to replace *<your_DockerHub_username>* with your own DockerHub username).
+Now you should be able to simply run `docker build` inside each *myhero* directory. Please note we are naming them **pi-myhero-** ... to differentiate them from the Mac versions we created before. You may now push your images to DockerHub, so they are available to be used in our Production environment (please remember to replace *<your_DockerHub_username>* with your own DockerHub username).
 
 ```
 cd myhero_data
@@ -935,7 +935,7 @@ For our tutorial I will just go through some of the aspects we need to understan
 
 Kubernetes deployments are configured by means of *manifests* in the form of YAML files. You will find the required manifests for *myhero* in the repo you cloned. Those files will allow you to deploy all different microservices required for our application to work.
 
-It is as simple as running a `kubectl apply -f *\<filename>*' command, from your *master* node, for each microservice.
+It is as simple as running a `kubectl apply -f *\<filename>*` command, from your *master* node, for each microservice.
 
 Let's start with the basic setup of *myhero-data* and *myhero-app* (we will cover why not *myhero-ui* in a minute).
 
@@ -977,7 +977,7 @@ Let's see how k8s do it.
 All our YAML files have 2 sections:
 
 1. Deployment: it includes all the required info on what is the name of the microservice, image to use, desired number of replicas, hardware requirements, port exposed by the container where it offers its service (ie. containerPort: 5000), etc.
-2. Service: it defines how *accesible* is this microservice, and how it is configured. You will see *myhero-data* or *myhero-app* pods exposing port 5000, but that is mapped to port 80 in the service that load-balances to all underlying pods. It also includes a service *type* that defines if the load-balancer is accessible from outside the container space or not.
+2. Service: it defines how *accessible* this microservice is, and how it is configured. You will see *myhero-data* or *myhero-app* pods exposing port 5000, but that is mapped to port 80 in the service that load-balances to all underlying pods. It also includes a service *type* that defines if the load-balancer is accessible from outside the container space or not.
 
 <p align="center"> 
 <img src="./images/k8s-service-portmapping.png">
@@ -1116,11 +1116,11 @@ traefik-ingress-service   LoadBalancer   10.111.243.177   192.168.1.250   80:300
 
 As you can see your LoadBalancer service (*traefik-ingress-service*) has been allocated the requested IP address. That means all traffic going to that IP will be received by Traefik, so that it can load-balance that traffic to the configured services.
 
-Now how do we configure our services to be load-balanced by Traefik? We need to create an Ingress resource, based on the content of *k8s_myhero_ingress.yml*
+Now, how do we configure our services to be load-balanced by Traefik? We need to create an Ingress resource, based on the content of *k8s_myhero_ingress.yml*
 
 Please review its content to understand how we have configured our ingress. Basically we have 3 rules to identify the 3 services we want to be accessible from outside our environment: *myhero-ui*, *myhero-app* and *myhero-spark*. Each one of those rules define a hostname and what is the specific service Traefik should associate to it.
 
-You will need to define those 3 hostnames in your DDNS provider. Luckily enough for us [noip](https://www.noip.com) supports a maximum of 3 hostnames in its free tier, so that is good enough for our setup.
+You will need to define those 3 hostnames in your DDNS provider. Luckily enough for us [NoIP](https://www.noip.com) supports a maximum of 3 hostnames in its free tier, so that is good enough for our setup.
 
 Please note we could have used *subdomains* instead of different hostnames, but noip does not support subdomains in their free tier.
 
@@ -1149,7 +1149,7 @@ New configuration file '/tmp/no-ip2.conf' created.
 
 Check your configuration is correct:
 
-`sudo noip2 -S``
+`sudo noip2 -S`
 
 And finally run *noip*:
 
@@ -1273,21 +1273,21 @@ Now *myhero-app* will publish votes to *myhero-mosca*, and then *myhero-ernst* w
 
 Please go ahead and test that your application still works, by voting with the Web Interface and Spark. Its functionality should be the same, but now it will be able to process a higher number of concurrent users!
 
-### A Dashboard to rule them all
+### A Dashboard to manage them all
 
-Now that your cluster is all set and your application is deployed you might be wondering if there could be an option to manage your system from a GUI. We can be CLI guys and want to run `top` or `htop` to see how each server is doing, but that does not really go well with the *modern* approach we are following for everything else.
+Now that your cluster is all set, and your application is deployed, you might be wondering if there could be an option to manage your system from a GUI. We can be CLI guys and want to run `top` or `htop` to see how each server is doing, but that does not really go well with the *modern* approach we are following for everything else.
 
 We need a dasboard. And while we are at it, let's please have a *good* one. Something that shows comprehensive information about our deployments, but also on the cluster itself.
 
-And as long as we have built a container scheduler, why don't we make the dashboard available via... containers? Wow, let that sink in. So the dashboard that monitors my containers and my cluster is actually a container itself? Talk about [Inception](http://www.imdb.com/title/tt1375666/)...
+And as long as we have built a container scheduler, why don't we make the dashboard available via... containers? Wow, let that sink in. So the dashboard that manages my containers and my cluster is actually a container itself? Talk about [Inception](http://www.imdb.com/title/tt1375666/)...
 
-But yes, that's a good and easy way to deploy it. So let's start by taking a look at [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), a nice and simple web-based dashboard that gives you visibility of applications running in your cluster.
+But yes, that's a good and easy way to deploy it. So let's start by taking a look at [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), a nice and simple web-based dashboard that allows you to manage applications running in your cluster.
 
 <center><src="http://ia.media-imdb.com/images/M/MV5BMTg4NzEyNzQ5OF5BMl5BanBnXkFtZTYwNTY3NDg4._V1._CR24,0,293,443_SX214_AL_.jpg"></center>
 
 ![Kubernetes Dashboard](https://github.com/kubernetes/dashboard/blob/master/docs/dashboard-ui.png?raw=true "Kubernetes Dashboard")
 
-Instead of describing it, let's quickly deploy it and you will see what it offers. 
+Instead of describing it, let's quickly deploy it and you will see what it offers.
 
 Open a new terminal, connect to your master node, and go to the dashboard directory:
 
@@ -1378,6 +1378,12 @@ sudo mkdir /mnt/extusb
 sudo mount /dev/sda2 /mnt/extusb
 ls /mnt/extusb
 sudo fdisk -l
+```
+
+Let's not forget to make this mount persist on reboot, so please edit */etc/fstab* and add the following line:
+
+```
+/dev/sda2  /mnt/extusb  ext4  defaults  1 1
 ```
 
 Now we need to install a NFS server:
