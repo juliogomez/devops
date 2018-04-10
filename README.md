@@ -27,6 +27,7 @@
         - [What about Web and Spark?](#what-about-web-and-spark)
         - [Now we need queues](#now-we-need-queues)
         - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
+        - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
     - [Public Cloud deployment](#public-cloud-deployment)
         - [GKE setup](#gke-setup)
         - [Disable DDNS](#disable-ddns)
@@ -1447,6 +1448,89 @@ Monitor the *heapster* pod until it is running and available (ready 1/1):
 `kubectl get pods -n kube-system`
 
 After some minutes refresh your browser while pointing to the k8s dashboard and you will start seeing those nice cluster resource graphs!
+
+### Monitoring your cluster and applications
+
+As you start using microservices-based applications you will discover that the need for a good monitoring service is more *real* than ever. You must consider that now applications consist of many different elements that must be monitored independently. A higher number of elements per application drive the need for a really good and useful monitoring solution.
+
+There are multiple options to implement a customised monitoring solution, each one of them suitable to individual requirements you might have in your scenario.
+
+We will use [Prometheus Operator](https://github.com/coreos/prometheus-operator), a tool that automates Prometheus instances management.
+
+[Prometheus](https://prometheus.io) is a systems monitoring toolkit. It provides a multi-dimensional data model with time series data identified by metric name and key/value pairs. Its server scrapes and stores time series data from multiple sources, called *exporters*.
+
+We will install our first exporter manually, and that is [cAdvisor](https://github.com/google/cadvisor) (Container Advisor), a tool that provides information on resources used by running containers.
+
+```
+cd devops/monitoring
+kubectl apply -f manifests/cadvisor/
+```
+
+Check cAdvisor port to access it:
+
+```
+pi@master:~ $ kubectl get service cadvisor
+NAME       TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
+cadvisor   NodePort   10.111.148.5   <none>        8080:32552/TCP   7m
+```
+
+As long as the service is configured as *NodePort*, you can test it and access directly its web interface on *\<any-node-IP>:\<service-port>*
+
+In my case, and as per the output above, I could point the browser to `192.168.1.100:32552`
+
+According to the official deployment documentation [here](https://github.com/coreos/prometheus-operator/blob/master/contrib/kube-prometheus/docs/kube-prometheus-on-kubeadm.md), a couple of changes are required on the cluster:
+
+1. We need to expose cadvisor and allow webhook token authentication. To do so, we do the following **on all nodes** (master and workers):
+
+```
+sudo sed -e "/cadvisor-port=0/d" -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+sudo sed -e "s/--authorization-mode=Webhook/--authentication-token-webhook=true --authorization-mode=Webhook/" -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+```
+
+2. Additionally, you need to run the following **only on the master node**, to change the address where kube-controller-manager and kube-scheduler listens:
+
+```
+sudo sed -e "s/- --address=127.0.0.1/- --address=0.0.0.0/" -i /etc/kubernetes/manifests/kube-controller-manager.yaml
+sudo sed -e "s/- --address=127.0.0.1/- --address=0.0.0.0/" -i /etc/kubernetes/manifests/kube-scheduler.yaml
+```
+
+Now we will install the rest of the sytem, via a script called `deploy`. It will automatically deploy all required manifests to install:
+
+- **Prometheus-operator**: element that manages all components
+- **Prometheus**: collecting and time-series database to store all data
+- **node-exporter**: collector to fetch node data, like HW and OS metrics
+- **arm-exporter**: collector to fetch board temperature
+- **alertmanager**: provides alarm notifications sent by Prometheus
+- **Grafana**: the dashboard GUI
+- **kube-state-metrics**: collector for Kubernetes cluster stats
+- **SMTP relay**: to provide email notifications
+
+But before using the `deploy` script we need to configure some parameters:
+
+The following elements provide GUIs accessible via *ingress* resources, so you should configure their internal URLs (don’t forget to update the `/etc/hosts` file **in your laptop**):
+
+- Prometheus, in `manifests/prometheus/prometheus-k8s-ingress.yaml`
+- AlertManager, in `manifests/alertmanager/alertmanager-ingress.yaml`
+- Grafana, in `manifests/grafana/grafana-ingress.yaml` 
+
+Add your gmail credentials (user and password) in `manifests/smtp-server/smtp.yaml`, so the system can send out emails for alerts, and just your gmail address in `manifests/grafana/grafana-configmap.yaml`
+
+Once you have everything configured, please run:
+
+```
+cd devops/monitoring
+deploy
+```
+
+`deploy` will create a new namespace, called *monitoring*, where all related pods will be deployed. Check all pods are running in that new namespace, with:
+
+`kubectl get pods -n monitoring`
+
+When all deployments are completed you may access Grafana from its ingress URL, in my case pointing the browser to `grafana.internal.julio.com` (default access with user *admin* and password *admin*).
+
+You may find some additional custom Grafana dashboards for your setup in the `grafana-dashboards` directory. These are really useful for a RPi cluster, as they provide visibility about critical system metrics. Import them from the Grafana GUI with the `+` sign and then `import` - `Upload .json File`.
 
 Congratulations!!! If you got here you have gone a looong way since we started this tutorial.
 
