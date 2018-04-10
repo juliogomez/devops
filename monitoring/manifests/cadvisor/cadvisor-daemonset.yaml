@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    service: cadvisor
+  name: cadvisor
+spec:
+  template:
+    metadata:
+      name: cadvisor
+      labels:
+        service: cadvisor
+    spec:
+      containers:
+      - image: carlosedp/rpi-cadvisor
+        name: cadvisor
+        ports:
+        - containerPort: 8080
+          hostPort: 8080
+          name: cadvisor-scrape
+        volumeMounts:
+#        - mountPath: /var/run/docker.sock
+#          name: docker-sock-volume
+        - mountPath: /rootfs
+          name: root
+          readOnly: true
+        - mountPath: /var/run
+          name: var-run
+        - mountPath: /sys
+          name: sys
+          readOnly: true
+        - mountPath: /var/lib/docker
+          name: docker
+          readOnly: true
+      volumes:
+#      - name: docker-sock-volume
+#        hostPath:
+#          path: /var/run/docker.sock
+      - name: root
+        hostPath:
+          path: /
+      - name: var-run
+        hostPath:
+          path: /var/run
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: docker
+        hostPath:
+          path: /var/lib/docker
