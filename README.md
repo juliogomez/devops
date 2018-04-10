@@ -617,7 +617,7 @@ You may find below the shopping list I used:
 * 4x microUSB-to-USB power cords
 * 1x RPi Case for 4x RPi
 
-For less than $300 you are all set to build a tiny and quiet, but fully-functional, 4-server datacenter. I chose 4 servers because I wanted to deploy a Kubernetes cluster with 1x Master and 3x Worker nodes, but you could have something different, like 3 or 6 nodes. I got all components from a single source (ie. Amazon), quickly shipped home to start working on it asap. Easy.
+For less than $300 you are all set to build a tiny and quiet, but fully-functional, 4-server datacenter. I chose 4 servers because I wanted to deploy a Kubernetes cluster with 1x Master and 3x Worker nodes, but you could have something different, like 3 or 6 nodes. I got all components from a single source (ie. Amazon, [here](http://amzn.eu/29EpwDv) is my shoppping list), quickly shipped home to start working on it asap. Easy.
 
 ### How to build your own cluster
 
