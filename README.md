@@ -95,15 +95,15 @@ We would need something that packages and isolates software from the underlying 
 
 But containers are not only another virtualisation technology. The packaging and portability layer they provide perfectly compliments the needs of modern application architectures based on *microservices*. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
 
-It also allows developers to add value while understanding a much smaller part of the overall code base for an application, allowing new members of the team to get upto speed and start contributing more quickly.
+It also allows developers to add value while understanding a much smaller part of the overall base code for an application, allowing new members of the team to get upto speed and start contributing more quickly.
 
 On top of that microservices provide fault isolation, so that a failure or bug in one microservice does not affect other parts of the application (other microservices).
 
 ## Modern application development with containers
 
-First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, command prompt or putty on Windows), and please check that Docker is correctly installed in your system with `docker version`. Finally, go to Docker Preferences - File Sharing, and include the `/Users` directory so that later on we can mount directories from your laptop into Docker container volumes.
+First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, Command Prompt or PowerShell on Windows), and please check that Docker is correctly installed in your system with `docker version`. Finally, go to "Docker Preferences" - "File Sharing", and include the `/Users` directory so that later on we can mount directories from your laptop into Docker container volumes.
 
-Please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system.
+Please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system. For Windows you can use Command Prompt or PowerShell.
 
 Now we need a microservices-based application, but instead of developing one from scratch we will leverage an existing one. And while we are at it we will be able to determine who is the best superhero!
 
@@ -373,7 +373,7 @@ Please go to its own directory where you cloned the content from the repo in Git
 
 There you will see a very similar file and directory structure, only in this case the code is stored in a folder called *app*. If you take a look inside you will realize there is no Python code in there. As long as this UI is a webpage, it has been developed in AngularJS. We will discuss an important implication of this in a minute.
 
-For now let's just review the *docker-compose.yml* file, and this time it should *really* familiar to you. It just maps a different port in your laptop (15080) to port 80 in the container (80 is the default port for web servers like this UI frontpage). And then you have your environment variables. Something that might catch your attention is that they define the app_server and spark_server by referring to *localhost:laptop_port* instead of *container_name:container_port*.
+For now let's just review the *docker-compose.yml* file, and this time it should *really* familiar to you. It just maps a different port in your laptop (15080) to port 80 in the container (80 is the default port for web servers like this UI frontpage). And then you have your environment variables. Something that might catch your attention is that they define the *app_server* and *spark_server* by referring to *localhost:laptop_port* instead of *container_name:container_port*.
 
 This is a consequence of the way AngularJS works. If you are not familiar with this programming language that is 0k, but you will need to understand this important implication. Services implemented as AngularJS applications run *client-side*. That means that the only interaction from the browser to the web server is to download HTML, CSS, images and JavaScript code. All the actual logic and code running happens client-side, in the browser itself. This is really important for our application, because *myhero-ui* will be that webserver providing our laptop's browser with everything it needs. And then the browser will access directly *myhero-app*. That is why we need to provide an externally accessible address of our *myhero-app* container, in the form of an environment variable.
 
@@ -488,9 +488,9 @@ Check its content, including hidden files:
 
 And you will find en *.env.template* file. Rename it to *.env* with: 
 
-`mv .env.template .env` 
+`mv .env.template .env`
 
-Edit this file to include all empty required values, including the *ngrok* URL you saved as the value for *NGROK_URL*.
+Edit *.env* file to include all empty required values, including the *ngrok* URL you saved as the value for *NGROK_URL*.
 
 You can now run:
 
@@ -502,7 +502,7 @@ See *myhero-spark* image being built and a container instantiate based on it. Le
 
 `curl http://<ngrok_url>/hello/<your_spark_email>`
 
-You will automatically get a new message in your Spark application, asking if you would like to vote. Any answer you provide will make the bot respond with the set of commands accepted by the bot. You can see the available options with /options, vote with /vote and the name of a superhero, and see the results with /results.
+You will automatically get a new message in your Spark application, asking if you would like to vote. Any answer you provide will make the bot respond with the set of commands accepted by the bot. You can see the available options with "/options", vote with "/vote" and the name of a superhero, and see the results with "/results".
 
 As long as this is just another interface available to your users, it relies on the same *myhero-app* and *myhero-data* containers as before. So you will still see the votes you put in the system via the web interface. And any vote you put in via Spark, will also be reflected in the web interface results.
 
@@ -514,7 +514,7 @@ Now that your containers are working it would be a good moment to publish the im
 
 Before publishing them you will need to create a [DockerHub](https://hub.docker.com) account. It is simple and free, and it will allow you publish your images easily.
 
-Find out the names of your existing images by filtering the ones that contain *myhero*: 
+Find out the names of your existing images by filtering the ones that contain *myhero*:
 
 `docker image ls | grep myhero`
 
@@ -1852,7 +1852,7 @@ This specific and important concern is what continuous integration, delivery and
 <img src="./images/CI.png">
 </p>
 
-Merging of development work with code base constantly enables automated testing to catch problems early.
+Merging of development work with base code constantly enables automated testing to catch problems early.
 
 Once software has been tested and it is working properly, we go into the *Delivery* phase where we:
 
@@ -2051,7 +2051,7 @@ In our case, when new code is pushed to our repo we would like Drone to:
 * Clone the updated repository from GoGS
 * Build an updated Docker image based on the new code and Dockerfile included in the repo, and associate a unique tag to it
 * Publish the new image to DockerHub
-* Update the aplication deployment in our k8s cluster, with containers using the new image that was just published
+* Update the application deployment in our k8s cluster, with containers using the new image that was just published
 * Notify us on pipeline execution results
 
 For each one of these phases you will be able to use [Drone plugins](http://plugins.drone.io), so we have selected some plugins for the specific tasks we have defined in our pipeline. These plugins require you to provide some information in order to automate its activities.
@@ -2276,7 +2276,7 @@ So once their code is ready they could use Draft to automatically detect the pro
 
 Let's get it working!
 
-First [install Draft, minikube and Helm](https://github.com/Azure/draft/blob/master/docs/install.md). Once done you will even have a 1-node k8s cluster running in your own laptop for testing.
+First [install Draft](https://github.com/azure/draft). If you choose to use minikube you will have a 1-node k8s cluster running in your own laptop for testing. Otherwise you can use any k8s cluster from a Cloud provider.
 
 Now go to *devops-tutorial* create a new *draft* directory, clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
 
@@ -2298,7 +2298,16 @@ This will create the required Helm chart structure and config file (*draft.toml*
 
 Let's quickly configure this for our specific microservice:
 
-* Edit *myherodata/charts/python/values.yaml* and replace the default service.internalPort from 8080 to 5000, which is the port defined in our Dockerfile.
+* Edit *myherodata/charts/python/values.yaml* and do 3 things:
+1. Replace the default service.internalPort from 8080 to 5000, which is the port defined in our Dockerfile. 
+2. Change service.type from *ClusterIP* to *NodePort*, so that the service is accessible from your laptop.
+3. Disable ingress access by adding the following 2 lines at the end of the file:
+
+```
+ingress:
+  enabled: false
+```
+
 * Edit *myherodata/charts/python/templates/deployment.yaml* to include the required environment variable under spec.template.spec.containers:
 
 ```
@@ -2315,17 +2324,23 @@ And it will automatically initiate the process to build the image, push it to yo
 
 As you can see, no k8s management is required from the developer, Draft does everything for him.
 
-Now you can connect to your deployment (it may take a couple of minutes until Pods are ready):
+Now you can connect to your deployment, although it may take a couple of minutes until Pods are ready. Check with:
 
-`draft connect`
+```
+kubectl get pods
+```
 
-This window will continue logging the output from your microservice. Please note the message stating how you can connect to your deployment:
+Once Pods are up and running, check the IP address for your *myherodata-python* to use by running:
 
-`Connecting to your app...SUCCESS...Connect to your app on localhost:57025`
+```
+minikube service list
+```
 
-Go ahead and open another window to test it on that \<localhost:port>\:
+In my case I got the following: http://192.168.99.100:31833
 
-`curl -X GET -H "key: SecureData" http://localhost:57025/options`
+So go ahead and test access via its API with:
+
+`curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options`
 
 Success!
 
@@ -2335,7 +2350,7 @@ With any further change made to your code, you just need to issue again:
 
 And it will automatically upgrade the deployment in your local k8s cluster (minikube). Easy!
 
-When you are done, you can delete your deployment by pressing 'ctrl+c' in the window where you run `draft connect`, and execute:
+When you are done, you can delete your deployment by executing:
 
 `draft delete`
 

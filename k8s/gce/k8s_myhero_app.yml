@@ -20,7 +20,7 @@ kind: Deployment
 metadata:
   name: myhero-app
 spec:
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
