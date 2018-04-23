@@ -2318,7 +2318,9 @@ ingress:
 
 We are all set! Now you just need to run:
 
-`draft up`
+```
+draft up
+```
 
 And it will automatically initiate the process to build the image, push it to your local registry and deploy the microservice in your local k8s cluster (minikube).
 
@@ -2340,19 +2342,31 @@ In my case I got the following: http://192.168.99.100:31833
 
 So go ahead and test access via its API with:
 
-`curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options`
+```
+curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
+```
 
 Success!
 
-With any further change made to your code, you just need to issue again:
+As developers, let's modify our code and see how easy it is to update the deployment. Please edit *sample_heros.txt* remove one of the entries, and save the file. With any change you make to your code, you just need to issue again:
 
-`draft up`
+```
+draft up
+```
 
-And it will automatically upgrade the deployment in your local k8s cluster (minikube). Easy!
+And it will automatically upgrade the deployment in your local k8s cluster (minikube). You may see the effect of your changes by querying the API again:
+
+```
+curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
+```
+
+Easy!
 
 When you are done, you can delete your deployment by executing:
 
-`draft delete`
+```
+draft delete
+```
 
 In summary, a python developer creates a microservice called *myhero-data*. Before sending it to production he wants to test it in a similar environment. Using Draft he can test his new code with just a couple of commands, and without having to manage the k8s cluster he is using.
 
