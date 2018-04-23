@@ -618,7 +618,7 @@ You may find below the shopping list I used:
 * 4x microUSB-to-USB power cords
 * 1x RPi Case for 4x RPi
 
-For less than $300 you are all set to build a tiny and quiet, but fully-functional, 4-server datacenter. I chose 4 servers because I wanted to deploy a Kubernetes cluster with 1x Master and 3x Worker nodes, but you could have something different, like 3 or 6 nodes. I got all components from a single source (ie. Amazon, [here](http://amzn.eu/29EpwDv) is my shoppping list), quickly shipped home to start working on it asap. Easy.
+For less than $300 you are all set to build a tiny and quiet, but fully-functional, 4-server datacenter. I chose 4 servers because I wanted to deploy a Kubernetes cluster with 1x Master and 3x Worker nodes, but you could have something different, like 3 or 6 nodes. I got all components from a single source (ie. Amazon, [here](http://amzn.eu/29EpwDv) is my shopping list), quickly shipped home to start working on it asap. Easy.
 
 ### How to build your own cluster
 
@@ -971,7 +971,7 @@ myhero-data-5f85c455f5-ks842                  1/1       Running   0          1m
 You may have noticed a couple of things that are different with k8s:
 
 1. We do not deal with containers anymore, but with *pods*. [Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod/) are the smallest unit of compute in k8s, and while they maybe be composed by several containers, for *myhero* there will be only one container per pod. So for our discussion you may think of pods as containers.
-2. There are several pods per microservice. We have 2x pods for *myhero-app*, and 1x pod for *myhero-data*. One of the big benefits of using a scheduler like k8s is that you *declare* the desired state, and k8s will *make it happen* for you. So in our case we have defined how many pods we want for each microservice (based on differente factors, like application architecture, or the required redundancy and/or expected workload). No matter how the underlying infrastructure behaves (RPi boards), k8s will manage it to make sure the system always complies with our *desired* state. No human intervention is required, nothing... k8s behaves like an efficient Ops team.
+2. There are several pods per microservice. We have 2x pods for *myhero-app*, and 1x pod for *myhero-data*. One of the big benefits of using a scheduler like k8s is that you *declare* the desired state, and k8s will *make it happen* for you. So in our case we have defined how many pods we want for each microservice (based on different factors, like application architecture, or the required redundancy and/or expected workload). No matter how the underlying infrastructure behaves (RPi boards), k8s will manage it to make sure the system always complies with our *desired* state. No human intervention is required, nothing... k8s behaves like an efficient Ops team.
 
 Now that all our pods are running and ready, we can locally test their service with `curl` commands. When we were running them in our Development environment with laptops, we used the port-mapping defined in *docker-compose.yml*. We are not using that file anymore, k8s handles access to its services in a different way.
 
@@ -1008,7 +1008,7 @@ Let's take a look at an example, and start by testing our new *myhero-data* serv
 
 You should get the list of voting options. As you can see we are querying one of the worker nodes, but any node would work exactly the same. That is because k8s cluster nodes are all connected, and NodePort reserves that specific port in all nodes.
 
-Now let's query *myhero-app* in a different node, and using its own servide *NodePort*:
+Now let's query *myhero-app* in a different node, and using its own service *NodePort*:
 
 `curl -X GET -H "key: SecureApp" http://worker-03.local:31238/options`
 
@@ -1221,13 +1221,13 @@ For Spark run the following command from your laptop terminal:
 
 You will receive a welcome message from the bot asking if you would like to vote, and you will be able to interact with it using /options, /vote and /results.
 
-Everythings is working! We can go home now... or not really?
+Everything is working! We can go home now... or not really?
 
 ### Now we need queues
 
 If you test extensively your current *myhero* deployment you will soon realize that by the time you have multiple users voting concurrently, your application will not be able to cope with the load and fail.
 
-The reason for this is that *myhero-data* cannot accomodate a high number of simultaneous requests to update its database (which is just a text file, by the way). If we want to address this challenge we need to implement a *buffering* system between *myhero-app* and *myhero-data*, so that *myhero-app* can send votes out when they arrive, and *myhero_data* can *process* them when it can.
+The reason for this is that *myhero-data* cannot accommodate a high number of simultaneous requests to update its database (which is just a text file, by the way). If we want to address this challenge we need to implement a *buffering* system between *myhero-app* and *myhero-data*, so that *myhero-app* can send votes out when they arrive, and *myhero_data* can *process* them when it can.
 
 We can implement this with a *queueing* system, based on [MQTT](https://en.wikipedia.org/wiki/MQTT). Votes are published by *myhero-app* towards the MQTT Server, and later they are processed by a *consumer* service that subscribes to the queue. To implement this model we need to deploy two additional services: the MQTT server and the *consumer*.
 
@@ -1884,7 +1884,7 @@ The adjective *continuous*, applied to each of these phases, means that each cod
 
 ## Pipeline infrastructure
 
-In order to accomplish the goal of integrating, delivering and deploying code in a continuous way, we need to build an architecture that is flexible enough to accomodate all requirements while remaining as standard as possible.
+In order to accomplish the goal of integrating, delivering and deploying code in a continuous way, we need to build an architecture that is flexible enough to accommodate all requirements while remaining as standard as possible.
 
 <p align="center"> 
 <img src="./images/CICDCD-infra.png">
