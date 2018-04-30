@@ -29,3 +29,7 @@ sleep 5
 
 kctl delete -f manifests/prometheus-operator
 
+kctl delete svc/alertmanager-operated
+kctl delete svc/prometheus-operated
+
+kctl delete namespace monitoring

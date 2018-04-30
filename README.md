@@ -435,7 +435,7 @@ Most developers working on real projects will not use a rudimentary editor like 
 
 Voting through a website is nice and convenient, but today's world offers a myriad of different devices and solutions to interact with: mobile phones, tables, wearables, etc. We would like to offer our users with additional ways to vote for their favorite superhero.
 
-[Cisco Spark](https://www.ciscospark.com) is a collaboration tool that supports *rooms* where users can interact (voice, video, IM) and share documents. Additionally it supports *bots* that you can interact with. It is an ideal platform to implement a service that allows our users to vote.
+[Cisco Spark](https://www.ciscospark.com) (soon to become Webex Meetings) is a collaboration tool that supports *rooms* where users can interact (voice, video, IM) and share documents. Additionally it supports *bots* that you can interact with. It is an ideal platform to implement a service that allows our users to vote.
 
 <p align="center"> 
 <img src="./images/myhero-spark.png">
@@ -1038,7 +1038,7 @@ If you remember our deployment of *myhero* on the development laptops, you alrea
 You may take a look at the k8s manifests and see what environment variables are required specifically for external connectivity:
 
 1. For *k8s_myhero_ui.template* you need to provide the public URL of *myhero_app_server* and *myhero_spark_server*.
-2. For *k8s_myhero_spark.template* you need to provide the public URL of your *myhero_spark_bot_url* (just another name for the same *myher_spark_server).
+2. For *k8s_myhero_spark.template* you need to provide the public URL of your *myhero_spark_bot_url* (just another name for the same *myhero_spark_server*).
 
 Now in our home setup these are a little bit tricky to provide. Why? Because they need to be publicly reachable URLs.
 
@@ -1909,10 +1909,9 @@ We could have our developers use [GitHub](https://github.com) for source code ve
 
 GoGS is available on containers (server and [Postgres](https://en.wikipedia.org/wiki/PostgreSQL) database), and you can easily deploy it into your k8s cluster with Helm. An important remark is that its chart is not [stable](https://github.com/kubernetes/charts/tree/master/stable) yet, but rather resides under [incubator charts](https://github.com/kubernetes/charts/tree/master/incubator). You may find it [here](https://github.com/kubernetes/charts/tree/master/incubator/gogs).
 
-So you will need to add the *incubator* repositorie to Helm:
+So you will need to add the *incubator* repository to Helm:
 
-`helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
-`
+`helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/`
 
 You will also need to create a DNS entry that points to GoGS LoadBalancer public IP address, so choose its name now and make sure it is available.
 
@@ -2072,7 +2071,7 @@ For the *Notify* phase we would like to use Spark, and let the system tell us wh
 ```
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
-  --name SPARK_TOKEN --value MDNiNTc0YTUtYTNmNC00N2EzLTg0MGUtZGFkMDYyZjI4YTYxMjhkY2EwNzgtOGYx
+  --name SPARK_TOKEN --value <your_spark_token>
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
   --name PERSONEMAIL --value <your_spark_email>
