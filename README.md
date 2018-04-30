@@ -2071,7 +2071,7 @@ For the *Notify* phase we would like to use Spark, and let the system tell us wh
 ```
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
-  --name SPARK_TOKEN --value <your_spark_token>
+  --name SPARK_TOKEN --value MDNiNTc0YTUtYTNmNC00N2EzLTg0MGUtZGFkMDYyZjI4YTYxMjhkY2EwNzgtOGYx
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
   --name PERSONEMAIL --value <your_spark_email>
