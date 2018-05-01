@@ -2174,7 +2174,7 @@ Point your browser to that external IP address and you will see something like t
 
 As you can see there is no info on the available superheroes to vote, or what are the current standings. The reason is that we have only deployed *myhero-ui*, and none of the other microservices required to have a working application.
 
-If your cluster has enough resources to deploy all the other microservices feel free to go for it. GKE clusters default configuration use 3 nodes of the [default node machine type (n1-standard-1)](https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-architecture#node_machine_type). We used this configuration and it does not support the complete *myhero* deployment with the desired number of replicas per microserive, and the GoGS and Drone servers. So instead of deploying every *myhero* microservices we will work with just one of them (*myhero-ui*), and demonstrate pipeline capabilities all the same.
+If your cluster has enough resources to deploy all the other microservices feel free to go for it. GKE clusters default configuration use 3 nodes of the [default node machine type (n1-standard-1)](https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-architecture#node_machine_type). We used this configuration and it does not support the complete *myhero* deployment with the desired number of replicas per microservice, and the GoGS and Drone servers. So instead of deploying every *myhero* microservices we will work with just one of them (*myhero-ui*), and demonstrate pipeline capabilities all the same.
 
 As per the web page above you can see the current heading is "Make your voice heard!". Let's change the code in our repository so it reads "Make your voice HEARD!!!".
 
