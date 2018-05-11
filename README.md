@@ -134,14 +134,14 @@ Once installation is complete, go and check that Git is correctly installed in y
 
 Now create a directory in your user home directory, where you would like to store all DevOps content related to this tutorial and enter it.
 
-```
+```shell
 mkdir devops_tutorial
 cd devops_tutorial
 ```
 
 Inside this new directory you will now clone the content from GitHub repositories (aka *repos*) that host all required code for each *myhero* container.
 
-```
+```shell
 git clone https://github.com/juliogomez/myhero_ui.git
 git clone https://github.com/juliogomez/myhero_app.git
 git clone https://github.com/juliogomez/myhero_data.git
@@ -169,7 +169,7 @@ We are more interested in the *docker-compose.yml* file. While you check its con
 
 Please edit you `docker-compose.yml` and replace the image *name* in *\<name>/\<image>* with your own DockerHub username (if you don't have one you can easily register and get one [here](https://hub.docker.com/)):
 
-```
+```yaml
 version: '2'
 services:
   myhero-data:
@@ -202,7 +202,7 @@ As you can see that *docker-compose.yml* file specifies a number of parameters o
 
 0k, now that you know about *docker-compose.yml* let's explore that file we saw earlier, *Dockerfile*. As discussed it is a local file in the same *myhero-data* directory that defines how to build the required image instantiated by our container.
 
-```
+```dockerfile
 FROM alpine
 EXPOSE 5000
 MAINTAINER Julio Gomez "jgomez2@cisco.com"
@@ -262,7 +262,7 @@ It is easier to understand with an example, so let's interact with our *myhero-d
 
 So let's go ahead and emulate an API call to our *myhero-data* container and see if it answers correctly. From your second terminal window run:
 
-```
+```json
 curl -X GET -H "key: DevData" http://localhost:15000/options
 
 {
@@ -289,7 +289,7 @@ You should get a [JSON](https://en.wikipedia.org/wiki/JSON) file with a list of 
 
 You can use *curl* for additional tasks, like voting (using the POST method instead of GET):
 
-```
+```json
 curl -X POST -H "key: DevData" http://localhost:15000/vote/Deadpool
 
 {
@@ -299,7 +299,7 @@ curl -X POST -H "key: DevData" http://localhost:15000/vote/Deadpool
 
 You can also review the summary results for all votes (GET method again):
 
-```
+```json
 curl -X GET -H "key: DevData" http://localhost:15000/results
 
 {
@@ -348,7 +348,7 @@ And the same as we did with *myhero-data*, you can do additional tasks like voti
 
 Or getting the results (please note the */v2/*, as the initial voting specification was deprecated):
 
-```
+```json
 curl -X GET -H "key: DevApp" http://localhost:15001/v2/results
 
 {
@@ -520,7 +520,7 @@ Find out the names of your existing images by filtering the ones that contain *m
 
 Login into DockerHub with `docker login` and provide your username and password. Once done you will be able to push your images (please remember to replace the *name* in \<name>/\<image> with your own DockerHub username):
 
-```
+```shell
 docker push <your_DockerHub_username>/myhero-data
 docker push <your_DockerHub_username>/myhero-app
 docker push <your_DockerHub_username>/myhero-ui
@@ -656,7 +656,7 @@ Now for the software we need to run a number of tasks, some of them on all nodes
 
   and insert the following content:
 
-```
+```shell
 #!/bin/sh
 
 hostname=$1
@@ -695,7 +695,7 @@ EOT
   
   and insert the following content:
 
-```
+```shell
 #!/bin/sh
 
 # Install Docker
@@ -735,7 +735,7 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 
   and insert the following content:
 
-```
+```yaml
 apiVersion: kubeadm.k8s.io/v1alpha1
 kind: MasterConfiguration
 controllerManagerExtraArgs:
@@ -751,7 +751,7 @@ controllerManagerExtraArgs:
 
 * Once completed follow the instructions on the screen and run:
 
-```
+```shell
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -815,7 +815,7 @@ Let's install it in our RPi *master* node, by following the instructions [here](
 
 Note: if the final `/usr/local/bin/noip2 -S` gives you an error message it might be a permissions issue, so just run the following commands:
 
-```
+```shell
 sudo chmod a+rwX /usr/local/etc/no-ip2.conf
 sudo /usr/local/bin/noip2
 ```
@@ -866,7 +866,7 @@ We will need to install some additional tools, but considering that most Kuberne
 
 * [docker-compose](https://docs.docker.com/compose/)
 
-```
+```shell
 sudo apt-get update
 sudo apt-get install -y apt-transport-https
 echo "deb https://packagecloud.io/Hypriot/Schatzkiste/debian/ jessie main" | sudo tee /etc/apt/sources.list.d/
@@ -899,7 +899,7 @@ You just need to build new images for your services in your new architecture. Th
 
 Go to your *master* node and clone the same repositories:
 
-```
+```shell
 git clone https://github.com/juliogomez/myhero_ui.git
 git clone https://github.com/juliogomez/myhero_app.git
 git clone https://github.com/juliogomez/myhero_data.git
@@ -912,7 +912,7 @@ Please clone also the repo hosting the content of this tutorial, as you will nee
 
 Now you should be able to simply run `docker build` inside each *myhero* directory. Please note we are naming them **pi-myhero-** ... to differentiate them from the Mac versions we created before. You may now push your images to DockerHub, so they are available to be used in our Production environment (please remember to replace *<your_DockerHub_username>* with your own DockerHub username).
 
-```
+```shell
 cd myhero_data
 docker build -t <your_DockerHub_username>/pi_myhero_data .
 docker push <your_DockerHub_username>/pi_myhero_data
@@ -944,7 +944,7 @@ Let's start with the basic setup of *myhero-data* and *myhero-app* (we will cove
 
 From your *master* node edit *k8s_myhero_data.yml* and *k8s_myhero_app.yml* to include your own image names, and then run:
 
-```
+```shell
 cd devops/k8s/pi/myhero
 ls
 kubectl apply -f k8s_myhero_data.yml
@@ -1016,7 +1016,7 @@ You should get the same list of voting options again, although this time your re
 
 We can also try voting, and checking the results, with:
 
-```
+```shell
 curl -X POST -H "key: SecureApp" http://worker-03.local:31238/vote/Deadpool
 curl -X GET -H "key: SecureApp" http://worker-01.local:31238/v2/results
 ```
@@ -1099,7 +1099,7 @@ We are now ready to install Traefik.
 
 Please go to the Traefik directory and run the following commands to set the required permissions:
 
-```
+```shell
 cd k8s/pi/traefik
 kubectl create configmap traefik-conf --from-file=traefik.toml
 kubectl apply -f traefik-rbac.yaml
@@ -1170,7 +1170,7 @@ You may now go back to the source of needing an Ingress resource: providing exte
 
 So first create a manifest for *myhero-ui* based on the provided template, and edit it:
 
-```
+```shell
 cd ../myhero
 cp k8s_myhero_ui.template k8s_myhero_ui.yml
 vi k8s_myhero_ui.yml
@@ -1198,7 +1198,7 @@ myhero-ui   2         2         2            2           1d
 
 Same process for *myhero-spark*:
 
-```
+```shell
 cp k8s_myhero_spark.template k8s_myhero_spark.yml
 vi k8s_myhero_spark.yml
 ```
@@ -1239,7 +1239,7 @@ You can directly apply it with:
 
 For the *consumer* service that processes votes we will need to build it the same way we did for *myhero-ui*, *myhero-app* or *myhero-data*.
 
-```
+```shell
 cd ../../../..
 git clone https://github.com/juliogomez/myhero_ernst.git
 cd myhero_ernst
@@ -1255,7 +1255,7 @@ The only missing part would be to tell *myhero-app* to start using *myhero-mosca
 
 In order to accomplish this you just need to edit your *k8s_myhero_app.yml* and *uncomment* (**remove** the # character at the beginning of the line) *myhero_app_mode* environment variable:
 
-```
+```yaml
 #          - name: myhero_app_mode
 #            value: queue
 ```
@@ -1376,7 +1376,7 @@ Choose the partition you would like to use (in my case *sda2*) and, if required,
 
 Once done mount the partition on a new directory:
 
-```
+```shell
 sudo mkdir /mnt/extusb
 sudo mount /dev/sda2 /mnt/extusb
 ls /mnt/extusb
@@ -1391,7 +1391,7 @@ Let's not forget to make this mount persist on reboot, so please edit */etc/fsta
 
 Now we need to install a NFS server:
 
-```
+```shell
 sudo apt-get install nfs-kernel-server nfs-common
 sudo systemctl enable nfs-kernel-server
 ```
@@ -1438,7 +1438,7 @@ Great! Now you have a working StorageClass that any application can use to reque
 
 You may now install Heapster and its backend, InfluxDB. From your terminal window connected to the *master* node:
 
-```
+```shell
 cd devops/heapster
 kubectl apply -f .
 ```
@@ -1461,7 +1461,7 @@ We will use [Prometheus Operator](https://github.com/coreos/prometheus-operator)
 
 We will install our first exporter manually, and that is [cAdvisor](https://github.com/google/cadvisor) (Container Advisor), a tool that provides information on resources used by running containers.
 
-```
+```shell
 cd devops/monitoring
 kubectl apply -f manifests/cadvisor/
 ```
@@ -1482,7 +1482,7 @@ According to the official deployment documentation [here](https://github.com/cor
 
 1. We need to expose cadvisor and allow webhook token authentication. To do so, we do the following **on all nodes** (master and workers):
 
-```
+```shell
 sudo sed -e "/cadvisor-port=0/d" -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 sudo sed -e "s/--authorization-mode=Webhook/--authentication-token-webhook=true --authorization-mode=Webhook/" -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 sudo systemctl daemon-reload
@@ -1491,7 +1491,7 @@ sudo systemctl restart kubelet
 
 2. Additionally, you need to run the following **only on the master node**, to change the address where kube-controller-manager and kube-scheduler listens:
 
-```
+```shell
 sudo sed -e "s/- --address=127.0.0.1/- --address=0.0.0.0/" -i /etc/kubernetes/manifests/kube-controller-manager.yaml
 sudo sed -e "s/- --address=127.0.0.1/- --address=0.0.0.0/" -i /etc/kubernetes/manifests/kube-scheduler.yaml
 ```
@@ -1519,7 +1519,7 @@ Add your gmail credentials (user and password) in `manifests/smtp-server/smtp.ya
 
 Once you have everything configured, please run:
 
-```
+```shell
 cd devops/monitoring
 deploy
 ```
@@ -1555,32 +1555,32 @@ You can work on GCP resources with their browser-embedded [Cloud Shell](https://
 
 If you prefer the second option you will also need to install `kubectl` CLI in your laptop:
 
-```
+```shell
 gcloud components install kubectl
 ```
 
 Before you can start working you will need to define a couple of parameters for `gcloud`: your *default project* and *compute zone* (you may see the available ones with `gcloud compute zones list`). Configuring this params help not having to specify them in every subsequent command.
 
-```
+```shell
 gcloud config set project <your_project_id>
 gcloud config set compute/zone <selected_zone>
 ```
 
 Now you can create your k8s cluster with a single command (default is a 3-node cluster, configurable with `--num-nodes`):
 
-```
+```shell
 gcloud container clusters create <cluster_name>
 ```
 
 When completed you can request the authentication credentials to interact with your cluster:
 
-```
+```shell
 gcloud container clusters get-credentials <cluster_name>
 ```
 
 You can see info about your cluster with:
 
-```
+```shell
 gcloud container clusters describe <cluster_name>
 kubectl get nodes
 ```
@@ -1595,13 +1595,13 @@ Before we can work on deploying the application itself let's sort out our DNS re
 
 First thing we need to do is to stop the *noip2* agent in our RPi master, so that it stops sending updates to NoIP servers. Login into your RPi and run:
 
-```
+```shell
 sudo noip2 -S
 ```
 
 Use the process number to run:
 
-```
+```shell
 sudo noip2 -K <process_number>
 ```
 
@@ -1703,7 +1703,7 @@ For our tutorial we will use the k8s cluster we deployed on GCE, but of course y
 
 Make sure your kubectl context points to the GCE cluster, and all your nodes are ready:
 
-```
+```shell
 kubectl config get-contexts
 kubectl get nodes
 ```
@@ -1747,7 +1747,7 @@ Helm is based on *templating*, so we could create some templates and instantiate
 
 Go into *devops* directory and create a new helm directory there:
 
-```
+```shell
 cd devops
 mkdir helm
 ```
@@ -1758,7 +1758,7 @@ Create a new helm chart:
 
 Go into the *templates* directory and delete all templates in there (that we will not use) and copy all *myhero* YAML files:
 
-```
+```shell
 cd myhero/templates
 rm *
 cp ../../k8s/gce/*.yml .
@@ -1766,7 +1766,7 @@ cp ../../k8s/gce/*.yml .
 
 Now go out of that directory and create *myhero* helm chart, and you will get a *myhero-0.1.0.tgz* file:
 
-```
+```shell
 cd ../..
 helm package myhero
 ls
@@ -1778,7 +1778,7 @@ Now you can deploy *myhero* with a single command:
 
 Watch pods, services and ingress being created:
 
-```
+```shell
 kubectl get pods
 kubectl get services
 kubectl get ingress
@@ -1921,7 +1921,7 @@ Now go into GoGS directory:
 
 And edit *values.yml* to configure the following two values to make sure your GoGS installation uses them in its repo cloning syntax:
 
-```
+```yaml
 serverDomain: <GoGS_public_URL>
 serverRootUrl: http://<GoGS_public_URL>/
 ```
@@ -1968,7 +1968,7 @@ Copy the template file:
 
 And edit *values.yaml* to configure the public URLs you configured in DNS, for both GoGS and Drone servers:
 
-```
+```yaml
 DRONE_HOST: "http://<drone_public_URL>"
 DRONE_GOGS_URL: "http://<gogs_public_URL>"
 ```
@@ -1997,7 +1997,7 @@ You are now in! You will see that it automatically shows the repository you crea
 
 In order to interact with Drone from your laptop you will need to [install Drone CLI](http://docs.drone.io/cli-installation/), and then configure it. You can get your token from Drone web interface, clicking on the 3-line list icon on the top right.
 
-```
+```shell
 export DRONE_SERVER=http://<Drone_DNS_entry>
 export DRONE_TOKEN=<TOKEN>
 ```
@@ -2024,7 +2024,7 @@ First thing you will need to do is create repositories in GoGS for each one of i
 
 For each one of them, go into its own directory inside *myhero*, replace the existing origin with the one in GoGS and push the code (you will need to provide your GoGS username and password). You may find below how you would do it for *myhero-ui*, but you will need to do the same for all of them:
 
-```
+```shell
 cd myhero/myhero_ui
 git remote remove origin
 git remote add origin http://<GoGS_IP>/<GoGS_username>/myhero_ui.git
@@ -2057,7 +2057,7 @@ For each one of these phases you will be able to use [Drone plugins](http://plug
 
 For the *Publish* phase you will need to include your Dockerhub username and password, so that the system can automatically publish new images. As long as this type of information should not be in clear text, let's use Drone secrets (for that specific GoGS directory):
 
-```
+```shell
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
   --name docker_username --value <your_dockerhub_user>
@@ -2068,7 +2068,7 @@ drone secret add \
 
 For the *Notify* phase we would like to use Spark, and let the system tell us when builds are complete and if they are successful or not. So please add this token (yes, you will need *that* specific token) and your Spark e-mail address, again in the form of Drone secrets:
 
-```
+```shell
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
   --name SPARK_TOKEN --value MDNiNTc0YTUtYTNmNC00N2EzLTg0MGUtZGFkMDYyZjI4YTYxMjhkY2EwNzgtOGYx
@@ -2081,7 +2081,7 @@ For the *Deploy* phase we will use a Drone plugin called [drone-gke](https://git
 
 You can learn how to create a service account [here](https://cloud.google.com/storage/docs/authentication#service_accounts). Once done please download the resulting JSON file into your *myhero_ui* directory, and add it as a *secret* for your GoGS repo (remember to replace your GoGS_username and JSON filename)
 
-```
+```shell
 drone secret add \
   --event push \
   --event pull_request \
@@ -2100,7 +2100,7 @@ Please check all secrets are correctly configured now:
 
 You will find a template for your pipeline definition inside *myhero_ui* directory, in a file called *.drone.template*. Please copy it to it required name (*.drone.yml*).
 
-```
+```shell
 cd myhero_ui
 cp .drone.template .drone.yml
 ```
@@ -2113,7 +2113,7 @@ cp .drone.template .drone.yml
 
 *.drone.yml* needs a deployment definition file, so you will also need to copy the template files for *myhero-ui* deployment to the required names. These files will be used to define how *myhero-ui* will be deployed in GKE k8s cluster:
 
-```
+```shell
 cp k8s_myhero_ui.template k8s_myhero_ui.yml
 cp k8s_myhero_ui.sec.template k8s_myhero_ui.sec.yml
 ```
@@ -2142,7 +2142,7 @@ Now our pipeline will be able to update the existing deployment with new images 
 
 Any new Git push to GoGS *myhero_ui* repo will automatically trigger its pipeline. For our first one we will need to add all modified files to the Git repo, commit and push to the GoGS server.
 
-```
+```shell
 git add .
 git commit -m "Required files for pipeline execution"
 git push -u origin master
@@ -2279,7 +2279,7 @@ First [install Draft](https://github.com/azure/draft). If you choose to use mini
 
 Now go to *devops-tutorial* create a new *draft* directory, clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
 
-```
+```shell
 cd devops-tutorial
 mkdir draft
 git clone https://github.com/juliogomez/myhero_data.git
@@ -2288,7 +2288,7 @@ mv myhero_data myherodata
 
 Go into the new directory and containerize the app by creating a draft pack.
 
-```
+```shell
 cd myherodata
 draft create
 ```
@@ -2302,14 +2302,14 @@ Let's quickly configure this for our specific microservice:
 2. Change service.type from *ClusterIP* to *NodePort*, so that the service is accessible from your laptop.
 3. Disable ingress access by adding the following 2 lines at the end of the file:
 
-```
+```yaml
 ingress:
   enabled: false
 ```
 
 * Edit *myherodata/charts/python/templates/deployment.yaml* to include the required environment variable under spec.template.spec.containers:
 
-```
+```yaml
   env:
     - name: myhero_data_key
       value: SecureData
@@ -2317,7 +2317,7 @@ ingress:
 
 We are all set! Now you just need to run:
 
-```
+```shell
 draft up
 ```
 
@@ -2327,13 +2327,13 @@ As you can see, no k8s management is required from the developer, Draft does eve
 
 Now you can connect to your deployment, although it may take a couple of minutes until Pods are ready. Check with:
 
-```
+```shell
 kubectl get pods
 ```
 
 Once Pods are up and running, check the IP address for your *myherodata-python* to use by running:
 
-```
+```shell
 minikube service list
 ```
 
@@ -2341,7 +2341,7 @@ In my case I got the following: http://192.168.99.100:31833
 
 So go ahead and test access via its API with:
 
-```
+```shell
 curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
 ```
 
@@ -2349,13 +2349,13 @@ Success!
 
 As developers, let's modify our code and see how easy it is to update the deployment. Please edit *sample_heros.txt* remove one of the entries, and save the file. With any change you make to your code, you just need to issue again:
 
-```
+```shell
 draft up
 ```
 
 And it will automatically upgrade the deployment in your local k8s cluster (minikube). You may see the effect of your changes by querying the API again:
 
-```
+```shell
 curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
 ```
 
@@ -2363,7 +2363,7 @@ Easy!
 
 When you are done, you can delete your deployment by executing:
 
-```
+```shell
 draft delete
 ```
 
@@ -2396,7 +2396,7 @@ Start by running Alpine with Telepresence:
 
 And now from inside the Alpine container you may interact directly with the already deployed *myhero* containers:
 
-```
+```shell
 apk add --no-cache curl
 curl -X GET -H "key: SecureData" http://myhero-data/options
 curl -X GET -H "key: SecureApp" http://myhero-app/options
@@ -2417,7 +2417,7 @@ Before running the new local deployment please find out what is the public IP ad
 
 Now you can replace the remotely deployed *myhero-ui* with your own local *myhero-ui* (please make sure to replace the public IP address of *myhero-app* provided as an environment variable in the command below):
 
-```
+```shell
 cd myhero_ui/app
 telepresence --swap-deployment myhero-ui --expose 80 --docker-run -p=80 -v $(pwd):/usr/share/nginx/html -e "myhero_app_server=http://<myhero-app_public_IP>" -e "myhero_app_key=SecureApp" <your_DockerHub_user>/myhero-ui
 ```
@@ -2458,7 +2458,7 @@ Ain't it amazing?!?
 
 When you are happy with all code changes you could rebuild and publish the image for future use:
 
-```
+```shell
 cd myhero-ui
 docker build -t <your_DockerHub_user>/myhero-ui
 docker push <your_DockerHub_user>/myhero-ui
