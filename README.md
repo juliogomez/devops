@@ -48,7 +48,7 @@
         - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
         - [Pipeline implementation](#pipeline-implementation)
         - [Running your pipeline](#running-your-pipeline)
-            - [Pipeline on-premises](#pipeline-on-premises)
+        - [Pipeline on-premises](#pipeline-on-premises)
 - [Additional tools](#additional-tools-1)
     - [Draft](#draft)
     - [Telepresence](#telepresence)
@@ -2541,7 +2541,7 @@ Every new feature would be tracked by a Version Control Server, then implemented
 
 This looks like a new world!
 
-#### Pipeline on-premises
+### Pipeline on-premises
 
 If you want to deploy CI/CD/CD in your own on-prem setup you will need to do things a little bit different. Once GoGS and Drone are installed via Helm and ready, you will need to define your pipeline. It will be really similar to the one you did for GKE, but will need a different Drone plugin for the *Deploy* phase.
 
