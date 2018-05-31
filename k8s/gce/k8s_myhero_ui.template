@@ -9,6 +9,7 @@ metadata:
 spec:
   ports:
   - port: 80
+    name: http
     targetPort: 80
   selector:
     app: myhero

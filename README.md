@@ -2567,7 +2567,7 @@ echo [ your k8s base64 encoded token ] | base64 -d && echo''
 
 Now from your Dev laptop you need to edit the *.drone.yml* file in your *myhero_ui* directory and replace the *Deploy* phase with the following content:
 
-```
+```yaml
   Deploy:
     image: quay.io/honestbee/drone-kubernetes
     deployment: myhero-ui
