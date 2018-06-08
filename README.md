@@ -35,8 +35,8 @@
         - [Cluster management](#cluster-management)
     - [Helm package manager](#helm-package-manager)
     - [Why a Service Mesh?](#why-a-service-mesh)
-    - [Traffic management rules](#traffic-management-rules)
-    - [Installing Istio](#installing-istio)
+        - [Traffic management rules](#traffic-management-rules)
+        - [Installing Istio](#installing-istio)
         - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
         - [Use case 2: delay injection](#use-case-2-delay-injection)
         - [Use case 3: HTTP abort injection](#use-case-3-http-abort-injection)
@@ -2055,7 +2055,7 @@ A service mesh allows you to decouple traffic management from application code. 
 
 Additionally Istio provides useful capabilities around *failure recovery* to tolerate failing nodes or avoid cascading instabilities, and *fault injection* (delays or connectivity failures) on specific requests to test application resiliency.
 
-## Traffic management rules
+### Traffic management rules
 
 Istio configuration for traffic rules is done via YAML manifests. There are 3 types of rules:
 
@@ -2063,7 +2063,7 @@ Istio configuration for traffic rules is done via YAML manifests. There are 3 ty
 * Destination policies: define the load-balancing algorithm, circuit-breakers, and health checks.
 * Egress rules: to allow calls to services in external domains.
 
-## Installing Istio
+### Installing Istio
 
 Depending on your environment (on-prem or Cloud) you will have to follow the instructions on [how to setup Istio with Kubernetes](https://istio.io/docs/setup/kubernetes/quick-start.html), and it will be installed in its own namespace (*istio-system*).
 
