@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: spark-server
+spec:
+  hosts:
+  - api.ciscospark.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTP
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: spark-server
+spec:
+  host: api.ciscospark.com
+  trafficPolicy:
+    tls:
+      mode: SIMPLE # initiates HTTPS when talking to api.ciscospark.com

@@ -2079,13 +2079,19 @@ This time we will deploy *myhero* in its own namespace so let's create it, label
 
 ```
 git clone https://github.com/juliogomez/devops.git
-cd devops
-kubectl delete -f k8s/gce/.
+cd devops/k8s/gce
+kubectl delete -f .
 cd istio
 kubectl create namespace myhero
 kubectl label namespace myhero istio-injection=enabled
 kubectl get namespace -L istio-injection
-kubectl apply -f myhero/.
+```
+
+Complete the required information in all manifests with *.template* extension in the *myhero* folder. Then apply them:
+
+```
+kubectl apply -f myhero/istio*
+kubectl -n myhero apply -f myhero/k8s_myhero*
 ```
 
 If you take a look at the new pods, you will immediately notice that they include 2 containers, instead of just 1 as before (ie. READY 2/2):

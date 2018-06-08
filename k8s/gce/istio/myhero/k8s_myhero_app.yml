@@ -1,36 +1,37 @@
----
 apiVersion: v1
 kind: Service
 metadata:
-  name: myhero-spark
+  name: myhero-app
+  namespace: myhero
   labels:
     app: myhero
-    tier: spark
+    tier: app
 spec:
   ports:
   - port: 80
     name: http
-    targetPort: 5000
+    targetPort: http
   selector:
     app: myhero
-    tier: spark
-  type: NodePort
+    tier: app
+  type: ClusterIP
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: myhero-spark
+  name: myhero-app
+  namespace: myhero
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
         app: myhero
-        tier: spark
+        tier: app
     spec:
       containers:
-      - name: myhero-spark
-        image: juliocisco/myhero-spark:latest
+      - name: myhero-app
+        image: juliocisco/myhero-app:latest
         livenessProbe:
           httpGet:
             path: /health
@@ -48,21 +49,21 @@ spec:
           name: http
           protocol: TCP
         env:
-          - name: myhero_app_server
-            value: http://myhero-app
+          - name: myhero_mqtt_host
+            value: myhero-mosca
+          - name: myhero_mqtt_port
+            value: "1883"
+          - name: myhero_app_mode
+            value: queue
+          - name: myhero_data_srv
+            value: myhero-data
+          - name: myhero_data_key
+            value: SecureData
           - name: myhero_app_key
             value: SecureApp
-          - name: myhero_spark_bot_email
-            value: <YOUR_SPARK_EMAIL>
-          - name: spark_token
-            value: <YOUR_SPARK_TOKEN>
-          - name: myhero_spark_bot_url
-            value: <YOUR_SPARK_DNS_NAME>
-          - name: myhero_spark_bot_secret
-            value: SecureBot
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           limits:
-            cpu: 100m
-            memory: 64M
+            cpu: 200m
+            memory: 48M
       restartPolicy: Always

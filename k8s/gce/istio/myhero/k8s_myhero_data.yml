@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myhero-data
+  namespace: myhero
+  labels:
+    app: myhero
+    tier: data
+spec:
+  ports:
+  - port: 80
+#    name: http
+    targetPort: http
+  selector:
+    app: myhero
+    tier: data
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myhero-data
+  namespace: myhero
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: myhero
+        tier: data
+    spec:
+      containers:
+      - name: myhero-data
+        image: juliocisco/myhero-data:latest
+        livenessProbe:
+          httpGet:
+            path: /hero_list
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /hero_list
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        ports:
+        - containerPort: 5000
+          name: http
+          protocol: TCP
+        env:
+          - name: myhero_data_key
+            value: SecureData
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 200m
+            memory: 64M
+      restartPolicy: Always

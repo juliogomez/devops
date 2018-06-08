@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: myhero-ui
+spec:
+  hosts:
+  - "<YOUR_UI_DNS_NAME>"
+  gateways:
+  - myhero-gateway
+  http:
+  - route:
+    - destination:
+        host: myhero-ui.myhero.svc.cluster.local
