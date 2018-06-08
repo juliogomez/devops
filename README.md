@@ -34,6 +34,15 @@
         - [Application deployment](#application-deployment)
         - [Cluster management](#cluster-management)
     - [Helm package manager](#helm-package-manager)
+    - [Why a Service Mesh?](#why-a-service-mesh)
+    - [Traffic management rules](#traffic-management-rules)
+    - [Installing Istio](#installing-istio)
+        - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
+        - [Use case 2: delay injection](#use-case-2-delay-injection)
+        - [Use case 3: HTTP abort injection](#use-case-3-http-abort-injection)
+        - [Use case 4: gradual migration to new version](#use-case-4-gradual-migration-to-new-version)
+        - [Use case 5: mirroring traffic](#use-case-5-mirroring-traffic)
+        - [Uninstalling Istio](#uninstalling-istio)
     - [On-prem vs Cloud](#on-prem-vs-cloud)
         - [Differences](#differences)
         - [Similarities](#similarities)
@@ -1190,7 +1199,7 @@ But what if we could use *LoadBalancer* to obtain a *private* IP address that ac
 Let's install MetalLB in your cluster. Connect to your master node and run:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.3.1/manifests/metallb.yaml
+kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.6.2/manifests/metallb.yaml
 ```
 
 It installs as a set of pods (a single controller, and then one speaker per worker node) you can monitor with:
@@ -2026,6 +2035,215 @@ Once you are finished you may easily delete your myhero application:
 helm delete --purge helm-myhero
 ```
 
+## Why a Service Mesh?
+
+Even when using a scheduler there are several important features that you might be missing from a standard container-based application deployment:
+
+* Load-balancing
+* Service-to-service authentication
+* Monitoring
+
+And it would be great to implement them without having to modify the code in our existing microservices. We would like these features to be *decoupled* from service containers, so that Developers do not need to be concerned about these aspects.
+
+One way to implement these services is via a *sidecar proxy* (called *envoy*) next to each container, to incercept all incoming and outgoing communications. The interaction between all these proxies in the data plane, together with a common control plane, is what we call a *service mesh*.
+
+**[Istio](https://istio.io)** is an open-source approach to how you can implement a *service mesh* in your multi-Cloud Kubernetes clusters. It will help you understand traffic flows among services and how to manage them with policies, protection and authentication.
+
+Using Istio you might, for example, define the percentage of traffic you want to send to a specific *[canary version](https://martinfowler.com/bliki/CanaryRelease.html)*, no matter what the size of its deployment is. Or determine how to distribute traffic based on information included in the request headers (ie. [user-agent](https://en.wikipedia.org/wiki/User_agent#Use_in_HTTP) in HTTP requests), source/destination, or service version weights.
+
+A service mesh allows you to decouple traffic management from application code. This way you can do A/B testing, gradual rollouts, and canary releases.
+
+Additionally Istio provides useful capabilities around *failure recovery* to tolerate failing nodes or avoid cascading instabilities, and *fault injection* (delays or connectivity failures) on specific requests to test application resiliency.
+
+## Traffic management rules
+
+Istio configuration for traffic rules is done via YAML manifests. There are 3 types of rules:
+
+* Route rules: send traffic to different versions of a service based on source/destination, HTTP header fields (ie. username), or service version weights. You may also change the timeout for HTTP requests or number of retries, and inject faults (delays or failures) for filtered traffic.
+* Destination policies: define the load-balancing algorithm, circuit-breakers, and health checks.
+* Egress rules: to allow calls to services in external domains.
+
+## Installing Istio
+
+Depending on your environment (on-prem or Cloud) you will have to follow the instructions on [how to setup Istio with Kubernetes](https://istio.io/docs/setup/kubernetes/quick-start.html), and it will be installed in its own namespace (*istio-system*).
+
+```
+curl -L https://git.io/getLatestIstio | sh -
+cd istio-0.8.0
+export PATH=$PWD/bin:$PATH
+kubectl apply -f install/kubernetes/istio-demo.yaml
+cd ..
+```
+
+Check everything is ready:
+
+```
+kubectl -n istio-system get svc
+kubectl -n istio-system get pods
+```
+
+**Cool!** Istio is now ready in our system, let's give a try with our modern microservices-based example application: *myhero*.
+
+This time we will deploy *myhero* in its own namespace so let's create it, label it for Istio injection (so that all pods in that namespace get a sidecar proxy container injected), and then deploy. For this example we assume you are using a Google Kubernetes Engine (GKE) managed cluster, but you could use any other option, including an on-prem setup:
+
+```
+git clone https://github.com/juliogomez/devops.git
+cd devops
+kubectl delete -f k8s/gce/.
+cd istio
+kubectl create namespace myhero
+kubectl label namespace myhero istio-injection=enabled
+kubectl get namespace -L istio-injection
+kubectl apply -f myhero/.
+```
+
+If you take a look at the new pods, you will immediately notice that they include 2 containers, instead of just 1 as before (ie. READY 2/2):
+
+```
+kubectl -n myhero get pods
+```
+
+You will be able to access *myhero* public IP address from your own browser and see the application working. Those new sidecar proxy containers that are intercepting all I/O are transparent to the service.
+
+For our capabilities demonstration today we will focus on some specific *traffic management* use cases, although Istio provides multiple security and telemetry capabilities as well.
+
+### Use case 1: routing to specific service version
+
+For *myhero-ui* we have defined 3 different versions, each one of them with a different header: "Make ONE voice heard!!!", "Make TWO voices heard!!!" and "Make THREE voices heard!!!". That way we will easily identify what version we are accessing.
+
+If you access *myhero-ui* public IP address from your browser, and refresh several times, you will notice this header changing as you access different versions of your *myhero-ui* service.
+
+Let's set v1 as the default version to use when accessing *myhero-ui*:
+
+```
+cd routing
+kubectl apply -f 1-ui_all_to_v1.yml
+```
+
+If you review the manifest you will notice it includes a *VirtualService* that defines a rule to route all traffic going to *myhero-ui* service, so that it reaches exclusively pods labelled with  *v1*. It also includes a *DestinationRule* that defines the different available versions (*subsets*).
+
+Please review the applied route (you may use this in all subsequent use cases examples):
+
+```
+kubectl get virtualservice myheroui-rule -o yaml
+kubectl get destinationrule myhero-ui-destination -o yaml
+```
+
+Refresh your browser several times while pointing to *myhero-ui* public IP and you will notice now you only get the *v1* header: "Make ONE voice heard!!!".
+
+This way Istio allows you to deploy several different pods in the same service, and choose which one to use as default for your users.
+
+### Use case 2: delay injection
+
+Now let's do something different and inject a delay to test the resiliency of our application. For each request from our browser to *myhero-ui* we will inject a 5 seconds delay.
+
+```
+kubectl apply -f 2-ui_inject_delay.yml
+```
+
+Refresh your browser and you will experience a slower response time. That way you can test how your application microservices handle unexpected response time delays. If you review the manifest you will notice you can define what specific traffic will be affected by this rule. In our case we are using 100% of traffic to simplify the example.
+
+Maybe you are wondering why the total delay experienced by the end user is much higher than 5 seconds... more like in the 20-25 seconds range. Well, let's dig in a little bit. From IE, Chrome or Firefox press *Ctrl+Shift+I* or *Alt+Cmd+I* to enter the *Developer tools*, go to tab *Network* and refresh your browser. You will be able to see the 5 seconds delay **for each request**, and the accumulated total to explain why users get a much slower response time.
+
+Remove the injected delay:
+
+```
+kubectl apply -f 1-ui_all_to_v1.yml
+```
+
+### Use case 3: HTTP abort injection
+
+In this case we will inject a fault where *myhero-app* responds with HTTP abort (HTTP status 500):
+
+```
+kubectl apply -f 3-app_HTTP_abort.yml
+```
+
+Refresh your browser and you will notice now the list of available superheroes is not there anymore. This list was provided by *myhero-app*, so now that it is aborting its connections, our application cannot show the list anymore.
+
+This way Istio allows us to insert artificial faults in our microservices, and test how those faults reflect in the overall application.
+
+Remove the artifically injected fault:
+
+```
+kubectl apply -f 0-app_initial_status.yml
+```
+
+### Use case 4: gradual migration to new version
+
+Istio allows us to migrate to new service versions in a gradual way. Let's suppose our *myhero-ui* versions (*v1, v2, v3*) are sequential ones with new features or bug fixes.
+
+Our initial status is all traffic goes to *v1*, so let's migrate for example 50% of the traffic to the newest *v3*.
+
+```
+kubectl apply -f 4-ui_50_to_v3.yml
+```
+
+Refresh your browser multiple times and you will see how 50% of the times you get *myhero-ui v1* header ("Make ONE voice heard!!!") and the other 50% of times you get *myhero-ui v3* header ("Make THREE voices heard!!!").
+
+This way you can smoothly migrate traffic from one service version to another, being able to define how much traffic you want directed to each service no matter what is the size of the deployment.
+
+Once *v3* is completely stable, you can easily migrate 100% of your traffic to the new version:
+
+```
+kubectl apply -f 5-ui_all_to_v3.yml
+```
+
+### Use case 5: mirroring traffic
+
+Istio also allows you to mirror traffic, maybe from a live service to a newer one out of production, so you can test how that new one behaves when it gets *real* traffic.
+
+For our test let's first direct all traffic back to *myhero-ui v1*.
+
+```
+kubectl apply -f 1-ui_all_to_v1.yml
+```
+
+Now open a second terminal window and leave it monitoring logs for pods belonging to the *v1* version:
+
+```
+export UI_V1_POD=$(kubectl -n myhero get pod -l app=myhero,version=v1 -o jsonpath={.items..metadata.name})
+
+kubectl -n myhero logs -f $UI_V1_POD -c myhero-ui
+```
+
+You will see that everytime you refresh your browser the logging reflects that activity.
+
+Open a third terminal window and leave it monitoring logs for pods belonging to the *v2* version:
+
+```
+export UI_V2_POD=$(kubectl -n myhero get pod -l app=myhero,version=v2 -o jsonpath={.items..metadata.name})
+
+kubectl -n myhero logs -f $UI_V2_POD -c myhero-ui
+```
+
+Here you will notice that refreshing your browser does not generate any kind of logs for the *v2* window.
+
+Now let's mirror all traffic going to *v1*, so that it sends a copy to all pods belonging to *v2*:
+
+```
+kubectl apply -f 6-ui_v1_mirror_to_v2.yml
+```
+
+If you refresh your browser again, you will notice in your logging terminal windows that now, not only *v1* receives traffic, but also *v2*. Both logging terminal windows will show the same events.
+
+### Uninstalling Istio
+
+Once you are done you with your testing you might want to stop using Istio, so you have different options:
+
+* Remove the namespace label and stop associated pods, so they are automatically recreated without the sidecar proxies:
+
+    ```
+    kubectl label namespace myhero istio-injection-
+    kubectl -n myhero delete pod ...
+    ```
+
+* Uninstall Istio:
+
+    ```
+    kubectl delete -f install/kubernetes/istio-demo.yaml
+    ```
+
 ## On-prem vs Cloud
 
 ### Differences
@@ -2054,7 +2272,8 @@ All the main elements are the same on both environments:
 * Name resolution (ie. DDNS)
 * Ingress connectivity (ie. Ingress resource)
 * Platform CLI (ie. k8s command line)
-* Package Manager (ie. Helm)
+* Package manager (ie. Helm)
+* Service mesh (ie. Istio)
 
 Note: images are not really the same in our specific case, but that is only because we decided to build an affordable MiniDC on RPi boards. As you can imagine any *real* on-prem DC will be built on standard architecture systems, and images will be exactly the same ones.
 
