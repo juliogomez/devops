@@ -35,7 +35,6 @@
         - [Cluster management](#cluster-management)
     - [Helm package manager](#helm-package-manager)
     - [Service Mesh](#service-mesh)
-        - [Traffic management rules](#traffic-management-rules)
         - [Installing Istio](#installing-istio)
         - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
         - [Use case 2: delay injection](#use-case-2-delay-injection)
@@ -2055,14 +2054,6 @@ A service mesh allows you to decouple traffic management from application code. 
 
 Additionally Istio provides useful capabilities around *failure recovery* to tolerate failing nodes or avoid cascading instabilities, and *fault injection* (delays or connectivity failures) on specific requests to test application resiliency.
 
-### Traffic management rules
-
-Istio configuration for traffic rules is done via YAML manifests. There are 3 types of rules:
-
-* Route rules: send traffic to different versions of a service based on source/destination, HTTP header fields (ie. username), or service version weights. You may also change the timeout for HTTP requests or number of retries, and inject faults (delays or failures) for filtered traffic.
-* Destination policies: define the load-balancing algorithm, circuit-breakers, and health checks.
-* Egress rules: to allow calls to services in external domains.
-
 ### Installing Istio
 
 Depending on your environment (on-prem or Cloud) you will have to follow the instructions on [how to setup Istio with Kubernetes](https://istio.io/docs/setup/kubernetes/quick-start.html), and it will be installed in its own namespace (*istio-system*).
@@ -2106,6 +2097,12 @@ kubectl -n myhero get pods
 You will be able to access *myhero* public IP address from your own browser and see the application working. Those new sidecar proxy containers that are intercepting all I/O are transparent to the service.
 
 For our capabilities demonstration today we will focus on some specific *traffic management* use cases, although Istio provides multiple security and telemetry capabilities as well.
+
+Istio configuration for traffic rules is done via YAML manifests. There are 3 types of rules:
+
+* Route rules: send traffic to different versions of a service based on source/destination, HTTP header fields (ie. username), or service version weights. You may also change the timeout for HTTP requests or number of retries, and inject faults (delays or failures) for filtered traffic.
+* Destination policies: define the load-balancing algorithm, circuit-breakers, and health checks.
+* Egress rules: to allow calls to services in external domains.
 
 ### Use case 1: routing to specific service version
 
