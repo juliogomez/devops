@@ -4,7 +4,7 @@ metadata:
   name: myhero-ui
 spec:
   hosts:
-  - "ui.burstserial.com"
+  - "<YOUR_UI_DNS_NAME>"
   gateways:
   - myhero-gateway
   http:
@@ -12,6 +12,8 @@ spec:
     - destination:
         host: myhero-ui.myhero.svc.cluster.local
         subset: v1
-    mirror:
-      host: myhero-ui.myhero.svc.cluster.local
-      subset: v2
+      weight: 50
+    - destination:
+        host: myhero-ui.myhero.svc.cluster.local
+        subset: v3
+      weight: 50

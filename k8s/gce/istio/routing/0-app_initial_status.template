@@ -1,13 +1,14 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: myhero-ui
+  name: myhero-app
 spec:
   hosts:
-  - "ui.burstserial.com"
+  - "<YOUR_APP_DNS_NAME>"
   gateways:
   - myhero-gateway
+  - mesh
   http:
   - route:
     - destination:
-        host: myhero-ui.myhero.svc.cluster.local
+        host: myhero-app.myhero.svc.cluster.local

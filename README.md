@@ -2087,7 +2087,9 @@ kubectl label namespace myhero istio-injection=enabled
 kubectl get namespace -L istio-injection
 ```
 
-Complete the required information in all manifests with *.template* extension in the *myhero* folder, and once done rename them from *.template* to *.yml*. Then apply them:
+Complete the required information in all manifests with *.template* extension in the *myhero* and *routing* folders. Once done rename them from *.template* to *.yml*.
+
+Apply the ones in *myhero* folder for the initial setup:
 
 ```
 kubectl apply -f myhero/istio*

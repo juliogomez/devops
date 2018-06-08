@@ -4,7 +4,7 @@ metadata:
   name: myhero-ui
 spec:
   hosts:
-  - "ui.burstserial.com"
+  - "<YOUR_UI_DNS_NAME>"
   gateways:
   - myhero-gateway
   http:

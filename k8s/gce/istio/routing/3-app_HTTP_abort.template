@@ -4,7 +4,7 @@ metadata:
   name: myhero-app
 spec:
   hosts:
-  - "app.burstserial.com"
+  - "<YOUR_APP_DNS_NAME>"
   gateways:
   - myhero-gateway
   - mesh
