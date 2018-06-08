@@ -34,7 +34,7 @@
         - [Application deployment](#application-deployment)
         - [Cluster management](#cluster-management)
     - [Helm package manager](#helm-package-manager)
-    - [Why a Service Mesh?](#why-a-service-mesh)
+    - [Service Mesh](#service-mesh)
         - [Traffic management rules](#traffic-management-rules)
         - [Installing Istio](#installing-istio)
         - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
@@ -2035,7 +2035,7 @@ Once you are finished you may easily delete your myhero application:
 helm delete --purge helm-myhero
 ```
 
-## Why a Service Mesh?
+## Service Mesh
 
 Even when using a scheduler there are several important features that you might be missing from a standard container-based application deployment:
 
