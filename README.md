@@ -12,7 +12,7 @@
     - [Your first container](#your-first-container)
     - [Building a complete microservices-based application](#building-a-complete-microservices-based-application)
     - [Working on your code](#working-on-your-code)
-    - [May I use Spark to vote?](#may-i-use-spark-to-vote)
+    - [May I use WebEx Teams to vote?](#may-i-use-webex-teams-to-vote)
     - [How to publish your images](#how-to-publish-your-images)
     - [Microservices management](#microservices-management)
 - [Operations](#operations)
@@ -24,7 +24,7 @@
         - [Additional tools](#additional-tools)
         - [Architecture-specific images](#architecture-specific-images)
         - [Deploying your application](#deploying-your-application)
-        - [What about Web and Spark?](#what-about-web-and-spark)
+        - [What about Web and WebEx Teams?](#what-about-web-and-webex-teams)
         - [Now we need queues](#now-we-need-queues)
         - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
         - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
@@ -125,7 +125,7 @@ Now we need a microservices-based application, but instead of developing one fro
 As the diagram indicates *myhero* has three layers: Data, Applications and Presentation.
 * *Data* layer, a microservice composed by a single container that stores the list of available superheros and the number of votes received for each of them.
 * *Application* layer, composed by three different microservices. The first and main one is the middleware that processes votes from several user interfaces, and stores them in the Data layer. It includes a variable number of load-balanced containers depending on the needs of the system. The second and third microservices in this layer (*mosca* and *ernst*) are optional, and implement a queueing system to alleviate the pressure when there are multiple votes waiting to be stored in the Data layer.
-* *Presentation* layer, composed by several microservices that interact directly with end users. We will use two of them: a Web User Interface for users to vote via a webpage, and a Spark Interface for users to vote via Spark (whether from the App or from Spark website). Each one of these microservices will also be composed by a variable number of load-balanced containers depending on the required load for each of them.
+* *Presentation* layer, composed by several microservices that interact directly with end users. We will use two of them: a Web User Interface for users to vote via a webpage, and a WebEx Teams (previously known as Spark) Interface for users to vote via WebEx Teams (whether from the App or from WebEx Teams website). Each one of these microservices will also be composed by a variable number of load-balanced containers depending on the required load for each of them.
 
 Once you understand the architecture of *myhero* let's get the source code for its three main microservices (*myhero-ui*, *myhero-app* and *myhero-data*) and build a simplified version in our laptop.
 
@@ -475,21 +475,21 @@ As you can see, using a single command you can test new code in any of your cont
 
 Most developers working on real projects will not use a rudimentary editor like `vi`, but an [IDE](https://en.wikipedia.org/wiki/Integrated_development_environment) (Integrated Development Environment). There are multiple options available, like [Visual Studio Code](https://code.visualstudio.com), [Atom](https://atom.io), [PyCharm](https://www.jetbrains.com/pycharm/) or [Sublime Text](https://www.sublimetext.com). You can test all of them for free and see which one fits better your preferences and needs.
 
-## May I use Spark to vote?
+## May I use WebEx Teams to vote?
 
 Voting through a website is nice and convenient, but today's world offers a myriad of different devices and solutions to interact with: mobile phones, tables, wearables, etc. We would like to offer our users with additional ways to vote for their favorite superhero.
 
-[Cisco Spark](https://www.ciscospark.com) (soon to become Webex Meetings) is a collaboration tool that supports *rooms* where users can interact (voice, video, IM) and share documents. Additionally it supports *bots* that you can interact with. It is an ideal platform to implement a service that allows our users to vote.
+[Cisco WebEx Teams](https://www.webex.com/products/teams/index.html) (soon to become Webex Meetings) is a collaboration tool that supports *rooms* where users can interact (voice, video, IM) and share documents. Additionally it supports *bots* that you can interact with. It is an ideal platform to implement a service that allows our users to vote.
 
 <p align="center"> 
 <img src="./images/myhero-spark.png">
 </p>
 
-Please go ahead and register for a Spark account, it is easy and completely free. You can use Spark from an app installed in your computer/laptop/mobile, or via a web interface.
+Please go ahead and register for a WebEx Teams account, it is easy and completely free. You can use WebEx Teams from an app installed in your computer/laptop/mobile, or via a web interface.
 
-Once you are set we will need to create a *bot* for our *myhero* app. Don't worry, it is easy. Please visit [Spark for Developers](https://developer.ciscospark.com) and login with your Spark user. Then go to *My Apps* and click on the **+** sign to add a new *App*. Click on *Create a Bot* and give it a *Name* you like. Then create its address by providing a *Bot Username* (@sparkbot.io). Choose your favorite icon and add a short description about your bot. Then click on *Create Bot*. On successful creation you will see all info about your bot, please make sure to copy and save your *Bot's Access Token* (long string of characters), as you will need it later on and you will not be able to come back to review it. Your bot is now ready!
+Once you are set we will need to create a *bot* for our *myhero* app. Don't worry, it is easy. Please visit [WebEx Teams for Developers](https://developer.webex.com) and login with your WebEx Teams user. Then go to *My Apps* and click on the **+** sign to add a new *App*. Click on *Create a Bot* and give it a *Name* you like. Then create its address by providing a *Bot Username* (@webex.bot). Choose your favorite icon and add a short description about your bot. Then click on *Create Bot*. On successful creation you will see all info about your bot, please make sure to copy and save your *Bot's Access Token* (long string of characters), as you will need it later on and you will not be able to come back to review it. Your bot is now ready!
 
-However your bot does not know yet how to interact with users that want to vote. Let's provide it with the required code to implement this functionality. 
+However your bot does not know yet how to interact with users that want to vote. Let's provide it with the required code to implement this functionality.
 
 Open yet another terminal window (that would be the fifth one) and go into the right directory:
 
@@ -497,7 +497,7 @@ Open yet another terminal window (that would be the fifth one) and go into the r
 cd devops_tutorial
 ```
 
-Please download the source code to create the Spark microservice that will allow your Spark bot interact with users and the Spark servers.
+Please download the source code to create the WebEx Teams microservice that will allow your WebEx Teams bot interact with users and the WebEx Teams servers.
 
 ```shell
 git clone https://github.com/juliogomez/myhero_spark.git
@@ -509,12 +509,12 @@ Go into *myhero-spark* directory:
 cd myhero-spark
 ```
 
-And review the usual *docker-compose.yml*, *Dockerfile* and *.env* files. The main difference you will notice in the *docker-compose.yml* file is that there are a number of variables to use for this container to run. Apart from the shared private *app-key* to communicate with *myhero-app*, and the *app-server* address, there are a number of Spark variables.
+And review the usual *docker-compose.yml*, *Dockerfile* and *.env* files. The main difference you will notice in the *docker-compose.yml* file is that there are a number of variables to use for this container to run. Apart from the shared private *app-key* to communicate with *myhero-app*, and the *app-server* address, there are a number of WebEx Teams variables.
 
 * *bot_secret* is the shared private key to communicate with our *myhero-spark* microservice.
-* *bot_email* is the address of the bot you created (ie. yourbot@sparkbot.io).
+* *bot_email* is the address of the bot you created (ie. yourbot@webex.bot).
 * *token* is the long string of characters you obtained when you created your bot (the one you saved).
-* *bot_url* is the **public** URL where Cisco Spark servers can find your bot. This is required so that Spark servers redirect messages from Spark users to the microservice running in your laptop for processing. But think about it... you are deploying *myhero* microservices in your own laptop, which probably resides in a private environment (home or office) with connectivity to the outside world via a gateway. So if it is not reachable from Internet, Spark servers will not be able to access your *myhero-spark* container.
+* *bot_url* is the **public** URL where Cisco WebEx Teams servers can find your bot. This is required so that WebEx Teams servers redirect messages from WebEx Teams users to the microservice running in your laptop for processing. But think about it... you are deploying *myhero* microservices in your own laptop, which probably resides in a private environment (home or office) with connectivity to the outside world via a gateway. So if it is not reachable from Internet, WebEx Teams servers will not be able to access your *myhero-spark* container.
 
 We can easily overcome this challenge by using a CLI tool called [ngrok](https://ngrok.com). 
 
@@ -558,15 +558,15 @@ docker-compose up
 
 See *myhero-spark* image being built and a container instantiate based on it. Let it run there.
 
-**Open a new terminal** (seventh one) and now you can ask your *myhero-spark* container to invite your Spark user to vote. Run:
+**Open a new terminal** (seventh one) and now you can ask your *myhero-spark* container to invite your WebEx Teams user to vote. Run:
 
 ```shell
-curl http://<ngrok_url>/hello/<your_spark_email>
+curl http://<ngrok_url>/hello/<your_WebEx_Teams_email>
 ```
 
-You will automatically get a new message in your Spark application, asking if you would like to vote. Any answer you provide will make the bot respond with the set of commands accepted by the bot. You can see the available options with "/options", vote with "/vote" and the name of a superhero, and see the results with "/results".
+You will automatically get a new message in your WebEx Teams application, asking if you would like to vote. Any answer you provide will make the bot respond with the set of commands accepted by the bot. You can see the available options with "/options", vote with "/vote" and the name of a superhero, and see the results with "/results".
 
-As long as this is just another interface available to your users, it relies on the same *myhero-app* and *myhero-data* containers as before. So you will still see the votes you put in the system via the web interface. And any vote you put in via Spark, will also be reflected in the web interface results.
+As long as this is just another interface available to your users, it relies on the same *myhero-app* and *myhero-data* containers as before. So you will still see the votes you put in the system via the web interface. And any vote you put in via WebEx Teams, will also be reflected in the web interface results.
 
 Congratulations, you just implemented another microservice to provide an additional interface for your users to vote!
 
@@ -1154,13 +1154,13 @@ curl -X GET -H "key: SecureApp" http://worker-01.local:31238/v2/results
 
 *myhero-app* also works well!
 
-### What about Web and Spark?
+### What about Web and WebEx Teams?
 
 If you remember our deployment of *myhero* on the development laptops, you already know by now that, apart from *myhero-ui*, both your *myhero-app* and *myhero-spark* need to be reachable from outside the local environment.
 
 *myhero-app* needs to be reached by the browsers of our voters because the Web interface is implemented in AngularJS. *myhero-ui* will provide browsers with all required HTML, CSS, JavaScript code, and then the application will run client-side. This means that the browser will need to communicate directly with *myhero-app*, so that is why it needs to be reachable from the outside world.
 
-*myhero-spark* needs to be publicly reachable because it implements the code that our Spark bot runs. So Spark servers need to be able to reach it for interaction, and these servers obviously reside on the Internet as well.
+*myhero-spark* needs to be publicly reachable because it implements the code that our WebEx Teams bot runs. So WebEx Teams servers need to be able to reach it for interaction, and these servers obviously reside on the Internet as well.
 
 <p align="center"> 
 <img src="./images/k8s-reachability.png">
@@ -1357,7 +1357,7 @@ cp k8s_myhero_spark.template k8s_myhero_spark.yml
 vi k8s_myhero_spark.yml
 ```
 
-In this case you will need to provide *myhero_spark_bot_email*, *spark_token*, *myhero_spark_bot_url*. The first two fields will be the ones you got from [Spark for Developers website](developer.ciscospark.com) when you created your bot. The third field will be *myhero-spark* public URL, again based on the info from noip that you configured: *http://\<spark-hostname>:<home_router_port>*
+In this case you will need to provide *myhero_spark_bot_email*, *spark_token*, *myhero_spark_bot_url*. The first two fields will be the ones you got from [WebEx Teams for Developers website](https://developer.webex.com/index.html) when you created your bot. The third field will be *myhero-spark* public URL, again based on the info from noip that you configured: *http://\<spark-hostname>:<home_router_port>*
 
 With that you can now save the file and apply it:
 
@@ -1373,10 +1373,10 @@ kubectl get all
 
 You can now test both user interfaces. Point your browser to *http://\<ui-hostname>:<home_router_port>* and you should get *myhero* splash page, where you can see the available options, vote and check the results.
 
-For Spark run the following command from your laptop terminal:
+For WebEx Teams run the following command from your laptop terminal:
 
 ```shell
-curl http://<spark-hostname>:<home_router_port>/hello/<your_spark_email_address>
+curl http://<spark-hostname>:<home_router_port>/hello/<your_WebEx_Teams_email_address>
 ```
 
 You will receive a welcome message from the bot asking if you would like to vote, and you will be able to interact with it using */options*, */vote* and */results*.
@@ -1438,7 +1438,7 @@ Now *myhero-app* will publish votes to *myhero-mosca*, and then *myhero-ernst* w
 <img src="./images/myhero-queue-arch.png">
 </p>
 
-Please go ahead and test that your application still works, by voting with the Web Interface and Spark. Its functionality should be the same, but now it will be able to process a higher number of concurrent users!
+Please go ahead and test that your application still works, by voting with the Web Interface and WebEx Teams. Its functionality should be the same, but now it will be able to process a higher number of concurrent users!
 
 ### A Dashboard to manage them all
 
@@ -2044,7 +2044,7 @@ Even when using a scheduler there are several important features that you might 
 
 And it would be great to implement them without having to modify the code in our existing microservices. We would like these features to be *decoupled* from service containers, so that Developers do not need to be concerned about these aspects.
 
-One way to implement these services is via a *sidecar proxy* (called *envoy*) next to each container, to incercept all incoming and outgoing communications. The interaction between all these proxies in the data plane, together with a common control plane, is what we call a *service mesh*.
+One way to implement these services is via a *sidecar proxy* (called *envoy*) next to each container, to intercept all incoming and outgoing communications. The interaction between all these proxies in the data plane, together with a common control plane, is what we call a *service mesh*.
 
 **[Istio](https://istio.io)** is an open-source approach to how you can implement a *service mesh* in your multi-Cloud Kubernetes clusters. It will help you understand traffic flows among services and how to manage them with policies, protection and authentication.
 
@@ -2114,11 +2114,11 @@ Istio configuration for traffic rules is done via YAML manifests. There are 3 ty
 
 ### Use case 1: routing to specific service version
 
-For *myhero-ui* we have defined 3 different versions, each one of them with a different header: "Make ONE voice heard!!!", "Make TWO voices heard!!!" and "Make THREE voices heard!!!". That way we will easily identify what version we are accessing.
+For *myhero-ui* we have defined 3 different versions (*v1, v2 and v3*), each one of them with a different header: "Make ONE voice heard!!!", "Make TWO voices heard!!!" and "Make THREE voices heard!!!". That way we will easily identify what version we are accessing.
 
 If you access *myhero-ui* public IP address from your browser, and refresh several times, you will notice this header changing as you access different versions of your *myhero-ui* service.
 
-Let's set v1 as the default version to use when accessing *myhero-ui*:
+Let's set *v1* as the default version to use when accessing *myhero-ui*:
 
 ```
 cd routing
@@ -2558,7 +2558,7 @@ drone secret add \
   --name docker_password --value <your_dockerhub_password>
 ```
 
-For the *Notify* phase we would like to use Spark, and let the system tell us when builds are complete and if they are successful or not. So please add this token (yes, you will need *that* specific token) and your Spark e-mail address, again in the form of Drone secrets:
+For the *Notify* phase we would like to use WebEx Teams, and let the system tell us when builds are complete and if they are successful or not. So please add this token (yes, you will need *that* specific token) and your WebEx Teams e-mail address, again in the form of Drone secrets:
 
 ```shell
 drone secret add \
@@ -2566,7 +2566,7 @@ drone secret add \
   --name SPARK_TOKEN --value MDNiNTc0YTUtYTNmNC00N2EzLTg0MGUtZGFkMDYyZjI4YTYxMjhkY2EwNzgtOGYx
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
-  --name PERSONEMAIL --value <your_spark_email>
+  --name PERSONEMAIL --value <your_WebEx_Teams_email>
 ```
 
 For the *Deploy* phase we will use a Drone plugin called [drone-gke](https://github.com/NYTimes/drone-gke), designed to update existing deployments in Google Kubernetes Engine clusters. In order to do it this plugin needs you to provide the credentials [JSON](https://en.wikipedia.org/wiki/JSON) file of a Google service account to authenticate.
@@ -2654,7 +2654,7 @@ Due to the integration we configured between the GoGS and Drone servers, a webho
 <img src="./images/drone-web.png">
 </p>
 
-Once completed you will receive a Spark message from the *CICD Build Bot* saying your build was successful.
+Once completed you will receive a WebEx Teams message from the *CICD Build Bot* saying your build was successful.
 
 <p align="center"> 
 <img src="./images/spark-build.png">
