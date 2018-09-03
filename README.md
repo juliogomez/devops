@@ -479,7 +479,7 @@ Most developers working on real projects will not use a rudimentary editor like 
 
 Voting through a website is nice and convenient, but today's world offers a myriad of different devices and solutions to interact with: mobile phones, tables, wearables, etc. We would like to offer our users with additional ways to vote for their favorite superhero.
 
-[Cisco WebEx Teams](https://www.webex.com/products/teams/index.html) (soon to become Webex Meetings) is a collaboration tool that supports *rooms* where users can interact (voice, video, IM) and share documents. Additionally it supports *bots* that you can interact with. It is an ideal platform to implement a service that allows our users to vote.
+[Cisco WebEx Teams](https://www.webex.com/products/teams/index.html) (previously known as Cisco Spark) is a collaboration tool that supports *rooms* where users can interact (voice, video, IM) and share documents. Additionally it supports *bots* that you can interact with. It is an ideal platform to implement a service that allows our users to vote.
 
 <p align="center"> 
 <img src="./images/myhero-spark.png">
