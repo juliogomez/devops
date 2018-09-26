@@ -84,7 +84,7 @@ server:
     DRONE_OPEN: "true"
     DRONE_HOST: "http://<drone_public_URL>"
     DRONE_GOGS: "true"
-    DRONE_GOGS_URL: "http://<gogs_public_URL>"
+    DRONE_GOGS_URL: "http://my-gogs-gogs"
     # DRONE_GITHUB: "true"
     # DRONE_ORGS: "my-github-org,my-other-github-org"
     # DRONE_ADMIN:"admin-1,admin-2"

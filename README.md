@@ -2446,17 +2446,16 @@ Copy the template file:
 cp values.template values.yaml
 ```
 
-And edit *values.yaml* to configure the public URLs you configured in DNS, for both GoGS and Drone servers:
+And edit *values.yaml* to configure the public URL you configured in DNS for your Drone server:
 
 ```yaml
 DRONE_HOST: "http://<drone_public_URL>"
-DRONE_GOGS_URL: "http://<gogs_public_URL>"
 ```
 
 Now you can install Drone. It is also available as containers, so again we will be able to use our k8s cluster to deploy it. And again Helm can help us with this task:
 
 ```shell
-helm install --name my-drone -f values.yaml incubator/drone
+helm install --name my-drone -f values.yaml stable/drone
 ```
 
 Wait until you get an external public IP address for Drone (ctrl+c to exit):
