@@ -1198,7 +1198,7 @@ But what if we could use *LoadBalancer* to obtain a *private* IP address that ac
 Let's install MetalLB in your cluster. Connect to your master node and run:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.6.2/manifests/metallb.yaml
+kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.7.3/manifests/metallb.yaml
 ```
 
 It installs as a set of pods (a single controller, and then one speaker per worker node) you can monitor with:
@@ -1215,7 +1215,7 @@ speaker-nqbg8                 1/1       Running   1          2d
 Then you need to provide MetalLB with a configuration file. You can download a template with:
 
 ```shell
-wget https://raw.githubusercontent.com/google/metallb/v0.3.1/manifests/example-arp-config.yaml
+wget https://raw.githubusercontent.com/google/metallb/master/manifests/example-layer2-config.yaml
 ```
 
 Now edit that *example-arp-config.yaml* file and change the block of IP addresses you would like MetalLB to manage (in our case 192.168.1.240/28). Please make sure to configure your home router DHCP server to **not** allocate IP addresses from that block.
