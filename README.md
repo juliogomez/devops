@@ -2387,10 +2387,15 @@ Now go into GoGS directory:
 cd gogs
 ```
 
-And edit *values.yml* to configure the following two values to make sure your GoGS installation uses them in its repo cloning syntax:
+Rename *values.template* to *values.yml*:
+
+```shell
+mv values.template values.yml
+```
+
+And edit *values.yml* to configure the following values to make sure your GoGS installation uses it in its repo cloning syntax:
 
 ```yaml
-serverDomain: <GoGS_public_URL>
 serverRootUrl: http://<GoGS_public_URL>/
 ```
 

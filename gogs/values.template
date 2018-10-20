@@ -5,7 +5,7 @@
 ## Kubernetes configuration
 ## For minikube, set this to NodePort, elsewhere use LoadBalancer
 ##
-serviceType: NodePort
+serviceType: LoadBalancer
 
 replicaCount: 1
 
@@ -109,7 +109,7 @@ service:
 
     ## Enable this to use captcha validation for registration.
     ##
-    serverDomain: <GoGS_public_URL>
+    ## serverDomain: <GoGS_public_URL>
 
     ## Full public URL of Gogs server.
     ##
