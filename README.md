@@ -2575,7 +2575,7 @@ drone secret add \
 
 For the *Deploy* phase we will use a Drone plugin called [drone-gke](https://github.com/NYTimes/drone-gke), designed to update existing deployments in Google Kubernetes Engine clusters. In order to do it this plugin needs you to provide the credentials [JSON](https://en.wikipedia.org/wiki/JSON) file of a Google service account to authenticate.
 
-You can learn how to create a service account [here](https://cloud.google.com/storage/docs/authentication#service_accounts). Once done please download the resulting JSON file into your *myhero_ui* directory, and add it as a *secret* for your GoGS repo (remember to replace your GoGS_username and JSON filename)
+You can learn how to create a service account [here](https://cloud.google.com/iam/docs/creating-managing-service-accounts#iam-service-accounts-create-console). Once done please download the resulting JSON file into your *myhero_ui* directory, and add it as a *secret* for your GoGS repo (remember to replace your GoGS_username and JSON filename)
 
 ```shell
 drone secret add \
