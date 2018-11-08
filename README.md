@@ -2627,7 +2627,7 @@ kubectl get secrets
 Pick the one storing the drone token and extract the required values  (remember to replace the exact secret name with your specific one):
 
 ```shell
-kubectl get secret/drone-deploy-token-XXXXX -o yaml | egrep 'ca.crt:|token:
+kubectl get secret/drone-deploy-token-XXXXX -o yaml | egrep 'ca.crt:|token:'
 ```
 
 Copy and paste each one of those *long strings* into the required fields of *k8s_myhero_ui.sec.yml* file (*token* is *api-token*, and *ca.crt* is *p12-cert*) and save it.
