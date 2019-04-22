@@ -3108,13 +3108,13 @@ Available on:
 Hit CTRL-C to stop the server
 ```
 
-This process replaces the existing _myhero-ui_ container deployment in the kubernetes cluster, with our new one. It will also synchronize files from your workstation to the the development environment, and perform the required port forwarding. You may access this new web front-end deployment browsing to http://localhost:3000/
+This process replaces the existing _myhero-ui_ container deployment in the kubernetes cluster, with our new one. It will also synchronize files from your workstation to the development environment, and perform the required port forwarding. You may access this new web front-end deployment by browsing to http://localhost:3000/
 
-As a developer please use your favourite IDE (or even just `vi`) in your local workstation to edit, for example, the file defining the front page, residing at `./app/views/main.html`
+As a developer please use your favourite IDE (or even just `vi`) in your local workstation to edit, for example, the file defining the front page (`./app/views/main.html`).
 
 Make a change in your front page title, from 'Make your voice heard!' to 'Make your voice hearRRRd!', and save your file. Go back to your browser, refresh and you will see your changes reflected __immediately!__
 
-Let that sink in for a second: as a developer you have modified your code from your local workstation, using your own IDE and tools... and okteto has transparently updated the deployment containers in your production kubernetes cluster. All of that without any docker or kubernetes interaction: 
+Let that sink in for a second... as a developer you have modified your code from your local workstation, using your own IDE and tools. And okteto has transparently updated the deployment containers in your production kubernetes cluster. All of that without any docker or kubernetes interaction: 
 
 * No need to run Docker locally in your workstation
 * No need to create and publish new Docker images after code changes
@@ -3123,7 +3123,7 @@ Let that sink in for a second: as a developer you have modified your code from y
 
 Okteto does everything for you and in a __completely transparent way!__ 
 
-Developers can now easily test how their software changes behave when deployed as containers-based microservices in the real production kubernetes environment... without even knowing that Docker and kubernetes are there!
+Developers can now easily test how their software changes behave when deployed as containers-based microservices in the real production kubernetes environment... without even knowing what Docker and kubernetes are!
 
 Once you get over this overwhelming and amazing experience, you may disable your cloud native environment by pressing `Ctrl+C` and then `Ctrl+D` in your terminal window. From there you can remove your deployment and replace it with the original one, with:
 
