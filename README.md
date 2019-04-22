@@ -3060,7 +3060,7 @@ $ export myhero_app_server=<your_api_url>
 $ export myhero_app_key=<your_key_to_communicate_with_app_server>
 ```
 
-Then we will have okteto automatically detect the programming language used in the repo, and generate the required manifests based on it. Please make sure to answer __n__ when asked if you would like to create a Kubernetes deployment manifest. We do not need it, because we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. But we could also create a different deployment and work in parallel with the production one.
+Then we will have okteto automatically detect the programming language used in the repo, and generate the required manifests based on it. Please make sure to answer __n__ when asked if you would like to create a Kubernetes deployment manifest. We do not need it, because we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. We could also create a different deployment and work in parallel with the production one.
 
 ```
 $ okteto create
@@ -3119,11 +3119,11 @@ Let that sink in for a second: as a developer you have modified your code from y
 * No need to run Docker locally in your workstation
 * No need to create and publish new Docker images after code changes
 * No need to manually update the deployment in your remote kubernetes cluster
-* No need to even know `docker` or `kubectl` CLI!
+* No need to even know the `docker` or `kubectl` CLIs !
 
 Okteto does everything for you and in a __completely transparent way!__ 
 
-Developers can now easily test their software
+Developers can now easily test how their software changes behave when deployed as containers-based microservices in the real production kubernetes environment... without even knowing that Docker and kubernetes are there!
 
 Once you get over this overwhelming and amazing experience, you may disable your cloud native environment by pressing `Ctrl+C` and then `Ctrl+D` in your terminal window. From there you can remove your deployment and replace it with the original one, with:
 
