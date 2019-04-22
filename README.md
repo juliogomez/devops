@@ -62,6 +62,7 @@
     - [Telepresence](#telepresence)
         - [Additional deployment](#additional-deployment)
         - [Swap deployments](#swap-deployments)
+    - [Okteto](#okteto)
 - [Conclusions](#conclusions)
 
 <!-- /TOC -->
