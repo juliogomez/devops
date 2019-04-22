@@ -3078,7 +3078,6 @@ We will need to make some changes to make that file work in our setup:
 * Change the deployment name from `myheroui` to `myhero-ui`
 * Configure it to automatically install and start the code, including the following `command: ["yarn", "start"]`
 * Port mapping: if you take a look at our front-end's `package.json` file, you will see it starts an HTTP server in port 8000, so we should change the mapping from `3000:3000` to `3000:8000`
-* If your kubernetes cluster has limited capacity please lower your resources limits as required (eg. memory 512Mi and cpu 250m)
 
 For your convenience the _myhero-ui_ repo includes an already modified manifest you can use for this demo.
 
@@ -3086,7 +3085,6 @@ Now you should be good to activate your cloud native development environment.
 
 ```
 $ okteto up --namespace myhero --file okteto_myhero-ui.yml
-Okteto 0.7.1 is available, please upgrade.
  ✓  Environment activated!
     Ports:
        3000 -> 8000
