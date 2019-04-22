@@ -1840,7 +1840,7 @@ cp k8s_myhero_spark.template k8s_myhero_spark.yml
 
 Please edit *k8s_myhero_spark.yml* to update the image name and include your bot email (*myhero_spark_bot_email*), its token (*spark_token*) and DDNS hostname for spark (*myhero_spark_bot_url*).
 
-We are now ready to deploy your application. Make sure to edit all your manifests and replace the image name for the ones you built.
+We are now ready to deploy your application. Make sure to edit all your manifests and replace the image name with the ones you built.
 
 Now let's be brave and apply all at once!
 
@@ -2931,7 +2931,7 @@ Let's give it a try to see how it works.
 
 First you need to [install it](https://www.telepresence.io/reference/install), and it will automatically work with the k8s cluster active in your kubectl configuration.
 
-Now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to comment with **#** two lines in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. Please make sure to configure *myhero-ui* and *myhero-app* as LoadBalancer, so that they both get public IP addresses.
+By now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to comment with **#** two lines in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. Please make sure to configure *myhero-ui* and *myhero-app* as LoadBalancer, so that they both get public IP addresses.
 
 When you are ready you can try Telepresence in a couple of different ways:
 
@@ -3031,6 +3031,104 @@ docker push <your_DockerHub_user>/myhero-ui
 ```
 
 When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your laptop password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
+
+## Okteto
+
+[Okteto](https://okteto.com/) offers developers the ability to locally code with their own tools, and test their software live on containers deployed in a real remote kubernetes cluster, with no required knowledge about docker containers or kubernetes. 
+
+Too good to be true? Let's give it a try!
+
+First you need to [install it](https://okteto.com/docs/getting-started/installation/), and it will automatically work with the k8s cluster active in your kubectl configuration.
+
+By now you should already know how to get a full _myhero_ deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler please configure it in 'direct' mode, so no _myhero-mosca_ or _myhero-ernst_ is required. Remember you just need to comment with # two lines in _k8s_myhero_app.yml_ (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: _myhero-ui_, _myhero-app_ and _myhero-data_. Please make sure to configure _myhero-ui_ and _myhero-app_ as LoadBalancer, so they both get public IP addresses. Once the application is working we can try okteto.
+
+Let's say we are AngularJS developers, and we have been assigned to work on the web front-end microservice (_myhero-ui_).
+
+First thing we would need to do is cloning the repo, and get into the resulting directory:
+
+```
+$ git clone https://github.com/juliogomez/myhero_ui.git
+$ cd myhero_ui
+```
+
+Please make sure you have defined the following required 3 variables:
+
+```
+$ export myhero_spark_server=<your_spark_url>
+$ export myhero_app_server=<your_api_url>
+$ export myhero_app_key=<your_key_to_communicate_with_app_server>
+```
+
+Then we will have okteto automatically detect the programming language used in the repo, and generate the required manifests based on it. Please make sure to answer __n__ when asked if you would like to create a Kubernetes deployment manifest. We do not need it, because we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. But we could also create a different deployment and work in parallel with the production one.
+
+```
+$ okteto create
+JavaScript detected in your source. Recommended image for development: okteto/node:11
+Which docker image do you want to use for your development environment? [okteto/node:11]:
+
+Create a Kubernetes deployment manifest? [y/n]: n
+ ✓  Cloud native environment created
+```
+
+Okteto will automatically create the new `okteto.yml` manifest, specifying the deployment target, working directory, port forwarding and some scripts.
+
+We will need to make some changes to make that file work in our setup:
+
+* Change the deployment name from `myheroui` to `myhero-ui`
+* Configure it to automatically install and start the code, including the following `command: ["yarn", "start"]`
+* Port mapping: if you take a look at our front-end's `package.json` file, you will see it starts an HTTP server in port 8000, so we should change the mapping from `3000:3000` to `3000:8000`
+* If your kubernetes cluster has limited capacity please lower your resources limits as required (eg. memory 512Mi and cpu 250m)
+
+For your convenience the _myhero-ui_ repo includes an already modified manifest you can use for this demo.
+
+Now you should be good to activate your cloud native development environment.
+
+```
+$ okteto up --namespace myhero --file okteto_myhero-ui.yml
+Okteto 0.7.1 is available, please upgrade.
+ ✓  Environment activated!
+    Ports:
+       3000 -> 8000
+    Cluster:     gke_test-project-191216_europe-west1-b_example-cluster
+    Namespace:   myhero
+    Deployment:  myhero-ui
+
+yarn run v1.12.3
+$ npm install
+npm WARN notice [SECURITY] ecstatic has the following vulnerability: 1 moderate. Go here for more details: https://nodesecurity.io/advisories?search=ecstatic&version=1.4.1 - Run `npm i npm@latest -g` to upgrade your npm version, and then `npm audit` to get more info.
+npm notice created a lockfile as package-lock.json. You should commit this file.
+added 24 packages from 27 contributors and audited 24 packages in 5.825s
+found 1 moderate severity vulnerability
+  run `npm audit fix` to fix them, or `npm audit` for details
+$ http-server -a localhost -p 8000 -c-1 ./app
+Starting up http-server, serving ./app
+Available on:
+  http://localhost:8000
+Hit CTRL-C to stop the server
+```
+
+This process replaces the existing _myhero-ui_ container deployment in the kubernetes cluster, with our new one. It will also synchronize files from your workstation to the the development environment, and perform the required port forwarding. You may access this new web front-end deployment browsing to http://localhost:3000/
+
+As a developer please use your favourite IDE (or even just `vi`) in your local workstation to edit, for example, the file defining the front page, residing at `./app/views/main.html`
+
+Make a change in your front page title, from 'Make your voice heard!' to 'Make your voice hearRRRd!', and save your file. Go back to your browser, refresh and you will see your changes reflected __immediately!__
+
+Let that sink in for a second: as a developer you have modified your code from your local workstation, using your own IDE and tools... and okteto has transparently updated the deployment containers in your production kubernetes cluster. All of that without any docker or kubernetes interaction: 
+
+* No need to run Docker locally in your workstation
+* No need to create and publish new Docker images after code changes
+* No need to manually update the deployment in your remote kubernetes cluster
+* No need to even know `docker` or `kubectl` CLI!
+
+Okteto does everything for you and in a __completely transparent way!__ 
+
+Developers can now easily test their software
+
+Once you get over this overwhelming and amazing experience, you may disable your cloud native environment by pressing `Ctrl+C` and then `Ctrl+D` in your terminal window. From there you can remove your deployment and replace it with the original one, with:
+
+```
+$ okteto down
+```
 
 ---
 
