@@ -2770,7 +2770,9 @@ You may now start to see how different life would be for a DevOps team that impl
 
 Every new feature would be tracked by a Version Control Server, then implemented in a new image, tested, and translated into its own deployment. Everything automatic and based on containers to eliminate dependency issues.
 
-This looks like a new world!
+__This looks like a new world!__
+
+Please click [here](https://rawgit.com/juliogomez/devops/master/demos/myhero_CICD.html) to see a demo of the CICD pipeline working on our _myhero_ application.
 
 ### Pipeline on-premises
 
