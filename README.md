@@ -569,7 +569,9 @@ You will automatically get a new message in your WebEx Teams application, asking
 
 As long as this is just another interface available to your users, it relies on the same *myhero-app* and *myhero-data* containers as before. So you will still see the votes you put in the system via the web interface. And any vote you put in via WebEx Teams, will also be reflected in the web interface results.
 
-Congratulations, you just implemented another microservice to provide an additional interface for your users to vote!
+__Congratulations, you just implemented another microservice to provide an additional interface for your users to vote!__
+
+Please click [here](./demos/myhero_UIs.html) if you want to see a demo of our myhero application being accessed from two different User Interfaces: Web and Webex Teams.
 
 ## How to publish your images
 
