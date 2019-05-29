@@ -571,7 +571,7 @@ As long as this is just another interface available to your users, it relies on 
 
 __Congratulations, you just implemented another microservice to provide an additional interface for your users to vote!__
 
-Please click [here](https://rawgit.com/juliogomez/devops/master/demos/myhero_UIs.html) to see a demo of our _myhero_ application, being accessed from two different User Interfaces: Web and Webex Teams.
+Please click [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/juliogomez/devops/master/demos/myhero_UIs.html) to see a demo of our _myhero_ application, being accessed from two different User Interfaces: Web and Webex Teams.
 
 ## How to publish your images
 
@@ -2772,7 +2772,7 @@ Every new feature would be tracked by a Version Control Server, then implemented
 
 __This looks like a new world!__
 
-Please click [here](https://rawgit.com/juliogomez/devops/master/demos/myhero_CICD.html) to see a demo of the CICD pipeline working on our _myhero_ application.
+Please click [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/juliogomez/devops/master/demos/myhero_CICD.html) to see a demo of the CICD pipeline working on our _myhero_ application.
 
 ### Pipeline on-premises
 
