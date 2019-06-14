@@ -1891,6 +1891,8 @@ If at a certain point you want to stop the billing for your k8s cluster, but wou
 gcloud container clusters resize <cluster-name> --size=0
 ```
 
+> Please be aware that Google also charges for load-balancers, so make sure to remove your ingress resources as well.
+
 When you need to bring it back, you just need to issue:
 
 ```shell
