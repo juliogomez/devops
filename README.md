@@ -71,7 +71,7 @@
 
 # Introduction to DevOps
 
-Would you like to explore the life of a DevOps team, to understand team specific concerns? You might already be familiar with other environments like networking, but DevOps is a different world, with requirements for success being both technical and social, often requiring the team to think in a totally different way.
+Would you like to explore the life of a DevOps team, and understand their most usual challenges? You might already be familiar with other environments like networking, but DevOps is a different world, with requirements for success being both technical and social, often requiring the team to think in a totally different way.
 
 Let's go through some of the challenges Development and Operations teams have today:
 
@@ -101,7 +101,7 @@ Sometimes developers work on a common server for a number of individuals, but qu
 
 ## Containers and Docker
 
-We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter their current *de facto* implementation, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to  get some really nice foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to configure them.
+We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter the current *de facto* runtime engine, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to  get some really nice foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to configure them.
 
 But containers are not only another virtualisation technology. The packaging and portability layer they provide perfectly compliments the needs of modern application architectures based on *microservices*. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
 
