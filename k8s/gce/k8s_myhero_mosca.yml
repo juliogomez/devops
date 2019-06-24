@@ -13,7 +13,7 @@ spec:
   selector:
     app: myhero
     tier: mosca
-  type: NodePort
+  type: ClusterIP
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
