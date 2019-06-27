@@ -63,6 +63,7 @@
         - [Additional deployment](#additional-deployment)
         - [Swap deployments](#swap-deployments)
     - [Okteto](#okteto)
+    - [Cockpit](#cockpit)
 - [Conclusions](#conclusions)
 
 <!-- /TOC -->
