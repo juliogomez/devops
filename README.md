@@ -3138,7 +3138,7 @@ $ okteto down
 
 ## Cockpit
 
-If you have gone through the whole document by now you have used kubernetes to deploy a number of pods, services, volumes and namespaces, spread across a number of servers in your cluster. Of course you can use the kubernetes CLI to understand the mapping among these multiple elements, but sometimes it is also convenient to have a configurable CLI that shows this information.
+If you have gone through the whole document by now you have used kubernetes to deploy a number of pods, services, volumes and namespaces, spread across a number of servers in your cluster. Of course you can use the kubernetes CLI to understand the mapping among these multiple elements, but sometimes it is also convenient to have a configurable GUI that shows this information.
 
 [Cockpit](https://cockpit-project.org/) is a tool that helps managing Linux servers from your web browser. It allows you to start containers, administer storage, configure networks, and inspect logs. But the key capability I would like to focus on is its ability to interface with kubernetes API and graphically display how its constructs relate to each other and the underlying infrastructure.
 
@@ -3185,7 +3185,7 @@ As you can see you will need credentials (user name and password to access your 
 <img src="./images/cockpit_GKE_credentials.png">
 </p>
 
-Please login into cockpit using those values, and feel free to browse the capabilities offered by the dashboard. If you go to _Topology_ you will see a dynamic diagram similar to this:
+Please log into cockpit using those values, and feel free to browse the capabilities offered by the dashboard. If you go to _Topology_ you will see a dynamic diagram similar to this:
 
 <p align="center"> 
 <img src="./images/cockpit_diagram_all.png">
@@ -3209,7 +3209,7 @@ $ kubectl -n myhero scale deployment myhero-ui --replicas=2
 <img src="./images/cockpit_diagram_myhero_ui2.png">
 </p>
 
-Now the dashboard shows how the service is load-balancing into 2 different pods. 
+As you can see, the dashboard automatically shows in real time how the service is load-balancing into 2 different pods.
 
 __Cool way to display your microservices-based application, huh?__
 
