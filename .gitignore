@@ -10,3 +10,4 @@ drone/values.yaml
 drone/secrets.txt
 gogs/values.yaml
 gogs/secrets.txt
+.DS_Store
