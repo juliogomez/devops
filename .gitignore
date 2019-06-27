@@ -10,4 +10,5 @@ drone/values.yaml
 drone/secrets.txt
 gogs/values.yaml
 gogs/secrets.txt
+k8s/gce/k8s_myhero_ingress.ccp
 .DS_Store
