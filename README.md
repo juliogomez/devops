@@ -2138,8 +2138,8 @@ If you review the manifests you will notice they include a *DestinationRule* tha
 Please review the applied route (you may use this in all subsequent use cases examples):
 
 ```
-kubectl get virtualservice myheroui-rule -o yaml
-kubectl -namespace myhero get destinationrule myhero-ui-destination -o yaml
+kubectl get virtualservice myhero-ui -o yaml
+kubectl -n myhero get destinationrule myhero-ui-destinationrule -o yaml
 ```
 
 Refresh your browser several times while pointing to *myhero-ui* public IP and you will notice now you only get the *v1* header: "Make ONE voice heard!!!".
