@@ -2125,20 +2125,21 @@ For *myhero-ui* we have defined 3 different versions (*v1, v2 and v3*), each one
 
 If you access *myhero-ui* public IP address from your browser, and refresh several times, you will notice this header changing as you access different versions of your *myhero-ui* service.
 
-Let's set *v1* as the default version to use when accessing *myhero-ui*:
+Let's create the 3 different versions subsets and then set *v1* as the default one to use when accessing *myhero-ui*:
 
 ```
 cd routing
+kubectl -n myhero apply -f 1-ui_destinationrule.yml
 kubectl apply -f 1-ui_all_to_v1.yml
 ```
 
-If you review the manifest you will notice it includes a *VirtualService* that defines a rule to route all traffic going to *myhero-ui* service, so that it reaches exclusively pods labelled with  *v1*. It also includes a *DestinationRule* that defines the different available versions (*subsets*).
+If you review the manifests you will notice they include a *DestinationRule* that defines the 3 different available versions (*subsets*), and a *VirtualService* that defines a rule to route all traffic going to *myhero-ui* service, so that it reaches exclusively pods labelled with  *v1*. 
 
 Please review the applied route (you may use this in all subsequent use cases examples):
 
 ```
 kubectl get virtualservice myheroui-rule -o yaml
-kubectl get destinationrule myhero-ui-destination -o yaml
+kubectl -namespace myhero get destinationrule myhero-ui-destination -o yaml
 ```
 
 Refresh your browser several times while pointing to *myhero-ui* public IP and you will notice now you only get the *v1* header: "Make ONE voice heard!!!".
