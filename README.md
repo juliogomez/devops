@@ -2068,6 +2068,7 @@ Depending on your environment (on-prem or Cloud) you will have to follow the ins
 curl -L https://git.io/getLatestIstio | sh -
 cd istio-1.2.2
 export PATH=$PWD/bin:$PATH
+for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
 kubectl apply -f install/kubernetes/istio-demo.yaml
 cd ..
 ```
