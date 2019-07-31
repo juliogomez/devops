@@ -98,7 +98,7 @@ Let's start at the beginning of everything, where developers... develop.
 
 # Development
 
-Sometimes developers work on a common server for a number of individuals, but quite often they might be working in their own workstations or laptops. And of course that local system will be *unique* in terms of installed software, libraries, drivers, kernel, OS, etc. As discussed in the previous section, this will often lead to software that works perfectly in their local system, but does *not* work on a similar system run by a colleague (even another developer with a similar environment).
+Sometimes developers work on a common server for a number of individuals, but quite often they might be working in their own workstations or workstations. And of course that local system will be *unique* in terms of installed software, libraries, drivers, kernel, OS, etc. As discussed in the previous section, this will often lead to software that works perfectly in their local system, but does *not* work on a similar system run by a colleague (even another developer with a similar environment).
 
 ## Containers and Docker
 
@@ -112,7 +112,7 @@ On top of that microservices provide fault isolation, so that a failure or bug i
 
 ## Modern application development with containers
 
-First things first: if you want to understand how *modern* developers work in their own laptops, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your laptop (ie. terminal or iterm for Mac, Command Prompt or PowerShell on Windows), and please check that Docker is correctly installed in your system with `docker version`. Finally, go to "Docker Preferences" - "File Sharing", and include the `/Users` directory so that later on we can mount directories from your laptop into Docker container volumes.
+First things first: if you want to understand how *modern* developers work in their own workstations, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your workstation (ie. terminal or iterm for Mac, Command Prompt or PowerShell on Windows), and please check that Docker is correctly installed in your system with `docker version`. Finally, go to "Docker Preferences" - "File Sharing", and include the `/Users` directory so that later on we can mount directories from your workstation into Docker container volumes.
 
 Please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system. For Windows you can use Command Prompt or PowerShell.
 
@@ -129,7 +129,7 @@ As the diagram indicates *myhero* has three layers: Data, Applications and Prese
 * *Application* layer, composed by three different microservices. The first and main one is the middleware that processes votes from several user interfaces, and stores them in the Data layer. It includes a variable number of load-balanced containers depending on the needs of the system. The second and third microservices in this layer (*mosca* and *ernst*) are optional, and implement a queueing system to alleviate the pressure when there are multiple votes waiting to be stored in the Data layer.
 * *Presentation* layer, composed by several microservices that interact directly with end users. We will use two of them: a Web User Interface for users to vote via a webpage, and a WebEx Teams (previously known as Spark) Interface for users to vote via WebEx Teams (whether from the App or from WebEx Teams website). Each one of these microservices will also be composed by a variable number of load-balanced containers depending on the required load for each of them.
 
-Once you understand the architecture of *myhero* let's get the source code for its three main microservices (*myhero-ui*, *myhero-app* and *myhero-data*) and build a simplified version in our laptop.
+Once you understand the architecture of *myhero* let's get the source code for its three main microservices (*myhero-ui*, *myhero-app* and *myhero-data*) and build a simplified version in our workstation.
 
 <p align="center"> 
 <img src="./images/myhero-simple.png">
@@ -137,7 +137,7 @@ Once you understand the architecture of *myhero* let's get the source code for i
 
 ## Setting your development environment
 
-All the required code to build your *myhero* application is stored in [GitHub](https://github.com), a [repository hosting service](https://en.wikipedia.org/wiki/GitHub) that supports [Git Version Control System](https://en.wikipedia.org/wiki/Git). You can easily [register for a free GitHub account](https://github.com/join), and you will need to [install the Git CLI](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) in your laptop.
+All the required code to build your *myhero* application is stored in [GitHub](https://github.com), a [repository hosting service](https://en.wikipedia.org/wiki/GitHub) that supports [Git Version Control System](https://en.wikipedia.org/wiki/Git). You can easily [register for a free GitHub account](https://github.com/join), and you will need to [install the Git CLI](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) in your workstation.
 
 Once installation is complete, go and check that Git is correctly installed in your system by running the following command in a terminal window:
 
@@ -203,7 +203,7 @@ services:
      -  myhero_data_dir=/app/data/
 ```
 
-[docker-compose](https://docs.docker.com/compose/overview/) is a tool to define and run Docker applications. It should be included by default in your standard Docker CE laptop installation, and you can check if it is correctly installed in your system by running:
+[docker-compose](https://docs.docker.com/compose/overview/) is a tool to define and run Docker applications. It should be included by default in your standard Docker CE workstation installation, and you can check if it is correctly installed in your system by running:
 
 ```shell
 docker-compose version
@@ -211,14 +211,14 @@ docker-compose version
 
 If is not installed you can always check its [installation page](https://docs.docker.com/compose/install/).
 
-As you can see that *docker-compose.yml* file specifies a number of parameters on how docker should run our *myhero-data* container. It includes a version number (2 for compatibility with further steps later in the tutorial), and then a *services* category where there is a single service defined: *myhero-data*. So basically this YAML file will tell docker how to build and run locally a *myhero-data* container in your laptop.
+As you can see that *docker-compose.yml* file specifies a number of parameters on how docker should run our *myhero-data* container. It includes a version number (2 for compatibility with further steps later in the tutorial), and then a *services* category where there is a single service defined: *myhero-data*. So basically this YAML file will tell docker how to build and run locally a *myhero-data* container in your workstation.
 
 *myhero-data* service definition in your *docker-compose.yml* file includes several statements:
 
 * *build* specifies how to actually build your own *myhero-data* image (you instantiate an image to create a container), and its value is a simple *"."* (a period). This tells docker-compose it should automatically build the image with the instructions contained in a file located in the *local* directory ("./"). The default name of the local file to use for that build is *Dockerfile* and you will find it in the same directory you are in. We will get back to it soon.
 * *image* defines the name of the image to create when building it.
-* *ports* defines the required mapping of the port where the container provides its service (for *myhero-data* that is 5000, but this port is only accessible from other containers, not from external systems like our laptop terminal), to the port we want to use in our computer to access that service (in this case port 15000). This way we can access the service provided by this container via calls to `localhost:15000`.
-* *volumes* maps a directory in your laptop (in this case the local directory, identified by ".") to a directory inside the container (/app/data in this case). This mapping provides a simple method for data persistency, as all votes will be stored by the container in its */app/data* directory, which is the same as the local directory for *myhero-data* in your laptop. No matter what happens to your *myhero-data* container, your voting data will always be available in your computer. If you kill the container and create a new one, it will still be able to access the same data, so you do not loose any of your votes.
+* *ports* defines the required mapping of the port where the container provides its service (for *myhero-data* that is 5000, but this port is only accessible from other containers, not from external systems like our workstation terminal), to the port we want to use in our computer to access that service (in this case port 15000). This way we can access the service provided by this container via calls to `localhost:15000`.
+* *volumes* maps a directory in your workstation (in this case the local directory, identified by ".") to a directory inside the container (/app/data in this case). This mapping provides a simple method for data persistency, as all votes will be stored by the container in its */app/data* directory, which is the same as the local directory for *myhero-data* in your workstation. No matter what happens to your *myhero-data* container, your voting data will always be available in your computer. If you kill the container and create a new one, it will still be able to access the same data, so you do not loose any of your votes.
 * *environment* defines a couple of variables we want to pass to the container. Why did we not include these values in the code itself, and that way avoid having to define them here? Because there are certain guidelines that we want to follow when developing modern software, things we have learned that work better and provide better results and improved security like in this case. You may learn about them by visiting [12factor](https://12factor.net), and you will see [number III](https://12factor.net/config) talks about how configuration values should be stored in environment variables. This helps us reusing exactly the same code in different environments (ie. dev, qa or prod), but run it differently based on environment variables. It also provides better security as you can upload your software to a public repo without including any confidential secrets or configuration. For example in this case with *myhero-data* you have cloned a public repo with all code, but we will now provide a couple of environment variables. The first one is the private shared *key* ('myhero_data_key') that other containers (like *myhero-app*) should use to interact with it. As long as this container will eventually be running in a public environment you want to make sure that its data are only available to a certain subset of other containers. This shared key provide this kind of authentication. You will see we assign it the value of a variable called *MYHERO_DATA_KEY*, which is defined in the *.env* file also available in your local directory. We have pre-populated that file with a sample key for you to use (check it out and you will see it has a value of *DevData*), but you could modify that *.env* file with your own customised value. You would just need to make sure that other containers use that same value when trying to access *myhero-data* container. For now let's leave it like this. The second environment variable defined in our *docker-compose.yml* file is 'myhero_data_dir' and we have assigned it the name of the directory where we would like the code to store all data. This parameter gives us the flexibility to later on change very easily the location where our container stores its voting data, if we need to.
 
 0k, now that you know about *docker-compose.yml* let's explore that file we saw earlier, *Dockerfile*. As discussed it is a local file in the same *myhero-data* directory that defines how to build the required image instantiated by our container.
@@ -283,7 +283,7 @@ As long as we are creating a multi-layer, multi-microservice, multi-container ar
 
 You might remember we discussed at the beginning of this document that microservices interact via APIs. Specifically these are [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) APIs, which provide a uniform and small predefined set of stateless operations (methods) accessible via HTTP URLs. The main benefits this provides is that these are truly loosely coupled APIs (service implementation can change along time without disruption) and they are language-agnostic.
 
-It is easier to understand with an example, so let's interact with our *myhero-data* container via its RESTful API. As you probably remember the container exposed its service in port 5000, but container ports are only accessible from other containers, not from systems external to the container environment like our laptop terminal. So that is why we mapped *myhero-data* port 5000 to port 15000 in our laptop. That way we can access *myhero-data* via `localhost:15000` from our terminal.
+It is easier to understand with an example, so let's interact with our *myhero-data* container via its RESTful API. As you probably remember the container exposed its service in port 5000, but container ports are only accessible from other containers, not from systems external to the container environment like our workstation terminal. So that is why we mapped *myhero-data* port 5000 to port 15000 in our workstation. That way we can access *myhero-data* via `localhost:15000` from our terminal.
 
 So let's go ahead and emulate an API call to our *myhero-data* container and see if it answers correctly. From your second terminal window run:
 
@@ -333,7 +333,7 @@ curl -X GET -H "key: DevData" http://localhost:15000/results
 }
 ```
 
-Congratulations, you just built, ran and tested your first container in your own laptop!
+Congratulations, you just built, ran and tested your first container in your own workstation!
 
 ## Building a complete microservices-based application
 
@@ -343,7 +343,7 @@ For our local environment we will build a simplified version of *myhero* with ju
 <img src="./images/myhero-simple.png">
 </p>
 
-We have *myhero-data* already working in our laptop, so let's now follow the same process for *myhero-app* and *myhero-ui*. As long as this will be a very similar process to the steps already described earlier in the document, I will focus on the specifics that might be different for new containers.
+We have *myhero-data* already working in our workstation, so let's now follow the same process for *myhero-app* and *myhero-ui*. As long as this will be a very similar process to the steps already described earlier in the document, I will focus on the specifics that might be different for new containers.
 
 Let's go with *myhero-app*. Please go to the directory where you cloned your *myhero-app* source code from GitHub: 
 
@@ -353,7 +353,7 @@ cd devops_tutorial/myhero-app
 
 Inside it you will find a very similar structure to the one you already know from your previous review of *myhero-data*. You will find all the Python code for this container inside *myhero-app/myhero-app*. Feel free to explore it if you are familiar with Python.
 
-There you will also find a *docker-compose.yml* file, and its content should now be familiar to you. Of course port mapping uses a different port in our laptop (15001), but the same one in the container (5000). We need to provide different ports in our laptop, so that each individual service is accessible via its own port. And both containers may offer their service in the same port (5000) because they are  independent entities inside the container engine.
+There you will also find a *docker-compose.yml* file, and its content should now be familiar to you. Of course port mapping uses a different port in our workstation (15001), but the same one in the container (5000). We need to provide different ports in our workstation, so that each individual service is accessible via its own port. And both containers may offer their service in the same port (5000) because they are  independent entities inside the container engine.
 
 In terms of  environment variables you will find three of them. The first one is the private key shared with *myhero-data*. In case we changed it for *myhero-data* we would also need to change it in the local `.env` file, so that they could communicate properly. If you did not change it then it is fine to leave this one as is. Then you have the second one, similar to the previous variable, but called *myhero_app_key*. It will also be used in a similar way, but instead of validating the communication between *myhero-data* and *myhero-app*, it will validate the communication between any User Interface service (like *myhero-ui*) and *myhero-app*. The third environment variable is *myhero_data_server* and it provides the complete URL (service name and port) required to reach *myhero-data*.
 
@@ -395,7 +395,7 @@ It works!
 
 As you can see we have had to use *DevApp* instead of *DevData*, because we are interacting with *myhero-app* instead of *myhero-data*, and as per our configuration they have different shared private keys.
 
-So just to make it clear once again, from our laptop terminal we are requesting the voting options to *myhero-app* and, as long as that information is in a different container, *myhero-app* is requesting *myhero-data* to provide it. *myhero-data* returns the JSON file to *myhero-app*, and *myhero-app* forwards it to our terminal.
+So just to make it clear once again, from our workstation terminal we are requesting the voting options to *myhero-app* and, as long as that information is in a different container, *myhero-app* is requesting *myhero-data* to provide it. *myhero-data* returns the JSON file to *myhero-app*, and *myhero-app* forwards it to our terminal.
 
 Nice, let's now do the same for the third and last of our containers, *myhero-ui*.
 
@@ -407,9 +407,9 @@ cd devops_tutorial/myhero_ui
 
 There you will see a very similar file and directory structure, only in this case the code is stored in a folder called *app*. If you take a look inside you will realize there is no Python code in there. As long as this UI is a webpage, it has been developed in AngularJS. We will discuss an important implication of this in a minute.
 
-For now let's just review the *docker-compose.yml* file, and this time it should be *really* familiar to you. It just maps a different port in your laptop (15080) to port 80 in the container (80 is the default port for web servers like this UI frontpage). And then you have your environment variables. Something that might catch your attention is that they define the *app_server* and *spark_server* by referring to *localhost:laptop_port* instead of *container_name:container_port*.
+For now let's just review the *docker-compose.yml* file, and this time it should be *really* familiar to you. It just maps a different port in your workstation (15080) to port 80 in the container (80 is the default port for web servers like this UI frontpage). And then you have your environment variables. Something that might catch your attention is that they define the *app_server* and *spark_server* by referring to *localhost:workstation_port* instead of *container_name:container_port*.
 
-This is a consequence of the way AngularJS works. If you are not familiar with this programming language that is 0k, but you will need to understand this important implication. Services implemented as AngularJS applications run *client-side*. That means that the only interaction from the browser to the web server is to download HTML, CSS, images and JavaScript code. All the actual logic and code running happens client-side, in the browser itself. This is really important for our application, because *myhero-ui* will be that webserver providing our laptop's browser with everything it needs. And then the browser will access directly *myhero-app*. That is why we need to provide an externally accessible address of our *myhero-app* container, in the form of an environment variable.
+This is a consequence of the way AngularJS works. If you are not familiar with this programming language that is 0k, but you will need to understand this important implication. Services implemented as AngularJS applications run *client-side*. That means that the only interaction from the browser to the web server is to download HTML, CSS, images and JavaScript code. All the actual logic and code running happens client-side, in the browser itself. This is really important for our application, because *myhero-ui* will be that webserver providing our workstation's browser with everything it needs. And then the browser will access directly *myhero-app*. That is why we need to provide an externally accessible address of our *myhero-app* container, in the form of an environment variable.
 
 <p align="center"> 
 <img src="./images/myhero-angular.png">
@@ -461,7 +461,7 @@ Modify it by swapping *heard* to *HEARD*, and including more exclamation marks:
 <h3>Make your voice HEARD!!!</h3>
 ```
 
-Save it and refresh your browser (ie. shift+refresh in Safari). Changes are not reflected... why? Well, because when you created the *myhero-ui* image your container is currently running, its Dockerfile copied all code **available at that point in time** from your laptop directory into the image. And then your container instantiated from *that* image, and obviously with *that* code. If we want to use our *new* code we have to rebuild our *myhero-ui* image and then instantiate a new container from that new image.
+Save it and refresh your browser (ie. shift+refresh in Safari). Changes are not reflected... why? Well, because when you created the *myhero-ui* image your container is currently running, its Dockerfile copied all code **available at that point in time** from your workstation directory into the image. And then your container instantiated from *that* image, and obviously with *that* code. If we want to use our *new* code we have to rebuild our *myhero-ui* image and then instantiate a new container from that new image.
 
 Before creating the new *myhero-ui*, please stop the old one. Go to your previous terminal window (the third one you opened) and press *ctrl+c* to stop the running container.
 
@@ -487,7 +487,7 @@ Voting through a website is nice and convenient, but today's world offers a myri
 <img src="./images/myhero-spark.png">
 </p>
 
-Please go ahead and register for a WebEx Teams account, it is easy and completely free. You can use WebEx Teams from an app installed in your computer/laptop/mobile, or via a web interface.
+Please go ahead and register for a WebEx Teams account, it is easy and completely free. You can use WebEx Teams from an app installed in your computer/workstation/mobile, or via a web interface.
 
 Once you are set we will need to create a *bot* for our *myhero* app. Don't worry, it is easy. Please visit [WebEx Teams for Developers](https://developer.webex.com) and login with your WebEx Teams user. Then go to *My Apps* and click on the **+** sign to add a new *App*. Click on *Create a Bot* and give it a *Name* you like. Then create its address by providing a *Bot Username* (@webex.bot). Choose your favorite icon and add a short description about your bot. Then click on *Create Bot*. On successful creation you will see all info about your bot, please make sure to copy and save your *Bot's Access Token* (long string of characters), as you will need it later on and you will not be able to come back to review it. Your bot is now ready!
 
@@ -516,7 +516,7 @@ And review the usual *docker-compose.yml*, *Dockerfile* and *.env* files. The ma
 * *bot_secret* is the shared private key to communicate with our *myhero-spark* microservice.
 * *bot_email* is the address of the bot you created (ie. yourbot@webex.bot).
 * *token* is the long string of characters you obtained when you created your bot (the one you saved).
-* *bot_url* is the **public** URL where Cisco WebEx Teams servers can find your bot. This is required so that WebEx Teams servers redirect messages from WebEx Teams users to the microservice running in your laptop for processing. But think about it... you are deploying *myhero* microservices in your own laptop, which probably resides in a private environment (home or office) with connectivity to the outside world via a gateway. So if it is not reachable from Internet, WebEx Teams servers will not be able to access your *myhero-spark* container.
+* *bot_url* is the **public** URL where Cisco WebEx Teams servers can find your bot. This is required so that WebEx Teams servers redirect messages from WebEx Teams users to the microservice running in your workstation for processing. But think about it... you are deploying *myhero* microservices in your own workstation, which probably resides in a private environment (home or office) with connectivity to the outside world via a gateway. So if it is not reachable from Internet, WebEx Teams servers will not be able to access your *myhero-spark* container.
 
 We can easily overcome this challenge by using a CLI tool called [ngrok](https://ngrok.com). 
 
@@ -524,7 +524,7 @@ We can easily overcome this challenge by using a CLI tool called [ngrok](https:/
 <img src="./images/myhero-spark-ngrok.png">
 </p>
 
-You just need to [download ngrok](ngrok.com/download) and install it in your laptop. Then from you terminal window run:
+You just need to [download ngrok](ngrok.com/download) and install it in your workstation. Then from you terminal window run:
 
 ```shell
 ngrok http 15003
@@ -641,7 +641,7 @@ Don't forget to stop *ngrok* as well, by pressing Ctrl+C in its own terminal win
 
 # Operations
 
-Once developers feel comfortable with code running in their laptops they need to start thinking about how it will go into production. That production environment might be on-premises (private) or in the Cloud (public), depending on many different factors, like cost, data confidentiality or even local country regulations.
+Once developers feel comfortable with code running in their workstations they need to start thinking about how it will go into production. That production environment might be on-premises (private) or in the Cloud (public), depending on many different factors, like cost, data confidentiality or even local country regulations.
 
 ## On-premises deployment
 
@@ -706,7 +706,7 @@ Now for the software we need to run a number of tasks, some of them on all nodes
 
 **For all nodes**
 
-* Flash the microSD card with a Raspbian image. You may go [here](https://downloads.raspberrypi.org/raspbian_lite/images/) and download the latest version. Then download [Etcher](https://etcher.io/), install it in your laptop and flash your card with the Raspbian image you just downloaded. As long as SSH is disabled by default you would not be able to access your RPi unless you used a USB keyboard and HDMI monitor. Luckily there is a workaround in case you do not have any of these: once your card is flashed, access it from a terminal window and create an empty file called *ssh (in Mac you may just run `touch ssh` from your terminal). This will allow you to run a *headless* install (without terminal and keyboard) of your RPi. Insert the microSD card in the RPi and power it. Connect your laptop to a port in the switch and run: 
+* Flash the microSD card with a Raspbian image. You may go [here](https://downloads.raspberrypi.org/raspbian_lite/images/) and download the latest version. Then download [Etcher](https://etcher.io/), install it in your workstation and flash your card with the Raspbian image you just downloaded. As long as SSH is disabled by default you would not be able to access your RPi unless you used a USB keyboard and HDMI monitor. Luckily there is a workaround in case you do not have any of these: once your card is flashed, access it from a terminal window and create an empty file called *ssh (in Mac you may just run `touch ssh` from your terminal). This will allow you to run a *headless* install (without terminal and keyboard) of your RPi. Insert the microSD card in the RPi and power it. Connect your workstation to a port in the switch and run: 
 
   ```shell
   ssh pi@raspberry.local
@@ -848,7 +848,7 @@ EOT
   sudo kubeadm init --config kubeadm_conf.yaml
   ```
 
-  (please copy the resulting "*kubeadm join ...*" message in your laptop, so you can use it in your *worker* nodes later)
+  (please copy the resulting "*kubeadm join ...*" message in your workstation, so you can use it in your *worker* nodes later)
 
 * Once completed follow the instructions on the screen and run:
 
@@ -872,7 +872,7 @@ EOT
 
 **Only on WORKER nodes**
 
-* Configure your *worker* nodes to join the Kubernetes cluster with the output you obtained from the *master* node and saved in your laptop:
+* Configure your *worker* nodes to join the Kubernetes cluster with the output you obtained from the *master* node and saved in your workstation:
 
   ```shell
   sudo kubeadm join ...
@@ -904,7 +904,7 @@ But what if you (or a colleague) need to access your MiniDC from outside your ho
 
 Your connection to the outside world is your home router. It is the only one with a *public* IP address in its WAN interface, so it is the only one *known* (routable) to the Internet. Everything inside your home LAN segment uses private IP addresses that cannot be reached from outside. So we need to work with that one and only public IP address for everything we need.
 
-You can find out the actual WAN IP address of your home router by running the following command from your laptop.
+You can find out the actual WAN IP address of your home router by running the following command from your workstation.
 
 ```shell
 dig +short myip.opendns.com @resolver1.opendns.com
@@ -922,7 +922,7 @@ There are multiple DDNS providers, and you can choose the one you prefer. For th
 
 So you can register and create a hostname of your choice, and that will be mapped to the WAN IP address of your router.
 
-Once done you will need to install the NoIP agent in one of your local systems. Maybe your router could support it, but there are so many models it would be impossible to cover a generic way to do it. You could install it in your own laptop, but probably that is not always on. So the best option is to install it in one of your RPi.
+Once done you will need to install the NoIP agent in one of your local systems. Maybe your router could support it, but there are so many models it would be impossible to cover a generic way to do it. You could install it in your own workstation, but probably that is not always on. So the best option is to install it in one of your RPi.
 
 Let's install it in our RPi *master* node, by following the instructions [here](https://www.noip.com/support/knowledgebase/install-ip-duc-onto-raspberry-pi/).
 
@@ -969,7 +969,7 @@ This is an important foundational feature we will use extensively later in our M
 ssh pi@$(dig <hostname> @8.8.8.8 +short) -p 22400
 ```
 
-**Comment 2**: as long as [scp](https://en.wikipedia.org/wiki/Secure_copy) is based on SSH, you may use it to copy files from your laptop to your RPi boards. For example:
+**Comment 2**: as long as [scp](https://en.wikipedia.org/wiki/Secure_copy) is based on SSH, you may use it to copy files from your workstation to your RPi boards. For example:
 
 ```shell
 scp -P 22400 ./test.txt pi@$(dig <hostname> @8.8.8.8 +short):/home/pi/test.txt
@@ -1003,13 +1003,13 @@ We will need to install some additional tools, but considering that most Kuberne
 
 If we think of our MiniDC as a production environment, we could work as Ops personnel and consider deploying *myhero* into our Kubernetes cluster now.
 
-If you tried to do it you would quickly notice that your *myhero-app* and *myhero-data* deployments would never be ready. The reason it could never work is that our Production and Development environments run on very different architectures. While Development runs on a Mac laptop, Production runs on RPi, so they have different kernels and we need to adapt our images to them.
+If you tried to do it you would quickly notice that your *myhero-app* and *myhero-data* deployments would never be ready. The reason it could never work is that our Production and Development environments run on very different architectures. While Development runs on a Mac workstation, Production runs on RPi, so they have different kernels and we need to adapt our images to them.
 
 You might think this goes against the foundational idea of containers being *portable* from environment to environment, but that is not the case. They are portable and self-contained between environments that share similar kernels, but you cannot instantiate the same images in environments built on different architectures. 
 
 Another example would be Windows vs Linux. The only way to use Linux containers on a Windows system is to have Windows emulate a Linux kernel (with something like a VM) and instantiate the Linux image on top of that.
 
-So as long as RPi architecture is so different from a Windows or Mac computer, you will not be able to run the images you created from your laptop. You can try but you will get an error message like this:
+So as long as RPi architecture is so different from a Windows or Mac computer, you will not be able to run the images you created from your workstation. You can try but you will get an error message like this:
 
 ```console
 myhero-data_1  | standard_init_linux.go:195: exec user process caused "exec format error"
@@ -1102,7 +1102,7 @@ You may have noticed a couple of things that are different with k8s:
 1. We do not deal with containers anymore, but with *pods*. [Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod/) are the smallest unit of compute in k8s, and while they maybe be composed by several containers, for *myhero* there will be only one container per pod. So for our discussion you may think of pods as containers.
 2. There are several pods per microservice. We have 2x pods for *myhero-app*, and 1x pod for *myhero-data*. One of the big benefits of using a scheduler like k8s is that you *declare* the desired state, and k8s will *make it happen* for you. So in our case we have defined how many pods we want for each microservice (based on different factors, like application architecture, or the required redundancy and/or expected workload). No matter how the underlying infrastructure behaves (RPi boards), k8s will manage it to make sure the system always complies with our *desired* state. No human intervention is required, nothing... k8s behaves like an efficient Ops team.
 
-Now that all our pods are running and ready, we can locally test their service with `curl` commands. When we were running them in our Development environment with laptops, we used the port-mapping defined in *docker-compose.yml*. We are not using that file anymore, k8s handles access to its services in a different way.
+Now that all our pods are running and ready, we can locally test their service with `curl` commands. When we were running them in our Development environment with workstations, we used the port-mapping defined in *docker-compose.yml*. We are not using that file anymore, k8s handles access to its services in a different way.
 
 Let's see how k8s do it.
 
@@ -1133,7 +1133,7 @@ The first one (*kubernetes*) is an internal one used by the system itself, so ig
 
 For our two *myhero* services you will see they are both configured as type *NodePort*. That means that you can access the service by querying **any** of your k8s nodes (*master*, *worker-01*, *worker-02* or *worker-03*) in the port specified as mapped to the service port (ie. 80).
 
-Let's take a look at an example, and start by testing our new *myhero-data* service. We will leverage the same `curl` command we used for testing our development environment on laptops.
+Let's take a look at an example, and start by testing our new *myhero-data* service. We will leverage the same `curl` command we used for testing our development environment on workstations.
 
 ```shell
 curl -X GET -H "key: SecureData" http://worker-02.local:30122/options
@@ -1160,7 +1160,7 @@ curl -X GET -H "key: SecureApp" http://worker-01.local:31238/v2/results
 
 ### What about Web and WebEx Teams?
 
-If you remember our deployment of *myhero* on the development laptops, you already know by now that, apart from *myhero-ui*, both your *myhero-app* and *myhero-spark* need to be reachable from outside the local environment.
+If you remember our deployment of *myhero* on the development workstations, you already know by now that, apart from *myhero-ui*, both your *myhero-app* and *myhero-spark* need to be reachable from outside the local environment.
 
 *myhero-app* needs to be reached by the browsers of our voters because the Web interface is implemented in AngularJS. *myhero-ui* will provide browsers with all required HTML, CSS, JavaScript code, and then the application will run client-side. This means that the browser will need to communicate directly with *myhero-app*, so that is why it needs to be reachable from the outside world.
 
@@ -1377,7 +1377,7 @@ kubectl get all
 
 You can now test both user interfaces. Point your browser to *http://\<ui-hostname>:<home_router_port>* and you should get *myhero* splash page, where you can see the available options, vote and check the results.
 
-For WebEx Teams run the following command from your laptop terminal:
+For WebEx Teams run the following command from your workstation terminal:
 
 ```shell
 curl http://<spark-hostname>:<home_router_port>/hello/<your_WebEx_Teams_email_address>
@@ -1492,7 +1492,7 @@ But now you know about *Ingress*, so you might probably want to *do it right*. S
 
 As long as we got to the maximum number of hostnames in NoIP free tier, let's do something different. We will create an ingress resource, but only to be used from the *internal* network. That means the dashboard will not be accessible from the outside world, but let's suppose we only want to manage it locally, so for our case that should be okay.
 
-The most basic name resolution system is the `/etc/hosts` **in your laptop**, so let's edit it and add an entry like this:
+The most basic name resolution system is the `/etc/hosts` **in your workstation**, so let's edit it and add an entry like this:
 
 ```console
 192.168.1.250   dashboard.internal.julio.com
@@ -1711,7 +1711,7 @@ Now we will install the rest of the sytem, via a script called `deploy`. It will
 
 But before using the `deploy` script we need to configure some parameters:
 
-The following elements provide GUIs accessible via *ingress* resources, so you should configure their internal URLs (don’t forget to update the `/etc/hosts` file **in your laptop**):
+The following elements provide GUIs accessible via *ingress* resources, so you should configure their internal URLs (don’t forget to update the `/etc/hosts` file **in your workstation**):
 
 - Prometheus, in `manifests/prometheus/prometheus-k8s-ingress.yaml`
 - AlertManager, in `manifests/alertmanager/alertmanager-ingress.yaml`
@@ -1754,9 +1754,9 @@ Let's try an easier way. Some of these providers offer the option of providing y
 
 For our tutorial we will choose GKE, but you can try with your own preference.
 
-You can work on GCP resources with their browser-embedded [Cloud Shell](https://cloud.google.com/shell/) or install their [Cloud SDK](https://cloud.google.com/sdk/) [gcloud CLI](https://cloud.google.com/sdk/downloads) in your laptop.
+You can work on GCP resources with their browser-embedded [Cloud Shell](https://cloud.google.com/shell/) or install their [Cloud SDK](https://cloud.google.com/sdk/) [gcloud CLI](https://cloud.google.com/sdk/downloads) in your workstation.
 
-If you prefer the second option you will also need to install `kubectl` CLI in your laptop:
+If you prefer the second option you will also need to install `kubectl` CLI in your workstation:
 
 ```shell
 gcloud components install kubectl
@@ -1924,7 +1924,7 @@ Helm has 2 components: *client* (local agent that communicates with the server) 
 <img src="./images/helm-arch.png">
 </p>
 
-You will need to [install the Helm client in your laptop](https://github.com/kubernetes/helm/blob/master/docs/quickstart.md).
+You will need to [install the Helm client in your workstation](https://github.com/kubernetes/helm/blob/master/docs/quickstart.md).
 
 As a Mac user you can install the Helm client with:
 
@@ -2298,11 +2298,11 @@ Note: images are not really the same in our specific case, but that is only beca
 
 Now you know how developers work in their local environment and how operations teams manage application deployments on public Cloud providers, or on-premises environments. One of the possible scenarios might be to have three environments:
 
-1. Development: local laptops.
+1. Development: local workstations.
 2. Quality Assurance (or Testing): on-premises.
 3. Production: cloud provider.
 
-The way we have been working until now is quite manual. Developers work on source code in their laptops, they create new docker images, deploy them locally for testing to make sure application new features work as expected, and finally publish those images to share with other teams. Operations then will pick those images and update application deployments on k8s clusters (Cloud or on-prem).
+The way we have been working until now is quite manual. Developers work on source code in their workstations, they create new docker images, deploy them locally for testing to make sure application new features work as expected, and finally publish those images to share with other teams. Operations then will pick those images and update application deployments on k8s clusters (Cloud or on-prem).
 
 Each one of these is a manual step that involves actions from individuals in multiple teams, so it is quite prone to error. The whole process of *moving code* from one environment to the next one would benefit greatly from being automated, so that there is minimal human intervention required.
 
@@ -2435,7 +2435,7 @@ Once done, please verify the DNS entry has been correctly propagated:
 dig <GoGS_DNS_entry> @8.8.8.8 +short
 ```
 
-Point your laptop browser to that IP, your GoGS server is now ready!
+Point your workstation browser to that IP, your GoGS server is now ready!
 
 Register your first user (it will also become *admin* for the server) and log into GoGS with your credentials. You might want to use the same username you use in GitHub for consistency.
 
@@ -2495,7 +2495,7 @@ You may now point your browser to Drone public URL (the one you configured in yo
 
 You are now in! You will see that it automatically shows the repository you created in GoGS. Everything works!
 
-In order to interact with Drone from your laptop you will need to [install Drone CLI](http://docs.drone.io/cli-installation/), and then configure it. You can get your token from Drone web interface, clicking on the 3-line list icon on the top right.
+In order to interact with Drone from your workstation you will need to [install Drone CLI](http://docs.drone.io/cli-installation/), and then configure it. You can get your token from Drone web interface, clicking on the 3-line list icon on the top right.
 
 ```shell
 export DRONE_SERVER=http://<Drone_DNS_entry>
@@ -2539,7 +2539,7 @@ You may go to Drone web interface and refresh it to see the new repos show up. A
 
 Activating these repos means that Drone will get a notification from GoGS when the content of a repo is updated. Not only that, Drone will also get the pipeline definition file *included inside the repo*. That file will define the sequential steps Drone needs to follow for the code included in that specific repo.
 
-From Drone CLI in your laptop, you may now verify that all repos are active:
+From Drone CLI in your workstation, you may now verify that all repos are active:
 
 ```shell
 drone repo ls
@@ -2769,7 +2769,7 @@ This means that just by pushing new code to your repo, it automatically triggere
 
 You may now start to see how different life would be for a DevOps team that implemented a CI/CD/CD pipeline.
 
-* Developers might work on creating code locally in their laptops and test it in their own local container runtime engine. In fact they could even deploy a 1-node k8s cluster in their own laptops if they were interested! Recent Docker releases include this capability for standard laptop installations.
+* Developers might work on creating code locally in their workstations and test it in their own local container runtime engine. In fact they could even deploy a 1-node k8s cluster in their own workstations if they were interested! Recent Docker releases include this capability for standard workstation installations.
 * Once they are happy with the working code they could push it to a repository, and that would automatically trigger a pipeline execution.
 * That pipeline could include things like automatically testing the code, and if successful create new container images and update the deployments in production with the new code.
 
@@ -2803,7 +2803,7 @@ kubectl -n myhero get secret/drone-deploy-token-XXXXX -o yaml | egrep 'token:'
 echo [ your k8s base64 encoded token ] | base64 -d && echo''
 ```
 
-Now from your Dev laptop you need to edit the *.drone.yml* file in your *myhero_ui* directory and replace the *Deploy* phase with the following content:
+Now from your Dev workstation you need to edit the *.drone.yml* file in your *myhero_ui* directory and replace the *Deploy* phase with the following content:
 
 ```yaml
   Deploy:
@@ -2837,7 +2837,9 @@ So once their code is ready they could use Draft to automatically detect the pro
 
 Let's get it working!
 
-First [install Draft](https://github.com/azure/draft). If you choose to use minikube you will have a 1-node k8s cluster running in your own laptop for testing. Otherwise you can use any k8s cluster from a Cloud provider.
+First [install Draft](https://github.com/azure/draft). If you choose to use minikube you will have a 1-node k8s cluster running in your own workstation for testing. Otherwise you can use any k8s cluster from a Cloud provider.
+
+Please make sure you have Docker running locally in your workstation, as it will be needed to automatically build and publish your images.
 
 Now go to *devops-tutorial* create a new *draft* directory, clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
 
@@ -2848,10 +2850,11 @@ git clone https://github.com/juliogomez/myhero_data.git
 mv myhero_data myherodata
 ```
 
-Go into the new directory and containerize the app by creating a draft pack.
+Go into the new directory, initialize the required plugins and containerize the app by creating a draft pack.
 
 ```shell
 cd myherodata
+draft init
 draft create
 ```
 
@@ -2859,17 +2862,17 @@ This will create the required Helm chart structure and config file (*draft.toml*
 
 Let's quickly configure this for our specific microservice:
 
-* Edit *myherodata/charts/python/values.yaml* and do 3 things:
+* Edit *myherodata/charts/myherodata/values.yaml* and do 3 things:
 1. Replace the default service.internalPort from 8080 to 5000, which is the port defined in our Dockerfile. 
-2. Change service.type from *ClusterIP* to *NodePort*, so that the service is accessible from your laptop.
-3. Disable ingress access by adding the following 2 lines at the end of the file:
+2. Change service.type from *ClusterIP* to *NodePort*, so that the service is accessible from your workstation.
+3. Disable ingress access by adding the following 2 lines at the end of the file (they might already be present):
 
 ```yaml
 ingress:
   enabled: false
 ```
 
-* Edit *myherodata/charts/python/templates/deployment.yaml* to include the required environment variable under spec.template.spec.containers:
+* Edit *myherodata/charts/myherodata/templates/deployment.yaml* to include the required environment variable under spec.template.spec.containers:
 
 ```yaml
   env:
@@ -2877,7 +2880,13 @@ ingress:
       value: SecureData
 ```
 
-We are all set! Now you just need to run:
+You will need to set what is your DockerHub username, so that images can be automatically published there.
+
+```shell
+draft config set registry docker.io/<your_username>
+```
+
+__We are all set!__ Now you just need to run the following command from the main _myherodata_ directory:
 
 ```shell
 draft up
@@ -2909,7 +2918,7 @@ curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
 
 Success!
 
-As developers, let's modify our code and see how easy it is to update the deployment. Please edit *sample_heros.txt* remove one of the entries, and save the file. With any change you make to your code, you just need to issue again:
+As developers, let's modify our code and see how easy it is to update the deployment. Please edit *myhero_options.txt* remove one of the entries, and save the file. With any change you make to your code, you just need to issue again:
 
 ```shell
 draft up
@@ -2935,7 +2944,7 @@ How cool is that?!
 
 ## Telepresence
 
-[Telepresence](https://www.telepresence.io) allows you to work from your laptop like you were *inside* a remote k8s cluster. This way you can easily do *live* debugging and testing of a service locally, while it is automatically connected to a remote k8s cluster. For example you could develop on that local service and have it connnected to other remote services deployed in Production.
+[Telepresence](https://www.telepresence.io) allows you to work from your workstation like you were *inside* a remote k8s cluster. This way you can easily do *live* debugging and testing of a service locally, while it is automatically connected to a remote k8s cluster. For example you could develop on that local service and have it connnected to other remote services deployed in Production.
 
 Let's give it a try to see how it works.
 
@@ -2950,7 +2959,7 @@ When you are ready you can try Telepresence in a couple of different ways:
 
 ### Additional deployment
 
-In the first case you could run an additional container locally, and have full connectivity to the remote cluster, as if it were actually there. Let's try with *Alpine* and make it interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our laptop. But with Telepresence we can do it!
+In the first case you could run an additional container locally, and have full connectivity to the remote cluster, as if it were actually there. Let's try with *Alpine* and make it interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our workstation. But with Telepresence we can do it!
 
 Start by running Alpine with Telepresence:
 
@@ -2971,9 +2980,9 @@ As you can see the additional Alpine deployment can query existing microservices
 
 ### Swap deployments
 
-For the second case Telepresence allows you to replace an existing remote deployment in your k8s cluster, with a local one in your laptop where you can work **live**.
+For the second case Telepresence allows you to replace an existing remote deployment in your k8s cluster, with a local one in your workstation where you can work **live**.
 
-We will replace the *myhero-ui* microservice running in your k8s cluster with a new *myhero-ui* service deployed locally in your laptop.
+We will replace the *myhero-ui* microservice running in your k8s cluster with a new *myhero-ui* service deployed locally in your workstation.
 
 Before running the new local deployment please find out what is the public IP address assigned to *myhero-app* in your k8s cluster (you will need it as a parameter when you run the new *myhero-ui*):
 
@@ -2990,7 +2999,7 @@ telepresence --swap-deployment myhero-ui --expose 80 --docker-run -p=80 -v $(pwd
 
 Parameters indicate what is the port used by the remote deployment (*-expose*), what port uses the local container (*-p*), mapping of the application directory from the local host to the container, required environment variables (*myhero-app* URL or public address, and shared private key), and finally your *myhero-ui* image.
 
-You will probably be asked by your laptop password to allow the creation of a new local container. And finally the terminal will start logging your local *myhero-ui* execution.
+You will probably be asked by your workstation password to allow the creation of a new local container. And finally the terminal will start logging your local *myhero-ui* execution.
 
 Open a new terminal and check the public IP address of your *myhero-ui* service:
 
@@ -3040,7 +3049,7 @@ docker build -t <your_DockerHub_user>/myhero-ui
 docker push <your_DockerHub_user>/myhero-ui
 ```
 
-When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your laptop password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
+When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your workstation password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
 
 ## Okteto
 
@@ -3069,18 +3078,7 @@ $ export myhero_app_server=<your_api_url>
 $ export myhero_app_key=<your_key_to_communicate_with_app_server>
 ```
 
-Then we will have okteto automatically detect the programming language used in the repo, and generate the required manifests based on it. Please make sure to answer __n__ when asked if you would like to create a Kubernetes deployment manifest. We do not need it, because we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. We could also create a different deployment and work in parallel with the production one.
-
-```
-$ okteto create
-JavaScript detected in your source. Recommended image for development: okteto/node:11
-Which docker image do you want to use for your development environment? [okteto/node:11]:
-
-Create a Kubernetes deployment manifest? [y/n]: n
- ✓  Cloud native environment created
-```
-
-Okteto will automatically create the new `okteto.yml` manifest, specifying the deployment target, working directory, port forwarding and some scripts.
+Okteto will automatically detect the programming language used in the repo and create the new `okteto.yml` manifest, specifying the deployment target, working directory, port forwarding and some scripts.
 
 We will need to make some changes to make that file work in our setup:
 
@@ -3088,7 +3086,7 @@ We will need to make some changes to make that file work in our setup:
 * Configure it to automatically install and start the code, including the following `command: ["yarn", "start"]`
 * Port mapping: if you take a look at our front-end's `package.json` file, you will see it starts an HTTP server in port 8000, so we should change the mapping from `3000:3000` to `3000:8000`
 
-For your convenience the _myhero-ui_ repo includes an already modified manifest you can use for this demo.
+For the microservice deployment we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. We could also create a different deployment and work in parallel with the production one. For your convenience the _myhero-ui_ repo includes an already modified manifest you can use for this demo.
 
 Now you should be good to activate your cloud native development environment.
 
@@ -3135,7 +3133,7 @@ Developers can now easily test how their software changes behave when deployed a
 Once you get over this overwhelming and amazing experience, you may disable your cloud native environment by pressing `Ctrl+C` and then `Ctrl+D` in your terminal window. From there you can remove your deployment and replace it with the original one, with:
 
 ```
-$ okteto down
+$ okteto down -n myhero -f okteto_myhero-ui.yml -v
 ```
 
 ## Cockpit
