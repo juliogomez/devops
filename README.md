@@ -2007,7 +2007,7 @@ Go into the *templates* directory and delete all templates in there (that we wil
 ```shell
 cd myhero/templates
 rm *
-cp ../../k8s/gce/*.yml .
+cp ../../../k8s/gce/*.yml .
 ```
 
 Now go out of that directory and create *myhero* helm chart, and you will get a *myhero-0.1.0.tgz* file:
@@ -2176,7 +2176,7 @@ Refresh your browser and you will notice now the list of available superheroes i
 
 This way Istio allows us to insert artificial faults in our microservices, and test how those faults reflect in the overall application.
 
-Remove the artifically injected fault:
+Remove the artificially injected fault:
 
 ```
 kubectl apply -f 0-app_initial_status.yml
