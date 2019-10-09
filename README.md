@@ -1222,12 +1222,12 @@ Then you need to provide MetalLB with a configuration file. You can download a t
 wget https://raw.githubusercontent.com/google/metallb/master/manifests/example-layer2-config.yaml
 ```
 
-Now edit that *example-arp-config.yaml* file and change the block of IP addresses you would like MetalLB to manage (in our case 192.168.1.240/28). Please make sure to configure your home router DHCP server to **not** allocate IP addresses from that block.
+Now edit that *example-layer2-config.yaml* file and change the block of IP addresses you would like MetalLB to manage (in our case 192.168.1.240/28). Please make sure to configure your home router DHCP server to **not** allocate IP addresses from that block.
 
 Apply the resulting configuration file:
 
 ```shell
-kubectl apply -f example-arp-config.yaml
+kubectl apply -f example-layer2-config.yaml -n metallb-system
 ```
 
 You can check the logs with:
@@ -1456,7 +1456,7 @@ But yes, that's a good and easy way to deploy it. So let's start by taking a loo
 
 <center><src="http://ia.media-imdb.com/images/M/MV5BMTg4NzEyNzQ5OF5BMl5BanBnXkFtZTYwNTY3NDg4._V1._CR24,0,293,443_SX214_AL_.jpg"></center>
 
-![Kubernetes Dashboard](https://github.com/kubernetes/dashboard/blob/master/docs/dashboard-ui.png?raw=true "Kubernetes Dashboard")
+![Kubernetes Dashboard](https://github.com/kubernetes/dashboard/blob/master/docs/images/dashboard-ui.png?raw=true "Kubernetes Dashboard")
 
 Instead of describing it, let's quickly deploy it and you will see what it offers.
 
