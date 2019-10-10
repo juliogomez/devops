@@ -704,7 +704,7 @@ From the hardware perspective it is quite straight-forward, as you only need to 
 
 Now for the software we need to run a number of tasks, some of them on all nodes but some of them only on certain ones, so please pay attention to the following instructions. Many thanks to [Carlos](https://twitter.com/carlosedp) for his guidance on k8s over ARM.
 
-**For all nodes**
+__For all nodes__
 
 * Flash the microSD card with a Raspbian image. You may go [here](https://downloads.raspberrypi.org/raspbian_lite/images/) and download the latest version. Then download [Etcher](https://etcher.io/), install it in your workstation and flash your card with the Raspbian image you just downloaded. As long as SSH is disabled by default you would not be able to access your RPi unless you used a USB keyboard and HDMI monitor. Luckily there is a workaround in case you do not have any of these: once your card is flashed, access it from a terminal window and create an empty file called *ssh (in Mac you may just run `touch ssh` from your terminal). This will allow you to run a *headless* install (without terminal and keyboard) of your RPi. Insert the microSD card in the RPi and power it. Connect your workstation to a port in the switch and run: 
 
@@ -780,7 +780,86 @@ EOT
   sudo reboot
   ```
 
-* Create another script to install Docker, add Kubernetes repo, disable swap memory and install *kubeadm*:
+* From your workstation check if you have an SSH key:
+
+```shell
+ls -l ~/.ssh/id_rsa.pub
+```
+
+* If there is no file there, you should generate an SSH key:
+
+```shell
+ssh-keygen
+```
+
+* Once you have it, please copy your SSH key to all nodes, so that you can SSH into them without any password interaction (this will also be needed if you want to install kubernetes the _easy_ way - see next section):
+
+```shell
+ssh-copy-id pi@192.168.1.100
+ssh-copy-id pi@192.168.1.101
+ssh-copy-id pi@192.168.1.102
+ssh-copy-id pi@192.168.1.103
+```
+
+Moving forward to the next step, there are 2 ways of installing kubernetes in your cluster: the _easy_ way and the _hard_ way. The first one is quick and painless, while the second one is harder and gives you more insight into how it actually works. It's up to you to decide which path you would like to follow.
+
+### Installing Kubernetes the _easy_ way
+
+[k3s](https://k3s.io/) is an easy-to-install fully-compliant lightweight kubernetes distribution (40MB single binary and 512MB RAM) optimized for ARM architectures, like our Raspberry Pi setup. It does not include several heavy components that might not really necessary in a common setup, like legacy features, embedded plugins, and other things like... Docker. Yes, you read well. It does not include Docker. What!?! Well, it includes a better option: a low-level component called [containerd](https://containerd.io/), much lighter that Docker.
+
+To make installation as simple and quick as possible we will use a tool called [k3sup](https://k3sup.dev/). So, let's get started with the installation by running the following steps from your workstation.
+
+First you need to install `k3sup`:
+
+```shell
+curl -sLS https://get.k3sup.dev | sh
+```
+
+Then you can install k3s in your master RPi node (ie. with IP 192.168.1.100):
+
+```shell
+k3sup install --ip 192.168.1.100 --user pi
+```
+
+Save the `kubeconfig` file in your local directory, and start using it (make sure specify the complete path to the file):
+
+```shell
+export KUBECONFIG=~/Downloads/kubeconfig
+```
+
+In a minute you should be able to see your kubernetes master node up and ready:
+
+```shell
+kubectl get nodes
+```
+
+__wow__, that was quick, huh?
+
+Let's now configure the rest of RPi boards as worker nodes, by specifying their IP addresses (192.168.1.101-103) and the master node IP (192.168.1.100):
+
+```shell
+k3sup join --ip 192.168.1.101 --server-ip 192.168.1.100 --user pi
+k3sup join --ip 192.168.1.102 --server-ip 192.168.1.100 --user pi
+k3sup join --ip 192.168.1.103 --server-ip 192.168.1.100 --user pi
+```
+
+In a minute you should see all of them up and running:
+
+```shell
+kubectl get nodes
+```
+
+That's all... if you type fast you can go from ZERO to a configured kubernetes cluster in 30 seconds.
+
+THIS has to be the definition of __automagical__... so cool!!!
+
+On top of it, k3s also includes [traefik](https://traefik.io/) installed by default, so that you don't need to install a bare-metal load-balancer nor an ingress controller. Everything is there and ready for you to use!
+
+### Installing Kubernetes the _hard_ way
+
+__For all your nodes__
+
+* Create a script to install Docker, add Kubernetes repo, disable swap memory and install *kubeadm*:
 
   ```shell
   vi init.sh
@@ -824,7 +903,7 @@ EOT
   sudo reboot
   ```
 
-**Only on the MASTER node**
+__Only on the MASTER node__
 
 * Create a configuration file to change the time required to reschedule a pod from a lost node to 10s (*pod-eviction-timeout*), and also to change the time a node can be unresponsive to 10s (*node-monitor-grace-period*)
 
@@ -870,7 +949,7 @@ EOT
   kubectl apply -f https://git.io/weave-kube-1.6
   ```
 
-**Only on WORKER nodes**
+__Only on WORKER nodes__
 
 * Configure your *worker* nodes to join the Kubernetes cluster with the output you obtained from the *master* node and saved in your workstation:
 
@@ -1526,7 +1605,7 @@ Success! Your dashboard is now accessible from the internal network with the URL
 
 ( Optional: if you are bold and have access to your own DNS service, you could try and create an *external* ingress resource, to make the dashboard accessible from Internet. It should be very similar to what we did for *myhero* external accessibility in previous sections of this document. )
 
-Go through the dashboard and see the multiple benefits it offer. But you will soon notice that there is no information on the cluster itself and its nodes. You cannot find those nice graphs on CPU and memory consumption. That is because you need [Heapster](https://github.com/kubernetes/heapster/) to monitor cluster resources usage. 
+Go through the dashboard and see the multiple benefits it offer. But you will soon notice that there is no information on the cluster itself and its nodes. You cannot find those nice graphs on CPU and memory consumption. That is because you need [Heapster](https://github.com/kubernetes/heapster/) to monitor cluster resources usage (note: Heapster has been deprecated since this section was first written, and replaced by [Metrics server](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-metrics-pipeline/#metrics-server), so it is here for reference on how the PV+Storageclass are configured. Metrics server installation and usage is described further down this doc).
 
 Heapster needs [InfluxDB](https://github.com/kubernetes/heapster/blob/master/docs/influxdb.md) as a backend, and in time InfluxDB needs [persistent volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) (PV) to be deployed. PVs are *consumed* by applications, like InfluxDB, via persistent volume claims (PVC). PVs are provisioned by the system admin and *offered* to applications, that in time *claim* them when required.
 
@@ -1650,6 +1729,42 @@ kubectl get pods -n kube-system
 ```
 
 After some minutes refresh your browser while pointing to the k8s dashboard and you will start seeing those nice cluster resource graphs!
+
+As mentioned before, Heapster has been deprecated and replaced by [Kubernetes Metrics server](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-metrics-pipeline/#metrics-server), a cluster-wide aggregator of resource usage data. It provides access to CPU & RAM usage per node and per pod, via CLI or API.
+
+To install it please clone the required repo into your workstation:
+
+```shell
+git clone https://github.com/kubernetes-incubator/metrics-server.git
+```
+
+Then edit the deployment file and replace the default image name with `k8s.gcr.io/metrics-server-arm:v0.3.2`:
+
+```shell
+vi metrics-server/deploy/1.8+/metrics-server-deployment.yaml
+```
+
+You are now ready to apply the required manifests:
+
+```shell
+kubectl apply -f metrics-server/deploy/1.8+ -n kube-system
+```
+
+Once the pod is ready you will be able access the info via CLI:
+
+```shell
+kubectl top node
+kubectl top pod
+```
+
+Or you can also browse its API, as you would with any other kubernetes API:
+
+```shell
+kubectl get --raw /apis/metrics.k8s.io/v1beta1/nodes | jq .
+kubectl get --raw /apis/metrics.k8s.io/v1beta1/pods | jq .
+```
+
+(note: you will need [jq](https://stedolan.github.io/jq/) installed in your system, ie. `brew install jq` in your Mac)
 
 ### Monitoring your cluster and applications
 
