@@ -805,9 +805,11 @@ Moving forward to the next step, there are 2 ways of installing kubernetes in yo
 
 ### Installing Kubernetes the _easy_ way
 
-[k3s](https://k3s.io/) is an easy-to-install fully-compliant lightweight kubernetes distribution (40MB single binary and 512MB RAM) optimized for ARM architectures, like our Raspberry Pi setup. It does not include several heavy components that might not really necessary in a common setup, like legacy features, embedded plugins, and other things like... Docker. Yes, you read well. It does not include Docker. What!?! Well, it includes a better option: a low-level component called [containerd](https://containerd.io/), much lighter that Docker.
+[k3s](https://k3s.io/) is an easy-to-install, lightweight but fully-compliant, kubernetes distribution (40MB single binary and 512MB RAM) optimized for ARM architectures, like our RPi setup. It does not include several heavy components that might not be really necessary in a common setup, like legacy features, embedded plugins, and other things like... Docker. Yes, you read well. It does not include Docker. What!?! Well, it includes a better option: a low-level component called [containerd](https://containerd.io/), much lighter that Docker.
 
-To make installation as simple and quick as possible we will use a tool called [k3sup](https://k3sup.dev/). So, let's get started with the installation by running the following steps from your workstation.
+Sounds like a great option for our small cluster, right? Time to get our hands dirty!
+
+To make installation as simple and quick as possible we will use a tool called [k3sup](https://k3sup.dev/). So, let's get started by running the following steps from your workstation.
 
 First you need to install `k3sup`:
 
@@ -835,7 +837,7 @@ kubectl get nodes
 
 __wow__, that was quick, huh?
 
-Let's now configure the rest of RPi boards as worker nodes, by specifying their IP addresses (192.168.1.101-103) and the master node IP (192.168.1.100):
+Let's now configure the rest of RPi boards as worker nodes, by specifying their IP addresses (192.168.1.101-103) and the master node IP address (192.168.1.100):
 
 ```shell
 k3sup join --ip 192.168.1.101 --server-ip 192.168.1.100 --user pi
@@ -849,11 +851,11 @@ In a minute you should see all of them up and running:
 kubectl get nodes
 ```
 
-That's all... if you type fast you can go from ZERO to a configured kubernetes cluster in 30 seconds.
+__That's all__... if you are a fast typer you can go from ZERO to a configured kubernetes cluster in 30 seconds.
 
 THIS has to be the definition of __automagical__... so cool!!!
 
-On top of it, k3s also includes [traefik](https://traefik.io/) installed by default, so that you don't need to install a bare-metal load-balancer nor an ingress controller. Everything is there and ready for you to use!
+On top of it, k3s also includes [traefik](https://traefik.io/) installed by default, so you don't need to install a bare-metal load-balancer, nor an ingress controller. Everything is included and ready for you to use!
 
 ### Installing Kubernetes the _hard_ way
 
