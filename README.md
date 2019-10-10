@@ -743,28 +743,28 @@ __For all nodes__
 
   and insert the following content:
 
-```shell
-#!/bin/sh
+  ```shell
+  #!/bin/sh
 
-hostname=$1
-ip=$2 # should be of format: 192.168.1.100
-dns=$3 # should be of format: 192.168.1.1
+  hostname=$1
+  ip=$2 # should be of format: 192.168.1.100
+  dns=$3 # should be of format: 192.168.1.1
 
-# Change the hostname
-sudo hostnamectl --transient set-hostname $hostname
-sudo hostnamectl --static set-hostname $hostname
-sudo hostnamectl --pretty set-hostname $hostname
-sudo sed -i s/raspberrypi/$hostname/g /etc/hosts
+  # Change the hostname
+  sudo hostnamectl --transient set-hostname $hostname
+  sudo hostnamectl --static set-hostname $hostname
+  sudo hostnamectl --pretty set-hostname $hostname
+  sudo sed -i s/raspberrypi/$hostname/g /etc/hosts
 
-# Set the static ip
+  # Set the static ip
 
-sudo cat <<EOT >> /etc/dhcpcd.conf
-interface eth0
-static ip_address=$ip/24
-static routers=$dns
-static domain_name_servers=8.8.8.8
-EOT
-```
+  sudo cat <<EOT >> /etc/dhcpcd.conf
+  interface eth0
+  static ip_address=$ip/24
+  static routers=$dns
+  static domain_name_servers=8.8.8.8
+  EOT
+  ```
 
 * Run the following script:
 
@@ -782,24 +782,24 @@ EOT
 
 * From your workstation check if you have an SSH key:
 
-```shell
-ls -l ~/.ssh/id_rsa.pub
-```
+  ```shell
+  ls -l ~/.ssh/id_rsa.pub
+  ```
 
 * If there is no file there, you should generate an SSH key:
 
-```shell
-ssh-keygen
-```
+  ```shell
+  ssh-keygen
+  ```
 
 * Once you have it, please copy your SSH key to all nodes, so that you can SSH into them without any password interaction (this will also be needed if you want to install kubernetes the _easy_ way - see next section):
 
-```shell
-ssh-copy-id pi@192.168.1.100
-ssh-copy-id pi@192.168.1.101
-ssh-copy-id pi@192.168.1.102
-ssh-copy-id pi@192.168.1.103
-```
+  ```shell
+  ssh-copy-id pi@192.168.1.100
+  ssh-copy-id pi@192.168.1.101
+  ssh-copy-id pi@192.168.1.102
+  ssh-copy-id pi@192.168.1.103
+  ```
 
 Moving forward to the next step, there are 2 ways of installing kubernetes in your cluster: the _easy_ way and the _hard_ way. The first one is quick and painless, while the second one is harder and gives you more insight into how it actually works. It's up to you to decide which path you would like to follow.
 
@@ -1765,6 +1765,21 @@ kubectl get --raw /apis/metrics.k8s.io/v1beta1/pods | jq .
 ```
 
 (note: you will need [jq](https://stedolan.github.io/jq/) installed in your system, ie. `brew install jq` in your Mac)
+
+If you would rather use HTTP to browse the API (ie. with `curl` or `wget`), you can always use `kubectl proxy` as a reverse proxy to help locating the API server and authenticating:
+
+```shell
+kubectl proxy --port=8080 &
+curl http://localhost:8080/apis/metrics.k8s.io/v1beta1/nodes
+curl http://localhost:8080/apis/metrics.k8s.io/v1beta1/pods
+````
+
+Once done you can kill the kubectl proxy:
+
+```shell
+ps -ef | grep "kubectl proxy"
+kill -9 <pid>
+```
 
 ### Monitoring your cluster and applications
 
