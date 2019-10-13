@@ -24,7 +24,8 @@
         - [Additional tools](#additional-tools)
         - [Architecture-specific images](#architecture-specific-images)
         - [Deploying your application](#deploying-your-application)
-        - [What about Web and WebEx Teams?](#what-about-web-and-webex-teams)
+        - [Bare-metal LoadBalancer and Ingress Controller](#bare-metal-loadbalancer-and-ingress-controller)
+        - [Ingress resources](#ingress-resources)
         - [Now we need queues](#now-we-need-queues)
         - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
         - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
@@ -805,7 +806,7 @@ Moving forward to the next step, there are 2 ways of installing kubernetes in yo
 
 ### Installing Kubernetes the _easy_ way
 
-[k3s](https://k3s.io/) is an easy-to-install, lightweight but fully-compliant, kubernetes distribution (40MB single binary and 512MB RAM) optimized for ARM architectures, like our RPi setup. It does not include several heavy components that might not be really necessary in a common setup, like legacy features, embedded plugins, and other things like... Docker. Yes, you read well. It does not include Docker. What!?! Well, it includes a better option: a low-level component called [containerd](https://containerd.io/), much lighter that Docker.
+[k3s](https://k3s.io/) is an easy-to-install, lightweight but fully-compliant, kubernetes distribution (40MB single binary and 512MB RAM) optimized for ARM architectures, like our RPi setup. It does not include several heavy components that might not be really necessary in a common setup, like legacy features, embedded plugins, and other things like... Docker. Yes, you read well. It does not include Docker. What!?! Well, it includes a better option: a low-level component called [containerd](https://containerd.io/), much lighter than Docker.
 
 Sounds like a great option for our small cluster, right? Time to get our hands dirty!
 
@@ -856,6 +857,8 @@ __That's all__... if you are a fast typer you can go from ZERO to a configured k
 THIS has to be the definition of __automagical__... so cool!!!
 
 On top of it, k3s also includes [traefik](https://traefik.io/) installed by default, so you don't need to install a bare-metal load-balancer, nor an ingress controller. Everything is included and ready for you to use!
+
+Note: traefik's default configuration will assign your ingress resource the IP address of your master node (ie. 192.168.1.100).
 
 ### Installing Kubernetes the _hard_ way
 
@@ -1239,7 +1242,7 @@ curl -X GET -H "key: SecureApp" http://worker-01.local:31238/v2/results
 
 *myhero-app* also works well!
 
-### What about Web and WebEx Teams?
+### Bare-metal LoadBalancer and Ingress Controller
 
 If you remember our deployment of *myhero* on the development workstations, you already know by now that, apart from *myhero-ui*, both your *myhero-app* and *myhero-spark* need to be reachable from outside the local environment.
 
@@ -1264,7 +1267,7 @@ Now we need something beyond that point. We need to expose specific *services* f
 
 We could achieve external connectivity in a similar way to what we did earlier. For each one of these services we could create yet another DDNS hostname / arbitrary port, and map it to our home router WAN IP / destination port. We would then create additional *virtual servers* in our home router and map  destination ports to the IP address of one k8s specific node and *NodePorts* where our services are available.
 
-First problem with this approach is the every time any of our services restarted *NodePorts* would change, and we would have to reconfigure our home router again and again. Second problem is that mapping goes against a *single* node in the k8s cluster, so in case *that* node failed connectivity would be lost, even though the service could still be perfectly healthy running on pods in other nodes (as a scheduler would typically do). So definitely not the most optimal solution.
+The first problem with this approach is that every time any of our services restarted *NodePorts* would change and we would have to reconfigure our home router again and again. The second problem is that the defined static mapping goes against a *single* node in the k8s cluster. So in case *that* node failed, connectivity would be lost, even though the service could still be perfectly healthy running on pods in other nodes (as a scheduler would typically do). So definitely not the most optimal solution.
 
 Kubernetes [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) manages external access to different services inside a cluster, so it is the perfect solution for this scenario. Not only it provides load-balancing to pods inside a service, but it can perform name-based virtual hosting as well. This capability maps multiple host names to the same IP address, and then to different services inside the cluster.
 
@@ -1272,18 +1275,20 @@ Kubernetes [Ingress](https://kubernetes.io/docs/concepts/services-networking/ing
 <img src="./images/k8s-ingress.png">
 </p>
 
-In order for *ingress* resources to run in our cluster we will need to install an Ingress controller. There are several options available, public (ie. GCE) and private (ie. Nginx), so we will use our personal preference: [Traefik](https://traefik.io). It is an ingress controller that can act as a reverse proxy/loadbalancer on the service layer of Kubernetes. Traefik exposes services to the outside world.
+In order for *ingress* resources to run in our cluster we will need to install an Ingress controller. There are several options available, native from public Cloud providers (ie. GCE) or private to be deployed on-prem (ie. Nginx), so we will use our personal preference: [Traefik](https://traefik.io). It is an ingress controller that can act as a reverse proxy/loadbalancer on the service layer of Kubernetes. Traefik exposes services to the outside world.
 
-But Traefik needs to be deployed itself as a *LoadBalancer* service. [LoadBalancers](https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer) provide an external IP that will load-balance to all pods belonging to that specific service, no matter what node they reside in. Unfortunately they are only implemented by Cloud Providers (like GCP, AWS or Azure), so configuring it in our on-prem setup would not provide any additional benefit because we would never get any public IP address. If you think about it your nodes reside in a LAN segment so they could never receive a *public* IP address.
+But Traefik needs to be deployed itself as a kubernetes *LoadBalancer* service. [LoadBalancers](https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer) use an external IP that will load-balance to all pods belonging to that specific service, no matter what node they reside in. This service work automatically when working with public Cloud Providers (like GCP, AWS or Azure), but configuring it in our on-prem setup would not provide any additional benefit because we would never get any public IP address. If you think about it your nodes reside in a LAN segment so they could never receive a *public* IP address.
 
-But what if we could use *LoadBalancer* to obtain a *private* IP address that actually load-balances to every pod in our service? That is actually what Traefik needs to run in our setup.
+But what if we could use a *LoadBalancer* to obtain a *private* IP address that actually load-balances to every pod in our service? That is actually what Traefik needs to run in our setup.
 
 [MetalLB](https://metallb.universe.tf) provides us with exactly that. It is a LoadBalancer implementation for bare metal k8s clusters. You define a pool of IP address it can serve, and it automatically load-balances all traffic addressed to them.
+
+(Note: if you installed your kubernetes cluster _the easy way_ with `k3sup` you don't need to install MetalLB nor Traefik, as k3s includes a pre-configured Traefik installation by default. Please go ahead and jump to the next section!)
 
 Let's install MetalLB in your cluster. Connect to your master node and run:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.7.3/manifests/metallb.yaml
+kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.8.1/manifests/metallb.yaml
 ```
 
 It installs as a set of pods (a single controller, and then one speaker per worker node) you can monitor with:
@@ -1344,6 +1349,8 @@ traefik-ingress-service   LoadBalancer   10.111.243.177   192.168.1.250   80:300
 ```
 
 As you can see your LoadBalancer service (*traefik-ingress-service*) has been allocated the requested IP address. That means all traffic going to that IP will be received by Traefik, so that it can load-balance that traffic to the configured services.
+
+### Ingress resources
 
 Now, how do we configure our services to be load-balanced by Traefik? We need to create an Ingress resource, based on the content of *k8s_myhero_ingress.yml*
 
@@ -1466,7 +1473,7 @@ curl http://<spark-hostname>:<home_router_port>/hello/<your_WebEx_Teams_email_ad
 
 You will receive a welcome message from the bot asking if you would like to vote, and you will be able to interact with it using */options*, */vote* and */results*.
 
-Everything is working! We can go home now... or not really?
+Everything is working! We can go home now... or _not really_?
 
 ### Now we need queues
 
@@ -1732,7 +1739,7 @@ kubectl get pods -n kube-system
 
 After some minutes refresh your browser while pointing to the k8s dashboard and you will start seeing those nice cluster resource graphs!
 
-As mentioned before, Heapster has been deprecated and replaced by [Kubernetes Metrics server](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-metrics-pipeline/#metrics-server), a cluster-wide aggregator of resource usage data. It provides access to CPU & RAM usage per node and per pod, via CLI or API.
+As mentioned before, Heapster has been deprecated and replaced by [Kubernetes Metrics server](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-metrics-pipeline/#metrics-server), a cluster-wide aggregator of resource usage data. It provides access to CPU & RAM usage per node and per pod, via CLI and API.
 
 To install it please clone the required repo into your workstation:
 
@@ -1868,7 +1875,87 @@ When all deployments are completed you may access Grafana from its ingress URL, 
 
 You may find some additional custom Grafana dashboards for your setup in the `grafana-dashboards` directory. These are really useful for a RPi cluster, as they provide visibility about critical system metrics. Import them from the Grafana GUI with the `+` sign and then `import` - `Upload .json File`.
 
-Congratulations!!! If you got here you have gone a looong way since we started this tutorial.
+### Taking your cluster on the road
+
+Considering you built a tiny, banana-sized kubernetes cluster, you might be interested in maybe taking it with you _on the road_. And although bringing it on holiday with your family is definitely _not recommended_, there might be other occasions when having your cluster with you could be _joyful_.
+
+Let's say that maybe you would like to show it to a colleague in the office, or bring it to an event and brag about it. The current architecture connects to the _outside world_ using just one Ethernet cable from the USB-powered switch to your home router, so you could think of just unplugging it, putting everything in a case, and once you arrive to your destination connect it to the network there, cross your fingers and hope that everything works.
+
+Unfortunately __this won't work__... and for good reasons.
+
+__A)__ At home you were [configuring your upstream home router](https://github.com/juliogomez/devops#external-connectivity) to map _<WAN_IP>:\<WAN_port>_ to _<LAN_IP>:\<LAN_port>_ for each microservice that needed to be accessible from Internet. At the office you don't have any control at all over the upstream router, so you cannot perform this kind of configuration anymore. And without it your application will not be accessible from Internet.
+
+__B)__ The IP addresses we used for your cluster nodes were based on the addresses available at your home LAN segment (ie. 192.168.1.0/255). Please remember we could not use DHCP for our master & worker nodes, so the moment you connect your cluster to the office LAN segment, there will be a different addressing scheme that will not accept your pre-defined static IPs.
+
+But what's the point of having something as cool as your cluster and not being able to _show off_? There __has__ to be a solution...
+
+And there is.
+
+For point __A)__ you will have to solve __2 challenges__:
+
+1. How to get traffic from Internet to your cluster.
+2. How to _fan out_ traffic arriving to your cluster, so that it goes to the required specific microservice.
+
+For __challenge #1__ there are several different online services that offer you this capability of forwarding traffic towards a private local environment:
+
+* [ngrok](https://ngrok.com/): the most famous and reliable. It even has a GUI, but its free tier does not allow for custom domain names, and needs you to install an agent in your cluster node.
+* [local tunnel](https://localtunnel.github.io/www/): it also needs you to install a local agent in your cluster node.
+* [localhost.run](http://localhost.run/): agent-less, but does not allow for custom domain names.
+* [serveo](https://serveo.net/): agent-less, and allows for custom domain names in the free tier... our choice! Unfortunately it is quite unreliable, so be ready for some service interruptions... but what's life without some risks?
+
+Let's use serveo to create reverse SSH tunnels for every microservice that needs to be accessible from Internet. Specifically for our example application (_myhero_) you need the following services to be reachable: _ui_, _spark_ and _app_. For each one of them you will need to create a tunnel, specifying:
+
+* Domain name URL (ie. _ui_julio.serveo.net_) and port (ie. _80_) you would like to use to access your microservice.
+* Destination IP address and port, that needs to be reachable from the node where the tunnel is created (in this case from your master node). As long as every kubernetes _NodePort_ service can be reached from _any_ of the worker/master nodes, you might decide to use the IP of _any_ of your nodes. And for the port you would use port 80, as per the available microservices:
+
+```console
+$ kubectl get services
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kubernetes     ClusterIP   10.43.0.1       <none>        443/TCP          3d17h
+myhero-app     NodePort    10.43.188.136   <none>        80:31522/TCP     3d17h
+myhero-data    NodePort    10.43.18.39     <none>        80:31747/TCP     3d17h
+myhero-mosca   NodePort    10.43.111.11    <none>        1883:30704/TCP   3d17h
+myhero-spark   NodePort    10.43.188.95    <none>        80:32753/TCP     3d17h
+myhero-ui      NodePort    10.43.8.88      <none>        80:32728/TCP     3d17h
+```
+
+From your master node you will have to create one tunnel for each microservice, specifying the _\<URL>:\<port>_ (ie. _app_julio:80_) and port 80 in your master node as _<dest_IP>:\<port>_ (ie. _192.168.1.100:80_):
+
+```shell
+ssh -R ui_julio:80:192.168.1.100:80 serveo.net
+ssh -R spark_julio:80:192.168.1.100:80 serveo.net
+ssh -R app_julio:80:192.168.1.100:80 serveo.net
+```
+
+These commands will create 3 tunnels from the serveo servers to your cluster master node, so that all traffic going to the following URLs is sent to port 80 in your master node:
+
+* ui_julio.serveo.net
+* spark_julio.serveo.net
+* app_julio.serveo.net
+
+__But wait...__ that means you will be sending traffic going to _three_ different microservices towards the __same destination IP__ (192.168.1.100) __and port__ (80). _How will your cluster be able to determine what traffic should go to each specific microservice?_
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/iHe7mA9M9SsyQ/giphy.gif">
+</p>
+
+And that takes us exactly to __challenge #2__: how can we _fan out_ traffic going to a single _<dest_IP>:\<port>_ towards different microservices? The answer is __[ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)__. As we did before, you will need to define an ingress resource that specifies where traffic should go, depending on the destination URL. Second challenge __solved!__
+
+For point __B)__ we will need to find a way to isolate our cluster, so that it does not depend on the upstream router IP addressing scheme. Ideally you would like your cluster LAN segment to be private, and not shared with the office environment, so the best way to accomplish this is... adding a __router__ to our setup! It will be able to _route_ between your private LAN segment and the office one, allowing you to manage your cluster IP addresses independently from the office network.
+
+Of course, the main requirement for this router will be do what we need it to do, but also... to be _tiny_. There are many different options, but I chose [this one](https://www.amazon.es/dp/B0777L5YN6) (40g, 5x5x2 cm).
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/RJo6Uas77p4zzcEj5I/giphy.gif">
+</p>
+
+The Ethernet cable previously going from your cluster switch to the home router, will now be connected to your new _tiny_ router. And the WAN port from the _tiny_ router will go to the upstream router. 
+
+The great thing about this setup is that, as long as the cluster LAN segment does not overlap the upstream router LAN subnet, __it will work no matter where you are!__
+
+Everything is ready! You can now take your cluster with you on any occasion, ain't that the best news?
+
+__Congratulations!!! If you got here you have gone a looong way since we started this tutorial.__
 
 ## Public Cloud deployment
 
