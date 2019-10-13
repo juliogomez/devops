@@ -1878,21 +1878,21 @@ You may find some additional custom Grafana dashboards for your setup in the `gr
 
 ### Taking your cluster on the road
 
-Considering you built a tiny, banana-sized kubernetes cluster, you might be interested in maybe taking it with you _on the road_. And although bringing it on holiday with your family is definitely _not recommended_, there might be other occasions when having your cluster with you could be _joyful_.
+Considering you built a tiny, banana-sized kubernetes cluster, you might be interested in maybe taking it with you _on the road_. And although bringing it on holiday with your family is definitely _not recommended_, there might be other occasions when having your cluster with you could be... _joyful_.
 
-Let's say that maybe you would like to show it to a colleague in the office, or bring it to an event and brag about it. The current architecture connects to the _outside world_ using just one Ethernet cable from the USB-powered switch to your home router, so you could think of just unplugging it, putting everything in a case, and once you arrive to your destination connect it to the network there, cross your fingers and hope that everything works.
+Let's say that maybe you would like to show it to a colleague from the office, or bring it to an event and brag about it. Its current architecture connects to the _outside world_ using just one Ethernet cable from the USB-powered switch to your home router, so you could think of just unplugging it, putting everything in a case, and once you arrive to your destination connect it to the network there, cross your fingers and hope that everything works.
 
 Unfortunately __this won't work__... and for good reasons.
 
 __A)__ At home you were [configuring your upstream home router](https://github.com/juliogomez/devops#external-connectivity) to map _<WAN_IP>:\<WAN_port>_ to _<LAN_IP>:\<LAN_port>_ for each microservice that needed to be accessible from Internet. At the office you don't have any control at all over the upstream router, so you cannot perform this kind of configuration anymore. And without it your application will not be accessible from Internet.
 
-__B)__ The IP addresses we used for your cluster nodes were based on the addresses available at your home LAN segment (ie. 192.168.1.0/255). Please remember we could not use DHCP for our master & worker nodes, so the moment you connect your cluster to the office LAN segment, there will be a different addressing scheme that will not accept your pre-defined static IPs.
+__B)__ The IP addresses we used for your cluster nodes were based on the addresses available in your home LAN segment (ie. 192.168.1.0/255). Please remember we could not use DHCP for our master & worker nodes, so the moment you connect your cluster to the office LAN segment, there will be a different addressing scheme that will not accept your pre-defined static IPs.
 
 But what's the point of having something as cool as your cluster and not being able to _show off_? There __has__ to be a solution...
 
 And there is.
 
-For point __A)__ you will have to solve __2 challenges__:
+For point __A)__ we will have to solve __2 challenges__:
 
 1. How to get traffic from Internet to your cluster.
 2. How to _fan out_ traffic arriving to your cluster, so that it goes to the required specific microservice.
@@ -1902,7 +1902,7 @@ For __challenge #1__ there are several different online services that offer you 
 * [ngrok](https://ngrok.com/): the most famous and reliable. It even has a GUI, but its free tier does not allow for custom domain names, and needs you to install an agent in your cluster node.
 * [local tunnel](https://localtunnel.github.io/www/): it also needs you to install a local agent in your cluster node.
 * [localhost.run](http://localhost.run/): agent-less, but does not allow for custom domain names.
-* [serveo](https://serveo.net/): agent-less, and allows for custom domain names in the free tier... our choice! Unfortunately it is quite unreliable, so be ready for some service interruptions... but what's life without some risks?
+* [serveo](https://serveo.net/): agent-less, and allows for custom domain names in the free tier... our choice! Custom domain names will be __really__ important for our setup (more on this later). Unfortunately it is quite unreliable, so be ready for some service interruptions... but what's life without some risks?
 
 Let's use serveo to create reverse SSH tunnels for every microservice that needs to be accessible from Internet. Specifically for our example application (_myhero_) you need the following services to be reachable: _ui_, _spark_ and _app_. For each one of them you will need to create a tunnel, specifying:
 
@@ -1930,9 +1930,9 @@ ssh -R app_julio:80:192.168.1.100:80 serveo.net
 
 These commands will create 3 tunnels from the serveo servers to your cluster master node, so that all traffic going to the following URLs is sent to port 80 in your master node:
 
-* ui_julio.serveo.net
-* spark_julio.serveo.net
-* app_julio.serveo.net
+* _ui_julio.serveo.net_
+* _spark_julio.serveo.net_
+* _app_julio.serveo.net_
 
 __But wait...__ that means you will be sending traffic going to _three_ different microservices towards the __same destination IP__ (192.168.1.100) __and port__ (80). _How will your cluster be able to determine what traffic should go to each specific microservice?_
 
@@ -1940,7 +1940,7 @@ __But wait...__ that means you will be sending traffic going to _three_ differen
 <img src="https://media.giphy.com/media/iHe7mA9M9SsyQ/giphy.gif">
 </p>
 
-And that takes us exactly to __challenge #2__: how can we _fan out_ traffic going to a single _<dest_IP>:\<port>_ towards different microservices? The answer is __[ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)__. As we did before, you will need to define an ingress resource that specifies where traffic should go, depending on the destination URL. Second challenge __solved!__
+And that takes us exactly to __challenge #2__: how can we _fan out_ traffic going to a single _<dest_IP>:\<port>_ towards different microservices? The answer is __[ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)__. As we did before, you will need to define an ingress resource that specifies where traffic should go, depending on the destination URL. That definition needs to include the URL for each destination microservice, and it will be applied when the ingress resource is created. This is why we were so interested in _custom domain names_, so that we did not have to change them everytime the tunnels were reset. Second challenge __solved!__
 
 For point __B)__ we will need to find a way to isolate our cluster, so that it does not depend on the upstream router IP addressing scheme. Ideally you would like your cluster LAN segment to be private, and not shared with the office environment, so the best way to accomplish this is... adding a __router__ to our setup! It will be able to _route_ between your private LAN segment and the office one, allowing you to manage your cluster IP addresses independently from the office network.
 
@@ -1954,7 +1954,7 @@ The Ethernet cable previously going from your cluster switch to the home router,
 
 The great thing about this setup is that, as long as the cluster LAN segment does not overlap the upstream router LAN subnet, __it will work no matter where you are!__
 
-Everything is ready! You can now take your cluster with you on any occasion, ain't that the best news?
+Everything is ready! You can now take your cluster with you on any occasion, ain't those the best news?
 
 __Congratulations!!! If you got here you have gone a looong way since we started this tutorial.__
 
