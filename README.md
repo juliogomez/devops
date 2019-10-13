@@ -29,6 +29,7 @@
         - [Now we need queues](#now-we-need-queues)
         - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
         - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
+        - [Taking your cluster on the road](#taking-your-cluster-on-the-road)
     - [Public Cloud deployment](#public-cloud-deployment)
         - [GKE setup](#gke-setup)
         - [Disable DDNS](#disable-ddns)
