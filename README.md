@@ -2132,9 +2132,13 @@ Use the following command to describe your ingress, and wait until under Annotat
 kubectl describe ingress myhero-ingress
 ```
 
-Your application is now live!
+__Your application is now live!__
 
 Just point your browser to *myhero-ui* DDNS hostname and you should be able to access it!
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/3o6Ztb6YB8qg3MvkgE/giphy.gif">
+</p>
 
 ### Cluster management
 
