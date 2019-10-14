@@ -223,6 +223,10 @@ As you can see that *docker-compose.yml* file specifies a number of parameters o
 * *volumes* maps a directory in your workstation (in this case the local directory, identified by ".") to a directory inside the container (/app/data in this case). This mapping provides a simple method for data persistency, as all votes will be stored by the container in its */app/data* directory, which is the same as the local directory for *myhero-data* in your workstation. No matter what happens to your *myhero-data* container, your voting data will always be available in your computer. If you kill the container and create a new one, it will still be able to access the same data, so you do not loose any of your votes.
 * *environment* defines a couple of variables we want to pass to the container. Why did we not include these values in the code itself, and that way avoid having to define them here? Because there are certain guidelines that we want to follow when developing modern software, things we have learned that work better and provide better results and improved security like in this case. You may learn about them by visiting [12factor](https://12factor.net), and you will see [number III](https://12factor.net/config) talks about how configuration values should be stored in environment variables. This helps us reusing exactly the same code in different environments (ie. dev, qa or prod), but run it differently based on environment variables. It also provides better security as you can upload your software to a public repo without including any confidential secrets or configuration. For example in this case with *myhero-data* you have cloned a public repo with all code, but we will now provide a couple of environment variables. The first one is the private shared *key* ('myhero_data_key') that other containers (like *myhero-app*) should use to interact with it. As long as this container will eventually be running in a public environment you want to make sure that its data are only available to a certain subset of other containers. This shared key provide this kind of authentication. You will see we assign it the value of a variable called *MYHERO_DATA_KEY*, which is defined in the *.env* file also available in your local directory. We have pre-populated that file with a sample key for you to use (check it out and you will see it has a value of *DevData*), but you could modify that *.env* file with your own customised value. You would just need to make sure that other containers use that same value when trying to access *myhero-data* container. For now let's leave it like this. The second environment variable defined in our *docker-compose.yml* file is 'myhero_data_dir' and we have assigned it the name of the directory where we would like the code to store all data. This parameter gives us the flexibility to later on change very easily the location where our container stores its voting data, if we need to.
 
+<p align="center"> 
+<img src="https://media.giphy.com/media/j8nXhJ1fJM0wg/giphy.gif">
+</p>
+
 0k, now that you know about *docker-compose.yml* let's explore that file we saw earlier, *Dockerfile*. As discussed it is a local file in the same *myhero-data* directory that defines how to build the required image instantiated by our container.
 
 ```dockerfile
@@ -267,6 +271,10 @@ docker-compose up
 
 * *docker-compose* will first build the image, so it will go to your Dockerfile and download the required *alpine* image to use as the baseline. You might suddenly wonder where does it download it from... and that would be a very valid question! By default *docker-compose* will download images from Docker's own public registry service for image repository, [DockerHub](https://hub.docker.com). There are several other options but this one is convenient for our setup.
 * Then it will instantiate the image to create a running container with the required port mapping, volume mapping and use of the provided environment variables.
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/fqIBaMWI7m7O8/giphy.gif">
+</p>
 
 You will notice that once you run `docker-compose up` your terminal will not accept any further input from your keyboard, while displaying the output of the whole process of creation and execution, and later *myhero-data* container logging itself. Let's leave it like that and **open a new terminal** to continue our work, while *myhero-data* is still active in the first one.
 
@@ -393,7 +401,11 @@ curl -X GET -H "key: DevApp" http://localhost:15001/v2/results
 }
 ```
 
-It works!
+__It works!__
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/Mab1lyzb70X0YiNLUj/giphy.gif">
+</p>
 
 As you can see we have had to use *DevApp* instead of *DevData*, because we are interacting with *myhero-app* instead of *myhero-data*, and as per our configuration they have different shared private keys.
 
@@ -1934,6 +1946,8 @@ These commands will create 3 tunnels from the serveo servers to your cluster mas
 * _spark_julio.serveo.net_
 * _app_julio.serveo.net_
 
+(please note you will have to modify your _myhero_ui_ and _myhero_spark_ kubernetes manifests to use these specific URLs before deploying your app)
+
 __But wait...__ that means you will be sending traffic going to _three_ different microservices towards the __same destination IP__ (192.168.1.100) __and port__ (80). _How will your cluster be able to determine what traffic should go to each specific microservice?_
 
 <p align="center"> 
@@ -1954,9 +1968,7 @@ The Ethernet cable previously going from your cluster switch to the home router,
 
 The great thing about this setup is that, as long as the cluster LAN segment does not overlap the upstream router LAN subnet, __it will work no matter where you are!__
 
-Everything is ready! You can now take your cluster with you on any occasion, ain't those the best news?
-
-__Congratulations!!! If you got here you have gone a looong way since we started this tutorial.__
+Everything is ready! You can now take your cluster with you on any occasion, __ain't those the best news?__
 
 ## Public Cloud deployment
 
