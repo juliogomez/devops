@@ -1494,7 +1494,11 @@ curl http://<spark-hostname>:<home_router_port>/hello/<your_WebEx_Teams_email_ad
 
 You will receive a welcome message from the bot asking if you would like to vote, and you will be able to interact with it using */options*, */vote* and */results*.
 
-Everything is working! We can go home now... or _not really_?
+__Everything is working! We can go home now... or _not really_?__
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/xT0BKreM8WRBBap7gc/giphy.gif">
+</p>
 
 ### Now we need queues
 
