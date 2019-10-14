@@ -1651,6 +1651,10 @@ A simple way is to use [NFS](https://en.wikipedia.org/wiki/Network_File_System) 
 
 So let's review what we are going to do: in order to have visibility about cluster resources in our k8s dashboard, we are going to deploy Heapster, that requires InfluxDB, that requires PVs, that we will offer with a StorageClass, that we will provision on a HD offered via NFS... **NICE.**
 
+<p align="center"> 
+<img src="https://images-na.ssl-images-amazon.com/images/I/513Ctxt8udL.jpg">
+</p>
+
 Obviously we need to start *backwards*, so let's start by connecting a USB hard disk to one of your k8s cluster nodes (even better if it is USB powered, so you don't need an additional power supply for it). In my case I plugged it in *worker-01*.
 
 Open a new terminal, connect to the node where you plugged the HD, and check that you can see the HD and its partitions:
