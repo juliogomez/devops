@@ -1160,6 +1160,10 @@ Now we are ready to deploy *myhero* on our MiniDC. Our Kubernetes cluster is rea
 
 Learning [Kubernetes](https://kubernetes.io) (aka *k8s*) would be a long process itself, so I would recommend you to follow these excellent [tutorials](https://kubernetes.io/docs/tutorials/kubernetes-basics/). Additionally I have found [Kubernetes Up and Running](http://shop.oreilly.com/product/0636920043874.do) to be a magnificent book to dive into the future of infrastructure.
 
+<p align="center"> 
+<img src="https://media.giphy.com/media/3ohBVyLs9CkVV1yZEY/giphy.gif">
+</p>
+
 For our tutorial I will just go through some of the aspects we need to understand to make *myhero* work in our setup.
 
 Kubernetes deployments are configured by means of *manifests* in the form of YAML files. You will find the required manifests for *myhero* in the repo you cloned. Those files will allow you to deploy all different microservices required for our application to work.
