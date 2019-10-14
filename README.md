@@ -981,15 +981,15 @@ __Only on WORKER nodes__
 
 Once you have done all of this please go back to your master node and check that all your 4 nodes show up as `ready`:
 
-```shell
-kubectl get nodes
-```
+  ```shell
+  kubectl get nodes
+  ```
 
 You should also check that the configuration file was correctly accepted:
 
-```shell
-kubectl describe pod kube-controller-manager-master -n kube-system
-```
+  ```shell
+  kubectl describe pod kube-controller-manager-master -n kube-system
+  ```
 
 Congrats, your Kubernetes cluster is now all set!
 
@@ -1895,6 +1895,10 @@ You may find some additional custom Grafana dashboards for your setup in the `gr
 ### Taking your cluster on the road
 
 Considering you built a tiny, banana-sized kubernetes cluster, you might be interested in maybe taking it with you _on the road_. And although bringing it on holiday with your family is definitely _not recommended_, there might be other occasions when having your cluster with you could be... _joyful_.
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/gHtvqib1yFvNbsjwCs/giphy.gif">
+</p>
 
 Let's say that maybe you would like to show it to a colleague from the office, or bring it to an event and brag about it. Its current architecture connects to the _outside world_ using just one Ethernet cable from the USB-powered switch to your home router, so you could think of just unplugging it, putting everything in a case, and once you arrive to your destination connect it to the network there, cross your fingers and hope that everything works.
 
