@@ -2375,6 +2375,10 @@ Istio configuration for traffic rules is done via YAML manifests. There are 3 ty
 * Destination policies: define the load-balancing algorithm, circuit-breakers, and health checks.
 * Egress rules: to allow calls to services in external domains.
 
+<p align="center"> 
+<img src="https://media.giphy.com/media/26DOs997h6fgsCthu/giphy.gif">
+</p>
+
 ### Use case 1: routing to specific service version
 
 For *myhero-ui* we have defined 3 different versions (*v1, v2 and v3*), each one of them with a different header: "Make ONE voice heard!!!", "Make TWO voices heard!!!" and "Make THREE voices heard!!!". That way we will easily identify what version we are accessing.
