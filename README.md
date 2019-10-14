@@ -867,11 +867,15 @@ kubectl get nodes
 
 __That's all__... if you are a fast typer you can go from ZERO to a configured kubernetes cluster in 30 seconds.
 
+<p align="center"> 
+<img src="https://media.giphy.com/media/bh4jzePjmd9iE/giphy.gif">
+</p>
+
 THIS has to be the definition of __automagical__... so cool!!!
 
 On top of it, k3s also includes [traefik](https://traefik.io/) installed by default, so you don't need to install a bare-metal load-balancer, nor an ingress controller. Everything is included and ready for you to use!
 
-Note: traefik's default configuration will assign your ingress resource the IP address of your master node (ie. 192.168.1.100).
+(please note traefik's default configuration will assign your ingress resource the IP address of your master node, ie. 192.168.1.100)
 
 ### Installing Kubernetes the _hard_ way
 
