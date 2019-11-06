@@ -2,75 +2,77 @@
 <img src="./images/frontpage.jpg">
 </p>
 
-<!-- TOC -->
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 
 - [Introduction to DevOps](#introduction-to-devops)
 - [Development](#development)
-    - [Containers and Docker](#containers-and-docker)
-    - [Modern application development with containers](#modern-application-development-with-containers)
-    - [Setting your development environment](#setting-your-development-environment)
-    - [Your first container](#your-first-container)
-    - [Building a complete microservices-based application](#building-a-complete-microservices-based-application)
-    - [Working on your code](#working-on-your-code)
-    - [May I use WebEx Teams to vote?](#may-i-use-webex-teams-to-vote)
-    - [How to publish your images](#how-to-publish-your-images)
-    - [Microservices management](#microservices-management)
+  - [Containers and Docker](#containers-and-docker)
+  - [Modern application development with containers](#modern-application-development-with-containers)
+  - [Setting your development environment](#setting-your-development-environment)
+  - [Your first container](#your-first-container)
+  - [Building a complete microservices-based application](#building-a-complete-microservices-based-application)
+  - [Working on your code](#working-on-your-code)
+  - [May I use WebEx Teams to vote?](#may-i-use-webex-teams-to-vote)
+  - [How to publish your images](#how-to-publish-your-images)
+  - [Microservices management](#microservices-management)
 - [Operations](#operations)
-    - [On-premises deployment](#on-premises-deployment)
-        - [No hardware for you?](#no-hardware-for-you)
-        - [MiniDC features](#minidc-features)
-        - [How to build your own cluster](#how-to-build-your-own-cluster)
-        - [External connectivity](#external-connectivity)
-        - [Additional tools](#additional-tools)
-        - [Architecture-specific images](#architecture-specific-images)
-        - [Deploying your application](#deploying-your-application)
-        - [Bare-metal LoadBalancer and Ingress Controller](#bare-metal-loadbalancer-and-ingress-controller)
-        - [Ingress resources](#ingress-resources)
-        - [Now we need queues](#now-we-need-queues)
-        - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
-        - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
-        - [Taking your cluster on the road](#taking-your-cluster-on-the-road)
-    - [Public Cloud deployment](#public-cloud-deployment)
-        - [GKE setup](#gke-setup)
-        - [Disable DDNS](#disable-ddns)
-        - [Application deployment](#application-deployment)
-        - [Cluster management](#cluster-management)
-    - [Helm package manager](#helm-package-manager)
-    - [Service Mesh](#service-mesh)
-        - [Installing Istio](#installing-istio)
-        - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
-        - [Use case 2: delay injection](#use-case-2-delay-injection)
-        - [Use case 3: HTTP abort injection](#use-case-3-http-abort-injection)
-        - [Use case 4: gradual migration to new version](#use-case-4-gradual-migration-to-new-version)
-        - [Use case 5: mirroring traffic](#use-case-5-mirroring-traffic)
-        - [Uninstalling Istio](#uninstalling-istio)
-    - [On-prem vs Cloud](#on-prem-vs-cloud)
-        - [Differences](#differences)
-        - [Similarities](#similarities)
+  - [On-premises deployment](#on-premises-deployment)
+    - [No hardware for you?](#no-hardware-for-you)
+    - [MiniDC features](#minidc-features)
+    - [How to build your own cluster](#how-to-build-your-own-cluster)
+    - [Installing Kubernetes the _easy_ way](#installing-kubernetes-the-_easy_-way)
+    - [Installing Kubernetes the _hard_ way](#installing-kubernetes-the-_hard_-way)
+    - [External connectivity](#external-connectivity)
+    - [Additional tools](#additional-tools)
+    - [Architecture-specific images](#architecture-specific-images)
+    - [Deploying your application](#deploying-your-application)
+    - [Bare-metal LoadBalancer and Ingress Controller](#bare-metal-loadbalancer-and-ingress-controller)
+    - [Ingress resources](#ingress-resources)
+    - [Now we need queues](#now-we-need-queues)
+    - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
+    - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
+    - [Taking your cluster on the road](#taking-your-cluster-on-the-road)
+  - [Public Cloud deployment](#public-cloud-deployment)
+    - [GKE setup](#gke-setup)
+    - [Disable DDNS](#disable-ddns)
+    - [Application deployment](#application-deployment)
+    - [Cluster management](#cluster-management)
+  - [Helm package manager](#helm-package-manager)
+  - [Service Mesh](#service-mesh)
+    - [Installing Istio](#installing-istio)
+    - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
+    - [Use case 2: delay injection](#use-case-2-delay-injection)
+    - [Use case 3: HTTP abort injection](#use-case-3-http-abort-injection)
+    - [Use case 4: gradual migration to new version](#use-case-4-gradual-migration-to-new-version)
+    - [Use case 5: mirroring traffic](#use-case-5-mirroring-traffic)
+    - [Uninstalling Istio](#uninstalling-istio)
+  - [On-prem vs Cloud](#on-prem-vs-cloud)
+    - [Differences](#differences)
+    - [Similarities](#similarities)
 - [Continuous Integration, Delivery and Deployment](#continuous-integration-delivery-and-deployment)
-    - [Introduction](#introduction)
-    - [What is CI/CD/CD](#what-is-cicdcd)
-    - [Pipeline infrastructure](#pipeline-infrastructure)
-        - [Version Control Server](#version-control-server)
-        - [Integration Server](#integration-server)
-    - [Working with pipelines](#working-with-pipelines)
-        - [Pipeline setup](#pipeline-setup)
-        - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
-        - [Pipeline implementation](#pipeline-implementation)
-        - [Running your pipeline](#running-your-pipeline)
-        - [Pipeline on-premises](#pipeline-on-premises)
+  - [Introduction](#introduction)
+  - [What is CI/CD/CD](#what-is-cicdcd)
+  - [Pipeline infrastructure](#pipeline-infrastructure)
+    - [Version Control Server](#version-control-server)
+    - [Integration Server](#integration-server)
+  - [Working with pipelines](#working-with-pipelines)
+    - [Pipeline setup](#pipeline-setup)
+    - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
+    - [Pipeline implementation](#pipeline-implementation)
+    - [Running your pipeline](#running-your-pipeline)
+    - [Pipeline on-premises](#pipeline-on-premises)
 - [Additional tools](#additional-tools-1)
-    - [Draft](#draft)
-    - [Telepresence](#telepresence)
-        - [Additional deployment](#additional-deployment)
-        - [Swap deployments](#swap-deployments)
-    - [Okteto](#okteto)
-    - [Cockpit](#cockpit)
+  - [Draft](#draft)
+  - [Telepresence](#telepresence)
+    - [Additional deployment](#additional-deployment)
+    - [Swap deployments](#swap-deployments)
+  - [Okteto](#okteto)
+  - [Cockpit](#cockpit)
 - [Conclusions](#conclusions)
 
-<!-- /TOC -->
-
----
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Introduction to DevOps
 
@@ -1659,11 +1661,12 @@ Obviously we need to start *backwards*, so let's start by connecting a USB hard 
 
 Open a new terminal, connect to the node where you plugged the HD, and check that you can see the HD and its partitions:
 
-```shell
-ls /dev/sda*
+```console
+$ ls /dev/sd*
+/dev/sda  /dev/sda1  /dev/sda2
 ```
 
-*sda* is the HD itself, while *sda1*, *sda2* are the partitions it includes.
+In our example *sda* is the HD itself, while *sda1*, *sda2* are the partitions it includes.
 
 You may check your partitions format with:
 
@@ -1702,6 +1705,7 @@ sudo systemctl enable nfs-kernel-server
 Create the folder you would like to share via NFS:
 
 ```shell
+cd /mnt/extusb
 sudo mkdir kube
 ```
 
@@ -3299,7 +3303,7 @@ Refresh your browser and you will automatically see the updated header (shift+re
 
 Let's review what is happening: requests going to *myhero-ui* service **public** IP address are automatically redirected to your **local** *myhero-ui* deployment (where you are developing *live*), which in turn transparently interact with all the other *myhero* microservices deployed in the **remote** k8s cluster.
 
-Ain't it amazing?!?
+__Ain't it amazing?!?__
 
 When you are happy with all code changes you could rebuild and publish the image for future use:
 
