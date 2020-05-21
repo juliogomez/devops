@@ -2,77 +2,79 @@
 <img src="./images/frontpage.jpg">
 </p>
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
+<!-- TOC -->
 
 - [Introduction to DevOps](#introduction-to-devops)
 - [Development](#development)
-  - [Containers and Docker](#containers-and-docker)
-  - [Modern application development with containers](#modern-application-development-with-containers)
-  - [Setting your development environment](#setting-your-development-environment)
-  - [Your first container](#your-first-container)
-  - [Building a complete microservices-based application](#building-a-complete-microservices-based-application)
-  - [Working on your code](#working-on-your-code)
-  - [May I use WebEx Teams to vote?](#may-i-use-webex-teams-to-vote)
-  - [How to publish your images](#how-to-publish-your-images)
-  - [Microservices management](#microservices-management)
+    - [Containers and Docker](#containers-and-docker)
+    - [Modern application development with containers](#modern-application-development-with-containers)
+    - [Setting your development environment](#setting-your-development-environment)
+    - [Your first container](#your-first-container)
+    - [Building a complete microservices-based application](#building-a-complete-microservices-based-application)
+    - [Working on your code](#working-on-your-code)
+    - [May I use WebEx Teams to vote?](#may-i-use-webex-teams-to-vote)
+    - [How to publish your images](#how-to-publish-your-images)
+    - [Microservices management](#microservices-management)
 - [Operations](#operations)
-  - [On-premises deployment](#on-premises-deployment)
-    - [No hardware for you?](#no-hardware-for-you)
-    - [MiniDC features](#minidc-features)
-    - [How to build your own cluster](#how-to-build-your-own-cluster)
-    - [Installing Kubernetes the _easy_ way](#installing-kubernetes-the-_easy_-way)
-    - [Installing Kubernetes the _hard_ way](#installing-kubernetes-the-_hard_-way)
-    - [External connectivity](#external-connectivity)
-    - [Additional tools](#additional-tools)
-    - [Architecture-specific images](#architecture-specific-images)
-    - [Deploying your application](#deploying-your-application)
-    - [Bare-metal LoadBalancer and Ingress Controller](#bare-metal-loadbalancer-and-ingress-controller)
-    - [Ingress resources](#ingress-resources)
-    - [Now we need queues](#now-we-need-queues)
-    - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
-    - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
-    - [Taking your cluster on the road](#taking-your-cluster-on-the-road)
-  - [Public Cloud deployment](#public-cloud-deployment)
-    - [GKE setup](#gke-setup)
-    - [Disable DDNS](#disable-ddns)
-    - [Application deployment](#application-deployment)
-    - [Cluster management](#cluster-management)
-  - [Helm package manager](#helm-package-manager)
-  - [Service Mesh](#service-mesh)
-    - [Installing Istio](#installing-istio)
-    - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
-    - [Use case 2: delay injection](#use-case-2-delay-injection)
-    - [Use case 3: HTTP abort injection](#use-case-3-http-abort-injection)
-    - [Use case 4: gradual migration to new version](#use-case-4-gradual-migration-to-new-version)
-    - [Use case 5: mirroring traffic](#use-case-5-mirroring-traffic)
-    - [Uninstalling Istio](#uninstalling-istio)
-  - [On-prem vs Cloud](#on-prem-vs-cloud)
-    - [Differences](#differences)
-    - [Similarities](#similarities)
+    - [On-premises deployment](#on-premises-deployment)
+        - [No hardware for you?](#no-hardware-for-you)
+        - [MiniDC features](#minidc-features)
+        - [How to build your own cluster](#how-to-build-your-own-cluster)
+        - [Installing Kubernetes the easy way](#installing-kubernetes-the-easy-way)
+        - [Installing Kubernetes the hard way](#installing-kubernetes-the-hard-way)
+        - [External connectivity](#external-connectivity)
+        - [Additional tools](#additional-tools)
+        - [Architecture-specific images](#architecture-specific-images)
+        - [Deploying your application](#deploying-your-application)
+        - [Bare-metal LoadBalancer and Ingress Controller](#bare-metal-loadbalancer-and-ingress-controller)
+        - [Ingress resources](#ingress-resources)
+        - [Now we need queues](#now-we-need-queues)
+        - [A Dashboard to manage them all](#a-dashboard-to-manage-them-all)
+        - [Monitoring your cluster and applications](#monitoring-your-cluster-and-applications)
+        - [Taking your cluster on the road](#taking-your-cluster-on-the-road)
+    - [Public Cloud deployment](#public-cloud-deployment)
+        - [GKE setup](#gke-setup)
+        - [Disable DDNS](#disable-ddns)
+        - [Application deployment](#application-deployment)
+        - [Cluster management](#cluster-management)
+    - [Helm package manager](#helm-package-manager)
+    - [Service Mesh](#service-mesh)
+        - [Installing Istio](#installing-istio)
+        - [Use case 1: routing to specific service version](#use-case-1-routing-to-specific-service-version)
+        - [Use case 2: delay injection](#use-case-2-delay-injection)
+        - [Use case 3: HTTP abort injection](#use-case-3-http-abort-injection)
+        - [Use case 4: gradual migration to new version](#use-case-4-gradual-migration-to-new-version)
+        - [Use case 5: mirroring traffic](#use-case-5-mirroring-traffic)
+        - [Uninstalling Istio](#uninstalling-istio)
+    - [On-prem vs Cloud](#on-prem-vs-cloud)
+        - [Differences](#differences)
+        - [Similarities](#similarities)
 - [Continuous Integration, Delivery and Deployment](#continuous-integration-delivery-and-deployment)
-  - [Introduction](#introduction)
-  - [What is CI/CD/CD](#what-is-cicdcd)
-  - [Pipeline infrastructure](#pipeline-infrastructure)
-    - [Version Control Server](#version-control-server)
-    - [Integration Server](#integration-server)
-  - [Working with pipelines](#working-with-pipelines)
-    - [Pipeline setup](#pipeline-setup)
-    - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
-    - [Pipeline implementation](#pipeline-implementation)
-    - [Running your pipeline](#running-your-pipeline)
-    - [Pipeline on-premises](#pipeline-on-premises)
-- [Additional tools](#additional-tools-1)
-  - [Draft](#draft)
-  - [Telepresence](#telepresence)
-    - [Additional deployment](#additional-deployment)
-    - [Swap deployments](#swap-deployments)
-  - [Okteto](#okteto)
-  - [Cockpit](#cockpit)
+    - [Introduction](#introduction)
+    - [What is CI/CD/CD](#what-is-cicdcd)
+    - [Pipeline infrastructure](#pipeline-infrastructure)
+        - [Version Control Server](#version-control-server)
+        - [Integration Server](#integration-server)
+    - [Working with pipelines](#working-with-pipelines)
+        - [Pipeline setup](#pipeline-setup)
+        - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
+        - [Pipeline implementation](#pipeline-implementation)
+        - [Running your pipeline](#running-your-pipeline)
+        - [Pipeline on-premises](#pipeline-on-premises)
+- [Additional tools](#additional-tools)
+    - [Draft](#draft)
+    - [Telepresence](#telepresence)
+        - [Additional deployment](#additional-deployment)
+        - [Swap deployments](#swap-deployments)
+    - [Okteto](#okteto)
+    - [Cockpit](#cockpit)
+- [Serverless](#serverless)
+    - [OpenFaaS](#openfaas)
+    - [Kubeless](#kubeless)
+    - [Fission](#fission)
 - [Conclusions](#conclusions)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- /TOC -->
 
 # Introduction to DevOps
 
@@ -3480,7 +3482,7 @@ __Cool way to display your microservices-based application, huh?__
 
 ---
 
-### Serverless
+# Serverless
 
 By now you might be wondering how do developers deal with so much complexity around containers, micro-services, schedulers, service meshes, etc… on top of their core knowledge about programming languages and software architectures. It sounds like way too much, huh? That’s exactly how they feel and they main reason why everyone looks for ways to let them focus just on their code.
 
@@ -3519,7 +3521,7 @@ For our tests you can choose your favourite managed k8s offering, I will go with
 
 It’s time to start testing some of the most interesting FaaS engines available out there!
 
-#### OpenFaaS
+## OpenFaaS
 
 The first thing you will need to do is [installing OpenFaas CLI](https://github.com/openfaas/faas-cli) in your own workstation, so you can use it to build and deploy functions. In OSX for example you would install it with:
 
@@ -3692,7 +3694,7 @@ You can of course use your browser as well:
 
 As you can see OpenFaaS is easy to deploy, very k8s friendly with its own namespaces & functions deployments, and a great starting point with templates to deploy your own code. 
 
-#### Kubeless
+## Kubeless
 
 Same as with other FaaS engines you will need to install first its own CLI. For example with OSX:
 
@@ -3793,7 +3795,7 @@ curl -L --data 'Hi there!' \
 
 Fantastic, our function is now readily available for everyone to access it. Well done!
 
-#### Fission
+## Fission
 
 Let’s start by installing fission in its own namespace:
 
