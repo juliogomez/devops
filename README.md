@@ -3581,6 +3581,10 @@ Now let’s see it working:
 echo "Hello Cisco" | faas-cli invoke figlet
 ```
 
+<p align="center"> 
+<img src="https://media.giphy.com/media/l49JMeAuT0NmRrV0A/giphy.gif">
+</p>
+
 It’s working! But… what happened? Well, basically the _deploy_ command created a k8s deployment with a single replica in the _openfaas-fn_ namespace:
 
 ```
