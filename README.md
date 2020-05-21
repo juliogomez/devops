@@ -3085,6 +3085,401 @@ You are now ready to test your on-premises pipeline, the same way you did it in 
 
 ---
 
+# Additional tools
+
+Now you know how Developers and Operations teams work, what are some of the challenges they face, how to work around them and specifically how a CI/CD/CD pipeline might help.
+
+But there are additional tools to address certain needs, that provide multiple benefits and are of great interest to them.
+
+## Draft
+
+[Draft](https://draft.sh) enables developers to easily build applications and run them in k8s. It helps by hiding the complexity of building images, publishing them and creating the deployments. That way developers can focus on code. With only a couple of commands (`draft create` and `draft up`) they are good to go!
+
+Let's imagine there was a team working on our *myhero-data* microservice. They would be [python](https://www.python.org) coders constantly expanding its functionality and testing that it works fine. They would need to test it before going to Production, but testing it correctly implies deploying into a similar k8s cluster. However these coders should not be concerned about k8s management, they just want to code!
+
+So once their code is ready they could use Draft to automatically detect the programming language they use, create the required packaging info, build the required images and automatically create a deployment into a k8s test cluster.
+
+Let's get it working!
+
+First [install Draft](https://github.com/azure/draft). If you choose to use minikube you will have a 1-node k8s cluster running in your own workstation for testing. Otherwise you can use any k8s cluster from a Cloud provider.
+
+Please make sure you have Docker running locally in your workstation, as it will be needed to automatically build and publish your images.
+
+Now go to *devops-tutorial* create a new *draft* directory, clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
+
+```shell
+cd devops-tutorial
+mkdir draft
+git clone https://github.com/juliogomez/myhero_data.git
+mv myhero_data myherodata
+```
+
+Go into the new directory, initialize the required plugins and containerize the app by creating a draft pack.
+
+```shell
+cd myherodata
+draft init
+draft create
+```
+
+This will create the required Helm chart structure and config file (*draft.toml*). It would also create a default Dockerfile, but we already have one with everything we need.
+
+Let's quickly configure this for our specific microservice:
+
+* Edit *myherodata/charts/myherodata/values.yaml* and do 3 things:
+1. Replace the default service.internalPort from 8080 to 5000, which is the port defined in our Dockerfile. 
+2. Change service.type from *ClusterIP* to *NodePort*, so that the service is accessible from your workstation.
+3. Disable ingress access by adding the following 2 lines at the end of the file (they might already be present):
+
+```yaml
+ingress:
+  enabled: false
+```
+
+* Edit *myherodata/charts/myherodata/templates/deployment.yaml* to include the required environment variable under spec.template.spec.containers:
+
+```yaml
+  env:
+    - name: myhero_data_key
+      value: SecureData
+```
+
+You will need to set what is your DockerHub username, so that images can be automatically published there.
+
+```shell
+draft config set registry docker.io/<your_username>
+```
+
+__We are all set!__ Now you just need to run the following command from the main _myherodata_ directory:
+
+```shell
+draft up
+```
+
+And it will automatically initiate the process to build the image, push it to your local registry and deploy the microservice in your local k8s cluster (minikube).
+
+As you can see, no k8s management is required from the developer, Draft does everything for him.
+
+Now you can connect to your deployment, although it may take a couple of minutes until Pods are ready. Check with:
+
+```shell
+kubectl get pods
+```
+
+Once Pods are up and running, check the IP address for your *myherodata-python* to use by running:
+
+```shell
+minikube service list
+```
+
+In my case I got the following: http://192.168.99.100:31833
+
+So go ahead and test access via its API with:
+
+```shell
+curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
+```
+
+Success!
+
+As developers, let's modify our code and see how easy it is to update the deployment. Please edit *myhero_options.txt* remove one of the entries, and save the file. With any change you make to your code, you just need to issue again:
+
+```shell
+draft up
+```
+
+And it will automatically upgrade the deployment in your local k8s cluster (minikube). You may see the effect of your changes by querying the API again:
+
+```shell
+curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
+```
+
+Easy!
+
+When you are done, you can delete your deployment by executing:
+
+```shell
+draft delete
+```
+
+In summary, a python developer creates a microservice called *myhero-data*. Before sending it to production he wants to test it in a similar environment. Using Draft he can test his new code with just a couple of commands, and without having to manage the k8s cluster he is using.
+
+How cool is that?!
+
+## Telepresence
+
+[Telepresence](https://www.telepresence.io) allows you to work from your workstation like you were *inside* a remote k8s cluster. This way you can easily do *live* debugging and testing of a service locally, while it is automatically connected to a remote k8s cluster. For example you could develop on that local service and have it connnected to other remote services deployed in Production.
+
+Let's give it a try to see how it works.
+
+First you need to [install it](https://www.telepresence.io/reference/install), and it will automatically work with the k8s cluster active in your kubectl configuration.
+
+By now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to comment with **#** two lines in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. Please make sure to configure *myhero-ui* and *myhero-app* as LoadBalancer, so that they both get public IP addresses.
+
+When you are ready you can try Telepresence in a couple of different ways:
+
+* Additional local deployment that communicates with the existing remote ones.
+* Replace an existing remote deployment with a local one.
+
+### Additional deployment
+
+In the first case you could run an additional container locally, and have full connectivity to the remote cluster, as if it were actually there. Let's try with *Alpine* and make it interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our workstation. But with Telepresence we can do it!
+
+Start by running Alpine with Telepresence:
+
+```shell
+telepresence --docker-run -i -t alpine /bin/sh
+```
+
+And now from inside the Alpine container you may interact directly with the already deployed *myhero* containers:
+
+```shell
+apk add --no-cache curl
+curl -X GET -H "key: SecureData" http://myhero-data/options
+curl -X GET -H "key: SecureApp" http://myhero-app/options
+curl http://myhero-ui
+```
+
+As you can see the additional Alpine deployment can query existing microservices using k8s service names, that are only accessible by other containers inside the k8s cluster.
+
+### Swap deployments
+
+For the second case Telepresence allows you to replace an existing remote deployment in your k8s cluster, with a local one in your workstation where you can work **live**.
+
+We will replace the *myhero-ui* microservice running in your k8s cluster with a new *myhero-ui* service deployed locally in your workstation.
+
+Before running the new local deployment please find out what is the public IP address assigned to *myhero-app* in your k8s cluster (you will need it as a parameter when you run the new *myhero-ui*):
+
+```shell
+kubectl get service myhero-app
+```
+
+Now you can replace the remotely deployed *myhero-ui* with your own local *myhero-ui* (please make sure to replace the public IP address of *myhero-app* provided as an environment variable in the command below):
+
+```shell
+cd myhero_ui/app
+telepresence --swap-deployment myhero-ui --expose 80 --docker-run -p=80 -v $(pwd):/usr/share/nginx/html -e "myhero_app_server=http://<myhero-app_public_IP>" -e "myhero_app_key=SecureApp" <your_DockerHub_user>/myhero-ui
+```
+
+Parameters indicate what is the port used by the remote deployment (*-expose*), what port uses the local container (*-p*), mapping of the application directory from the local host to the container, required environment variables (*myhero-app* URL or public address, and shared private key), and finally your *myhero-ui* image.
+
+You will probably be asked by your workstation password to allow the creation of a new local container. And finally the terminal will start logging your local *myhero-ui* execution.
+
+Open a new terminal and check the public IP address of your *myhero-ui* service:
+
+```shell
+kubectl get service myhero-ui
+```
+
+Now point your browser to that Public IP address and you should see *myhero* app working as before.
+
+From the second terminal window go to the application directory:
+
+```shell
+cd myhero_ui/app/views
+```
+
+Let's modify the code of our *myhero-ui* microservice frontpage, by editing *main.html*:
+
+```shell
+vi main.html
+```
+
+In the second line you will find a line that says:
+
+```html
+<h3>Make your voice heard!</h3>
+```
+
+Modify it by swapping *voice* to *VOICE*:
+
+```html
+<h3>Make your VOICE heard!</h3>
+```
+
+Save the file. Please note this is just an example of a simple change in the code, but everything would work in the same way for any other change.
+
+Refresh your browser and you will automatically see the updated header (shift+refresh for a hard refresh) from your **local** *myhero-ui*.
+
+Let's review what is happening: requests going to *myhero-ui* service **public** IP address are automatically redirected to your **local** *myhero-ui* deployment (where you are developing *live*), which in turn transparently interact with all the other *myhero* microservices deployed in the **remote** k8s cluster.
+
+__Ain't it amazing?!?__
+
+When you are happy with all code changes you could rebuild and publish the image for future use:
+
+```shell
+cd myhero-ui
+docker build -t <your_DockerHub_user>/myhero-ui
+docker push <your_DockerHub_user>/myhero-ui
+```
+
+When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your workstation password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
+
+## Okteto
+
+[Okteto](https://okteto.com/) offers developers the ability to locally code with their own tools, and test their software live on containers deployed in a real remote kubernetes cluster, with no required knowledge about docker containers or kubernetes. 
+
+Too good to be true? Let's give it a try!
+
+First you need to [install it](https://okteto.com/docs/getting-started/installation/), and it will automatically work with the k8s cluster active in your kubectl configuration.
+
+By now you should already know how to get a full _myhero_ deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler please configure it in 'direct' mode, so no _myhero-mosca_ or _myhero-ernst_ is required. Remember you just need to comment with # two lines in _k8s_myhero_app.yml_ (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: _myhero-ui_, _myhero-app_ and _myhero-data_. Please make sure to configure _myhero-ui_ and _myhero-app_ as LoadBalancer, so they both get public IP addresses. Once the application is working we can try okteto.
+
+Let's say we are AngularJS developers, and we have been assigned to work on the web front-end microservice (_myhero-ui_).
+
+First thing we would need to do is cloning the repo, and get into the resulting directory:
+
+```
+$ git clone https://github.com/juliogomez/myhero_ui.git
+$ cd myhero_ui
+```
+
+Please make sure you have defined the following required 3 variables:
+
+```
+$ export myhero_spark_server=<your_spark_url>
+$ export myhero_app_server=<your_api_url>
+$ export myhero_app_key=<your_key_to_communicate_with_app_server>
+```
+
+Okteto will automatically detect the programming language used in the repo and create the new `okteto.yml` manifest, specifying the deployment target, working directory, port forwarding and some scripts.
+
+We will need to make some changes to make that file work in our setup:
+
+* Change the deployment name from `myheroui` to `myhero-ui`
+* Configure it to automatically install and start the code, including the following `command: ["yarn", "start"]`
+* Port mapping: if you take a look at our front-end's `package.json` file, you will see it starts an HTTP server in port 8000, so we should change the mapping from `3000:3000` to `3000:8000`
+
+For the microservice deployment we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. We could also create a different deployment and work in parallel with the production one. For your convenience the _myhero-ui_ repo includes an already modified manifest you can use for this demo.
+
+Now you should be good to activate your cloud native development environment.
+
+```
+$ okteto up --namespace myhero --file okteto_myhero-ui.yml
+ ✓  Environment activated!
+    Ports:
+       3000 -> 8000
+    Cluster:     gke_test-project-191216_europe-west1-b_example-cluster
+    Namespace:   myhero
+    Deployment:  myhero-ui
+
+yarn run v1.12.3
+$ npm install
+npm WARN notice [SECURITY] ecstatic has the following vulnerability: 1 moderate. Go here for more details: https://nodesecurity.io/advisories?search=ecstatic&version=1.4.1 - Run `npm i npm@latest -g` to upgrade your npm version, and then `npm audit` to get more info.
+npm notice created a lockfile as package-lock.json. You should commit this file.
+added 24 packages from 27 contributors and audited 24 packages in 5.825s
+found 1 moderate severity vulnerability
+  run `npm audit fix` to fix them, or `npm audit` for details
+$ http-server -a localhost -p 8000 -c-1 ./app
+Starting up http-server, serving ./app
+Available on:
+  http://localhost:8000
+Hit CTRL-C to stop the server
+```
+
+This process replaces the existing _myhero-ui_ container deployment in the kubernetes cluster, with our new one. It will also synchronize files from your workstation to the development environment, and perform the required port forwarding. You may access this new web front-end deployment by browsing to http://localhost:3000/
+
+As a developer please use your favourite IDE (or even just `vi`) in your local workstation to edit, for example, the file defining the front page (`./app/views/main.html`).
+
+Make a change in your front page title, from 'Make your voice heard!' to 'Make your voice hearRRRd!', and save your file. Go back to your browser, refresh and you will see your changes reflected __immediately!__
+
+Let that sink in for a second... as a developer you have modified your code from your local workstation, using your own IDE and tools. And okteto has transparently updated the deployment containers in your production kubernetes cluster. All of that without any docker or kubernetes interaction: 
+
+* No need to run Docker locally in your workstation
+* No need to create and publish new Docker images after code changes
+* No need to manually update the deployment in your remote kubernetes cluster
+* No need to even know the `docker` or `kubectl` CLIs !
+
+Okteto does everything for you and in a __completely transparent way!__ 
+
+Developers can now easily test how their software changes behave when deployed as containers-based microservices in the real production kubernetes environment... without even knowing what Docker and kubernetes are!
+
+Once you get over this overwhelming and amazing experience, you may disable your cloud native environment by pressing `Ctrl+C` and then `Ctrl+D` in your terminal window. From there you can remove your deployment and replace it with the original one, with:
+
+```
+$ okteto down -n myhero -f okteto_myhero-ui.yml -v
+```
+
+## Cockpit
+
+If you have gone through the whole document by now you have used kubernetes to deploy a number of pods, services, volumes and namespaces, spread across a number of servers in your cluster. Of course you can use the kubernetes CLI to understand the mapping among these multiple elements, but sometimes it is also convenient to have a configurable GUI that shows this information.
+
+[Cockpit](https://cockpit-project.org/) is a tool that helps managing Linux servers from your web browser. It allows you to start containers, administer storage, configure networks, and inspect logs. But the key capability I would like to focus on is its ability to interface with kubernetes API and graphically display how its constructs relate to each other and the underlying infrastructure.
+
+For this example I will be using a common 2-node GKE cluster with our usual _myhero_ application already deployed.
+
+Let's start by going into the cockpit directory in your cloned repo.
+
+```
+$ cd devops_tutorial/devops/cockpit
+```
+
+Create a new namespace for cockpit.
+
+```
+$ kubectl create namespace cockpit
+```
+
+Now apply the cockpit manifest to create the resources required by the dashboard.
+
+```
+$ kubectl -n cockpit create -f kubernetes-cockpit.json
+```
+
+Please wait until all pods are in `Running` status and READY `1/1`. You will also need to wait until the new cockpit service gets and `EXTERNAL-IP`.
+
+```
+$ kubectl -n cockpit get po,svc
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/kubernetes-cockpit-gl8m4   1/1     Running   0          44m
+
+NAME                         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)         AGE
+service/kubernetes-cockpit   LoadBalancer   10.31.245.114   35.240.118.14   443:30837/TCP   44m
+```
+
+Once assigned please use your browser to navigate to that external IP address __using HTTPS__. As an example, for the previous output you would need to go to https://35.240.118.14 (please accept any required security exceptions in your browser).
+
+<p align="center"> 
+<img src="./images/cockpit_login.png">
+</p>
+
+As you can see you will need credentials (user name and password to access your dashboard), and by default those are the ones from your server. Please log into your GKE console and obtain them from _Kubernetes Engine_ - _Clusters_ - _your_cluster_name_, and click on _Show credentials_.
+
+<p align="center"> 
+<img src="./images/cockpit_GKE_credentials.png">
+</p>
+
+Please log into cockpit using those values, and feel free to browse the capabilities offered by the dashboard. If you go to _Topology_ you will see a dynamic diagram similar to this:
+
+<p align="center"> 
+<img src="./images/cockpit_diagram_all.png">
+</p>
+
+It shows the nodes in your kubernetes cluster (2 in this example), what pods reside in each one of them and the services enabling access to these pods. This way it is easy to understand the real architecture of your deployed application. You can move the different elements around so that they are shown the way you prefer.
+
+By default it shows information for all projects in the cluster, so let's filter it to show only info about our _myhero_ application.
+
+<p align="center"> 
+<img src="./images/cockpit_diagram_myhero_ui1.png">
+</p>
+
+Now you see only the nodes supporting services and pods related to this specific application. I have highlighted the _myhero-ui_ pod on the left, so we can now scale the number of replicas and see how the dashboard automatically reflects this change.
+
+```
+$ kubectl -n myhero scale deployment myhero-ui --replicas=2
+```
+
+<p align="center"> 
+<img src="./images/cockpit_diagram_myhero_ui2.png">
+</p>
+
+As you can see, the dashboard automatically shows in real time how the service is load-balancing into 2 different pods.
+
+__Cool way to display your microservices-based application, huh?__
+
+
+---
+
 ### Serverless
 
 By now you might be wondering how do developers deal with so much complexity around containers, micro-services, schedulers, service meshes, etc… on top of their core knowledge about programming languages and software architectures. It sounds like way too much, huh? That’s exactly how they feel and they main reason why everyone looks for ways to let them focus just on their code.
@@ -3503,400 +3898,6 @@ hello, world!
 It works, well done!
 
 __By now you should have a good understanding on how to get started with several different FaaS engines over kubernetes, so please keep exploring! Serverless is here to stay and nobody likes lock-in!__
-
----
-
-# Additional tools
-
-Now you know how Developers and Operations teams work, what are some of the challenges they face, how to work around them and specifically how a CI/CD/CD pipeline might help.
-
-But there are additional tools to address certain needs, that provide multiple benefits and are of great interest to them.
-
-## Draft
-
-[Draft](https://draft.sh) enables developers to easily build applications and run them in k8s. It helps by hiding the complexity of building images, publishing them and creating the deployments. That way developers can focus on code. With only a couple of commands (`draft create` and `draft up`) they are good to go!
-
-Let's imagine there was a team working on our *myhero-data* microservice. They would be [python](https://www.python.org) coders constantly expanding its functionality and testing that it works fine. They would need to test it before going to Production, but testing it correctly implies deploying into a similar k8s cluster. However these coders should not be concerned about k8s management, they just want to code!
-
-So once their code is ready they could use Draft to automatically detect the programming language they use, create the required packaging info, build the required images and automatically create a deployment into a k8s test cluster.
-
-Let's get it working!
-
-First [install Draft](https://github.com/azure/draft). If you choose to use minikube you will have a 1-node k8s cluster running in your own workstation for testing. Otherwise you can use any k8s cluster from a Cloud provider.
-
-Please make sure you have Docker running locally in your workstation, as it will be needed to automatically build and publish your images.
-
-Now go to *devops-tutorial* create a new *draft* directory, clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
-
-```shell
-cd devops-tutorial
-mkdir draft
-git clone https://github.com/juliogomez/myhero_data.git
-mv myhero_data myherodata
-```
-
-Go into the new directory, initialize the required plugins and containerize the app by creating a draft pack.
-
-```shell
-cd myherodata
-draft init
-draft create
-```
-
-This will create the required Helm chart structure and config file (*draft.toml*). It would also create a default Dockerfile, but we already have one with everything we need.
-
-Let's quickly configure this for our specific microservice:
-
-* Edit *myherodata/charts/myherodata/values.yaml* and do 3 things:
-1. Replace the default service.internalPort from 8080 to 5000, which is the port defined in our Dockerfile. 
-2. Change service.type from *ClusterIP* to *NodePort*, so that the service is accessible from your workstation.
-3. Disable ingress access by adding the following 2 lines at the end of the file (they might already be present):
-
-```yaml
-ingress:
-  enabled: false
-```
-
-* Edit *myherodata/charts/myherodata/templates/deployment.yaml* to include the required environment variable under spec.template.spec.containers:
-
-```yaml
-  env:
-    - name: myhero_data_key
-      value: SecureData
-```
-
-You will need to set what is your DockerHub username, so that images can be automatically published there.
-
-```shell
-draft config set registry docker.io/<your_username>
-```
-
-__We are all set!__ Now you just need to run the following command from the main _myherodata_ directory:
-
-```shell
-draft up
-```
-
-And it will automatically initiate the process to build the image, push it to your local registry and deploy the microservice in your local k8s cluster (minikube).
-
-As you can see, no k8s management is required from the developer, Draft does everything for him.
-
-Now you can connect to your deployment, although it may take a couple of minutes until Pods are ready. Check with:
-
-```shell
-kubectl get pods
-```
-
-Once Pods are up and running, check the IP address for your *myherodata-python* to use by running:
-
-```shell
-minikube service list
-```
-
-In my case I got the following: http://192.168.99.100:31833
-
-So go ahead and test access via its API with:
-
-```shell
-curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
-```
-
-Success!
-
-As developers, let's modify our code and see how easy it is to update the deployment. Please edit *myhero_options.txt* remove one of the entries, and save the file. With any change you make to your code, you just need to issue again:
-
-```shell
-draft up
-```
-
-And it will automatically upgrade the deployment in your local k8s cluster (minikube). You may see the effect of your changes by querying the API again:
-
-```shell
-curl -X GET -H "key: SecureData" http://192.168.99.100:31833/options
-```
-
-Easy!
-
-When you are done, you can delete your deployment by executing:
-
-```shell
-draft delete
-```
-
-In summary, a python developer creates a microservice called *myhero-data*. Before sending it to production he wants to test it in a similar environment. Using Draft he can test his new code with just a couple of commands, and without having to manage the k8s cluster he is using.
-
-How cool is that?!
-
-## Telepresence
-
-[Telepresence](https://www.telepresence.io) allows you to work from your workstation like you were *inside* a remote k8s cluster. This way you can easily do *live* debugging and testing of a service locally, while it is automatically connected to a remote k8s cluster. For example you could develop on that local service and have it connnected to other remote services deployed in Production.
-
-Let's give it a try to see how it works.
-
-First you need to [install it](https://www.telepresence.io/reference/install), and it will automatically work with the k8s cluster active in your kubectl configuration.
-
-By now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to comment with **#** two lines in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. Please make sure to configure *myhero-ui* and *myhero-app* as LoadBalancer, so that they both get public IP addresses.
-
-When you are ready you can try Telepresence in a couple of different ways:
-
-* Additional local deployment that communicates with the existing remote ones.
-* Replace an existing remote deployment with a local one.
-
-### Additional deployment
-
-In the first case you could run an additional container locally, and have full connectivity to the remote cluster, as if it were actually there. Let's try with *Alpine* and make it interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our workstation. But with Telepresence we can do it!
-
-Start by running Alpine with Telepresence:
-
-```shell
-telepresence --docker-run -i -t alpine /bin/sh
-```
-
-And now from inside the Alpine container you may interact directly with the already deployed *myhero* containers:
-
-```shell
-apk add --no-cache curl
-curl -X GET -H "key: SecureData" http://myhero-data/options
-curl -X GET -H "key: SecureApp" http://myhero-app/options
-curl http://myhero-ui
-```
-
-As you can see the additional Alpine deployment can query existing microservices using k8s service names, that are only accessible by other containers inside the k8s cluster.
-
-### Swap deployments
-
-For the second case Telepresence allows you to replace an existing remote deployment in your k8s cluster, with a local one in your workstation where you can work **live**.
-
-We will replace the *myhero-ui* microservice running in your k8s cluster with a new *myhero-ui* service deployed locally in your workstation.
-
-Before running the new local deployment please find out what is the public IP address assigned to *myhero-app* in your k8s cluster (you will need it as a parameter when you run the new *myhero-ui*):
-
-```shell
-kubectl get service myhero-app
-```
-
-Now you can replace the remotely deployed *myhero-ui* with your own local *myhero-ui* (please make sure to replace the public IP address of *myhero-app* provided as an environment variable in the command below):
-
-```shell
-cd myhero_ui/app
-telepresence --swap-deployment myhero-ui --expose 80 --docker-run -p=80 -v $(pwd):/usr/share/nginx/html -e "myhero_app_server=http://<myhero-app_public_IP>" -e "myhero_app_key=SecureApp" <your_DockerHub_user>/myhero-ui
-```
-
-Parameters indicate what is the port used by the remote deployment (*-expose*), what port uses the local container (*-p*), mapping of the application directory from the local host to the container, required environment variables (*myhero-app* URL or public address, and shared private key), and finally your *myhero-ui* image.
-
-You will probably be asked by your workstation password to allow the creation of a new local container. And finally the terminal will start logging your local *myhero-ui* execution.
-
-Open a new terminal and check the public IP address of your *myhero-ui* service:
-
-```shell
-kubectl get service myhero-ui
-```
-
-Now point your browser to that Public IP address and you should see *myhero* app working as before.
-
-From the second terminal window go to the application directory:
-
-```shell
-cd myhero_ui/app/views
-```
-
-Let's modify the code of our *myhero-ui* microservice frontpage, by editing *main.html*:
-
-```shell
-vi main.html
-```
-
-In the second line you will find a line that says:
-
-```html
-<h3>Make your voice heard!</h3>
-```
-
-Modify it by swapping *voice* to *VOICE*:
-
-```html
-<h3>Make your VOICE heard!</h3>
-```
-
-Save the file. Please note this is just an example of a simple change in the code, but everything would work in the same way for any other change.
-
-Refresh your browser and you will automatically see the updated header (shift+refresh for a hard refresh) from your **local** *myhero-ui*.
-
-Let's review what is happening: requests going to *myhero-ui* service **public** IP address are automatically redirected to your **local** *myhero-ui* deployment (where you are developing *live*), which in turn transparently interact with all the other *myhero* microservices deployed in the **remote** k8s cluster.
-
-__Ain't it amazing?!?__
-
-When you are happy with all code changes you could rebuild and publish the image for future use:
-
-```shell
-cd myhero-ui
-docker build -t <your_DockerHub_user>/myhero-ui
-docker push <your_DockerHub_user>/myhero-ui
-```
-
-When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your workstation password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
-
-## Okteto
-
-[Okteto](https://okteto.com/) offers developers the ability to locally code with their own tools, and test their software live on containers deployed in a real remote kubernetes cluster, with no required knowledge about docker containers or kubernetes. 
-
-Too good to be true? Let's give it a try!
-
-First you need to [install it](https://okteto.com/docs/getting-started/installation/), and it will automatically work with the k8s cluster active in your kubectl configuration.
-
-By now you should already know how to get a full _myhero_ deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler please configure it in 'direct' mode, so no _myhero-mosca_ or _myhero-ernst_ is required. Remember you just need to comment with # two lines in _k8s_myhero_app.yml_ (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: _myhero-ui_, _myhero-app_ and _myhero-data_. Please make sure to configure _myhero-ui_ and _myhero-app_ as LoadBalancer, so they both get public IP addresses. Once the application is working we can try okteto.
-
-Let's say we are AngularJS developers, and we have been assigned to work on the web front-end microservice (_myhero-ui_).
-
-First thing we would need to do is cloning the repo, and get into the resulting directory:
-
-```
-$ git clone https://github.com/juliogomez/myhero_ui.git
-$ cd myhero_ui
-```
-
-Please make sure you have defined the following required 3 variables:
-
-```
-$ export myhero_spark_server=<your_spark_url>
-$ export myhero_app_server=<your_api_url>
-$ export myhero_app_key=<your_key_to_communicate_with_app_server>
-```
-
-Okteto will automatically detect the programming language used in the repo and create the new `okteto.yml` manifest, specifying the deployment target, working directory, port forwarding and some scripts.
-
-We will need to make some changes to make that file work in our setup:
-
-* Change the deployment name from `myheroui` to `myhero-ui`
-* Configure it to automatically install and start the code, including the following `command: ["yarn", "start"]`
-* Port mapping: if you take a look at our front-end's `package.json` file, you will see it starts an HTTP server in port 8000, so we should change the mapping from `3000:3000` to `3000:8000`
-
-For the microservice deployment we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. We could also create a different deployment and work in parallel with the production one. For your convenience the _myhero-ui_ repo includes an already modified manifest you can use for this demo.
-
-Now you should be good to activate your cloud native development environment.
-
-```
-$ okteto up --namespace myhero --file okteto_myhero-ui.yml
- ✓  Environment activated!
-    Ports:
-       3000 -> 8000
-    Cluster:     gke_test-project-191216_europe-west1-b_example-cluster
-    Namespace:   myhero
-    Deployment:  myhero-ui
-
-yarn run v1.12.3
-$ npm install
-npm WARN notice [SECURITY] ecstatic has the following vulnerability: 1 moderate. Go here for more details: https://nodesecurity.io/advisories?search=ecstatic&version=1.4.1 - Run `npm i npm@latest -g` to upgrade your npm version, and then `npm audit` to get more info.
-npm notice created a lockfile as package-lock.json. You should commit this file.
-added 24 packages from 27 contributors and audited 24 packages in 5.825s
-found 1 moderate severity vulnerability
-  run `npm audit fix` to fix them, or `npm audit` for details
-$ http-server -a localhost -p 8000 -c-1 ./app
-Starting up http-server, serving ./app
-Available on:
-  http://localhost:8000
-Hit CTRL-C to stop the server
-```
-
-This process replaces the existing _myhero-ui_ container deployment in the kubernetes cluster, with our new one. It will also synchronize files from your workstation to the development environment, and perform the required port forwarding. You may access this new web front-end deployment by browsing to http://localhost:3000/
-
-As a developer please use your favourite IDE (or even just `vi`) in your local workstation to edit, for example, the file defining the front page (`./app/views/main.html`).
-
-Make a change in your front page title, from 'Make your voice heard!' to 'Make your voice hearRRRd!', and save your file. Go back to your browser, refresh and you will see your changes reflected __immediately!__
-
-Let that sink in for a second... as a developer you have modified your code from your local workstation, using your own IDE and tools. And okteto has transparently updated the deployment containers in your production kubernetes cluster. All of that without any docker or kubernetes interaction: 
-
-* No need to run Docker locally in your workstation
-* No need to create and publish new Docker images after code changes
-* No need to manually update the deployment in your remote kubernetes cluster
-* No need to even know the `docker` or `kubectl` CLIs !
-
-Okteto does everything for you and in a __completely transparent way!__ 
-
-Developers can now easily test how their software changes behave when deployed as containers-based microservices in the real production kubernetes environment... without even knowing what Docker and kubernetes are!
-
-Once you get over this overwhelming and amazing experience, you may disable your cloud native environment by pressing `Ctrl+C` and then `Ctrl+D` in your terminal window. From there you can remove your deployment and replace it with the original one, with:
-
-```
-$ okteto down -n myhero -f okteto_myhero-ui.yml -v
-```
-
-## Cockpit
-
-If you have gone through the whole document by now you have used kubernetes to deploy a number of pods, services, volumes and namespaces, spread across a number of servers in your cluster. Of course you can use the kubernetes CLI to understand the mapping among these multiple elements, but sometimes it is also convenient to have a configurable GUI that shows this information.
-
-[Cockpit](https://cockpit-project.org/) is a tool that helps managing Linux servers from your web browser. It allows you to start containers, administer storage, configure networks, and inspect logs. But the key capability I would like to focus on is its ability to interface with kubernetes API and graphically display how its constructs relate to each other and the underlying infrastructure.
-
-For this example I will be using a common 2-node GKE cluster with our usual _myhero_ application already deployed.
-
-Let's start by going into the cockpit directory in your cloned repo.
-
-```
-$ cd devops_tutorial/devops/cockpit
-```
-
-Create a new namespace for cockpit.
-
-```
-$ kubectl create namespace cockpit
-```
-
-Now apply the cockpit manifest to create the resources required by the dashboard.
-
-```
-$ kubectl -n cockpit create -f kubernetes-cockpit.json
-```
-
-Please wait until all pods are in `Running` status and READY `1/1`. You will also need to wait until the new cockpit service gets and `EXTERNAL-IP`.
-
-```
-$ kubectl -n cockpit get po,svc
-NAME                           READY   STATUS    RESTARTS   AGE
-pod/kubernetes-cockpit-gl8m4   1/1     Running   0          44m
-
-NAME                         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)         AGE
-service/kubernetes-cockpit   LoadBalancer   10.31.245.114   35.240.118.14   443:30837/TCP   44m
-```
-
-Once assigned please use your browser to navigate to that external IP address __using HTTPS__. As an example, for the previous output you would need to go to https://35.240.118.14 (please accept any required security exceptions in your browser).
-
-<p align="center"> 
-<img src="./images/cockpit_login.png">
-</p>
-
-As you can see you will need credentials (user name and password to access your dashboard), and by default those are the ones from your server. Please log into your GKE console and obtain them from _Kubernetes Engine_ - _Clusters_ - _your_cluster_name_, and click on _Show credentials_.
-
-<p align="center"> 
-<img src="./images/cockpit_GKE_credentials.png">
-</p>
-
-Please log into cockpit using those values, and feel free to browse the capabilities offered by the dashboard. If you go to _Topology_ you will see a dynamic diagram similar to this:
-
-<p align="center"> 
-<img src="./images/cockpit_diagram_all.png">
-</p>
-
-It shows the nodes in your kubernetes cluster (2 in this example), what pods reside in each one of them and the services enabling access to these pods. This way it is easy to understand the real architecture of your deployed application. You can move the different elements around so that they are shown the way you prefer.
-
-By default it shows information for all projects in the cluster, so let's filter it to show only info about our _myhero_ application.
-
-<p align="center"> 
-<img src="./images/cockpit_diagram_myhero_ui1.png">
-</p>
-
-Now you see only the nodes supporting services and pods related to this specific application. I have highlighted the _myhero-ui_ pod on the left, so we can now scale the number of replicas and see how the dashboard automatically reflects this change.
-
-```
-$ kubectl -n myhero scale deployment myhero-ui --replicas=2
-```
-
-<p align="center"> 
-<img src="./images/cockpit_diagram_myhero_ui2.png">
-</p>
-
-As you can see, the dashboard automatically shows in real time how the service is load-balancing into 2 different pods.
-
-__Cool way to display your microservices-based application, huh?__
 
 ---
 
