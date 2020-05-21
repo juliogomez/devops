@@ -3766,6 +3766,10 @@ NAME    AGE
 hello   9m25s
 ```
 
+<p align="center"> 
+<img src="https://media.giphy.com/media/l378xw31ztiHQi1YA/giphy.gif">
+</p>
+
 0k, let’s see if our new function works with:
 
 ```
@@ -3907,7 +3911,7 @@ Kudos to you, we have travelled a **really** long path since we started! We cove
 
 Later we covered two different options for Operations teams working on remote environments: on-premises and public Cloud. For on-prem we saw how you can build your own miniDC and deploy a real application on it. We deployed different user interfaces and solved some scalability challenges suffered by real applications. Then you got familiar with public Cloud environments and how deployments work there vs on-prem.
 
-Later on we moved to the benefits of CI/CD/CD and how to implement the required infrastructure in your own setup. We created a pipeline for our application and saw it working. Finally we discussed additional tools that provide multiple benefits for DevOps teams.
+Later on we moved to the benefits of CI/CD/CD and how to implement the required infrastructure in your own setup. We created a pipeline for our application and saw it working. Finally we discussed additional tools that provide multiple benefits for DevOps teams, and how the future might look like for developers moving to serverless solutions.
 
 By now you have quite an understanding of DevOps challenges and possible solutions. What are their concerns and what are some of the tools we can use to address them. You are now one of us, congratulations!
 
