@@ -20,8 +20,8 @@
         - [No hardware for you?](#no-hardware-for-you)
         - [MiniDC features](#minidc-features)
         - [How to build your own cluster](#how-to-build-your-own-cluster)
-        - [Installing Kubernetes the easy way](#installing-kubernetes-the-easy-way)
-        - [Installing Kubernetes the hard way](#installing-kubernetes-the-hard-way)
+        - [Installing Kubernetes the _easy_ way](#installing-kubernetes-the-_easy_-way)
+        - [Installing Kubernetes the _hard_ way](#installing-kubernetes-the-_hard_-way)
         - [External connectivity](#external-connectivity)
         - [Additional tools](#additional-tools)
         - [Architecture-specific images](#architecture-specific-images)
@@ -124,7 +124,7 @@ Please note that for this document I will use a Mac and [iterm2](https://www.ite
 
 Now we need a microservices-based application, but instead of developing one from scratch we will leverage an existing one. And while we are at it we will be able to determine who is the best superhero!
 
-[myhero](http://myhero.imapex.io) is an application developed by [Hank Preston](mailto:hapresto@cisco.com) for demonstration purposes. It is composed by several different microservices, developed in [AngularJS](https://angularjs.org) + [Python](https://www.python.org), and packaged with Docker containers. Basically it allows users to vote for their favorite superhero, and presents the summary results for all received votes.
+_myhero_ is an application developed by [Hank Preston](mailto:hapresto@cisco.com) for demonstration purposes. It is composed by several different microservices, developed in [AngularJS](https://angularjs.org) + [Python](https://www.python.org), and packaged with Docker containers. Basically it allows users to vote for their favorite superhero, and presents the summary results for all received votes.
 
 <p align="center"> 
 <img src="./images/myhero-arch.png">
