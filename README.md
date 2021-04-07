@@ -671,7 +671,6 @@ Don't worry if you have no hardware at all to build your own datacenter. There a
 
 * [Katacoda kubernetes playground](http://katacoda.com/courses/kubernetes/playground): very basic k8s cluster with just 1 master + 1 worker nodes, pre-configured, accessible via web-based terminal, and valid for quick tests, as the environment is very short-lived (5-10 mins).
 * [play-with-kubernetes](https://labs.play-with-k8s.com/): basic k8s cluster with multiple Docker-based nodes ([Docker in Docker](https://hub.docker.com/_/docker/)), you need to initialize all different nodes and required networking yourself, accessible via web-based terminal, short-lived (4-hours).
-* [DevNet k8s sandbox](http://cs.co/SBxK8sContiv): comprehensive environment with 1 master + 3 worker nodes, based on VMs, pre-configured, accessible via SSH, valid for long testing (multi-day reservations) and reliable. It includes other interesting features, like Contiv for networking.
 
 ### No hardware for you?
 
