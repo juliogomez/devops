@@ -234,7 +234,7 @@ As you can see that *docker-compose.yml* file specifies a number of parameters o
 0k, now that you know about *docker-compose.yml* let's explore that file we saw earlier, *Dockerfile*. As discussed it is a local file in the same *myhero-data* directory that defines how to build the required image instantiated by our container.
 
 ```dockerfile
-FROM alpine
+FROM alpine:3.11
 EXPOSE 5000
 MAINTAINER Julio Gomez "jgomez2@cisco.com"
 
