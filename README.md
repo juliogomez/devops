@@ -1113,7 +1113,7 @@ You might think this goes against the foundational idea of containers being *por
 
 Another example would be Windows vs Linux. The only way to use Linux containers on a Windows system is to have Windows emulate a Linux kernel (with something like a VM) and instantiate the Linux image on top of that.
 
-So as long as RPi architecture is so different from a Windows or Mac computer, you will not be able to run the images you created from your workstation. You can try but you will get an error message like this:
+As long as the RPi architecture is quite different from a Windows or Mac computer, you will not be able to run the images you created from your workstation. You can try but you will get an error message like this:
 
 ```console
 myhero-data_1  | standard_init_linux.go:195: exec user process caused "exec format error"
@@ -2708,7 +2708,7 @@ You can create a new repository called *my-test*, just to verify the integration
 
 ### Integration Server
 
-There are several different options to implement your Integration Server. A very common options is [Jenkins](https://jenkins.io), but we have decided to use a different one, called [Drone](https://drone.io). The main reason is that Drone allows you to include the pipeline definition in your Git repo, instead of having to define the pipeline in the Integration server itself.
+There are several different options to implement your Integration Server. A very common options is [Jenkins](https://jenkins.io), but we have decided to use a different one called [Drone](https://drone.io). The main reason is that Drone allows you to include the pipeline definition in your Git repo, instead of having to define the pipeline in the Integration server itself.
 
 In a couple of minutes you will need to create a DNS entry that points to Drone LoadBalancer public IP address, so choose now the name you prefer and make sure it is available in your DNS.
 
@@ -2730,7 +2730,7 @@ And edit *values.yaml* to configure the public URL you configured in DNS for you
 DRONE_HOST: "http://<drone_public_URL>"
 ```
 
-Now you can install Drone. It is also available as containers, so again we will be able to use our k8s cluster to deploy it. And again Helm can help us with this task:
+Now you can install Drone. It is also available as container images, so again we will be able to use our k8s cluster to deploy it. And again Helm can help us with this task:
 
 ```shell
 helm install --name my-drone -f values.yaml stable/drone
