@@ -2009,7 +2009,7 @@ Let's try an easier way. Some of these providers offer the option of providing y
 
 ### GKE setup
 
-For our tutorial we will choose GKE, but you can try with your own preference.
+For our tutorial we will choose GKE, but you can go with your preferred one.
 
 You can work on GCP resources with their browser-embedded [Cloud Shell](https://cloud.google.com/shell/) or install their [Cloud SDK](https://cloud.google.com/sdk/) [gcloud CLI](https://cloud.google.com/sdk/downloads) in your workstation.
 
@@ -2019,7 +2019,7 @@ If you prefer the second option you will also need to install `kubectl` CLI in y
 gcloud components install kubectl
 ```
 
-Before you can start working you will need to define a couple of parameters for `gcloud`: your *default project* and *compute zone* (you may see the available ones with `gcloud compute zones list`). Configuring this params help not having to specify them in every subsequent command.
+Before you can start working you will need to define a couple of parameters for `gcloud`: your *default project* and *compute zone* (you may see the available ones with `gcloud compute zones list` and where they are [here](https://cloud.google.com/about/locations)). Configuring this params helps not having to specify them in every subsequent command.
 
 ```shell
 gcloud config set project <your_project_id>
@@ -2067,7 +2067,7 @@ sudo noip2 -K <process_number>
 
 Now there will be no more updates from your on-prem setup to NoIP servers. 
 
-Login with your user into [NoIP](noip.com) and note that your entries are still there. Please do not delete them, we will reuse them.
+Login with your user into [NoIP](https://www.noip.com/) and note that your entries are still there. Please do not delete anything, we will reuse them later.
 
 ### Application deployment
 
@@ -2083,9 +2083,9 @@ Copy the *ingress* template to the proper manifest name:
 cp k8s_myhero_ingress.template k8s_myhero_ingress.yml
 ```
 
-Edit *k8s_myhero_ingress.yml* to include the 3 required *host* values, for *ui*, *spark* and *api*. Save the file.
+Edit *k8s_myhero_ingress.yml* to include the 3 required *host* values, for *ui*, *spark* and *app*. Save the file.
 
-Now is time to update the manifest for *myhero-ui*, so copy it from the template:
+Now it's time to update the manifest for *myhero-ui*, so copy it from the template:
 
 ```shell
 cp k8s_myhero_ui.template k8s_myhero_ui.yml
