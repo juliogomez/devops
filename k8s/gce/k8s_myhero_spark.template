@@ -57,11 +57,11 @@ spec:
           - name: myhero_app_key
             value: SecureApp
           - name: myhero_spark_bot_email
-            value: <YOUR_SPARK_EMAIL>
+            value: YOUR_SPARK_EMAIL
           - name: spark_token
-            value: <YOUR_SPARK_TOKEN>
+            value: YOUR_SPARK_TOKEN
           - name: myhero_spark_bot_url
-            value: <YOUR_SPARK_DNS_NAME>
+            value: http://YOUR_SPARK_DNS_NAME
           - name: myhero_spark_bot_secret
             value: SecureBot
         imagePullPolicy: Always

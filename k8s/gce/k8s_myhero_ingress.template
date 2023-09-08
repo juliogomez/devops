@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: INSERT_HERE_YOUR_APP_HOSTNAME_FROM_NOIP
+  - host: YOUR_APP_DNS_NAME
     http:
       paths:
       - path: /
@@ -17,7 +17,7 @@ spec:
             port: 
               number: 80
 
-  - host: INSERT_HERE_YOUR_SPARK_HOSTNAME_FROM_NOIP
+  - host: YOUR_SPARK_DNS_NAME
     http:
       paths:
       - path: /
@@ -28,7 +28,7 @@ spec:
             port: 
               number: 80
 
-  - host: INSERT_HERE_YOUR_UI_HOSTNAME_FROM_NOIP
+  - host: YOUR_UI_DNS_NAME
     http:
       paths:
       - path: /

@@ -53,9 +53,9 @@ spec:
           protocol: TCP
         env:
           - name: myhero_spark_server
-            value: http://<YOUR_SPARK_DNS_NAME>
+            value: http://YOUR_SPARK_DNS_NAME
           - name: myhero_app_server
-            value: http://<YOUR_APP_DNS_NAME>
+            value: http://YOUR_APP_DNS_NAME
           - name: myhero_app_key
             value: SecureApp
         imagePullPolicy: Always
