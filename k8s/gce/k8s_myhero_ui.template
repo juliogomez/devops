@@ -16,12 +16,16 @@ spec:
     tier: ui
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-ui
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: myhero
+      tier: ui
   template:
     metadata:
       labels:

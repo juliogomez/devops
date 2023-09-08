@@ -16,12 +16,16 @@ spec:
     tier: spark
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-spark
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: spark
   template:
     metadata:
       labels:

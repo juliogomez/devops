@@ -14,14 +14,18 @@ spec:
   selector:
     app: myhero
     tier: app
-  type: NodePort
+  type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-app
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: app
   template:
     metadata:
       labels:

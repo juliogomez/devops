@@ -2077,13 +2077,21 @@ Go into the directory where all k8s manifests reside:
 cd devops_tutorial/devops/k8s/gce
 ```
 
-Copy the *ingress* template to the proper manifest name:
+Before deploying the ingress resource you will need to install an ingress controller. Instead of using the native one included with GKE, let's rather install NGINX:
+
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/cloud/deploy.yaml
+```
+
+With the ingress controller installed, it is now ready to accept ingress resources. 
+
+Copy the *ingress* resource template to the proper manifest name:
 
 ```shell
 cp k8s_myhero_ingress.template k8s_myhero_ingress.yml
 ```
 
-Edit *k8s_myhero_ingress.yml* to include the 3 required *host* values, for *ui*, *spark* and *app*. Save the file.
+Edit *k8s_myhero_ingress.yml* to include the 3 required *host* values, for *ui*, *spark* and *app*. You should use the hostnames you configured in your DDNS service (i.e. [noip](https://www.noip.com/)), without the `http://` prefix. Save the file.
 
 Now it's time to update the manifest for *myhero-ui*, so copy it from the template:
 
@@ -2091,15 +2099,15 @@ Now it's time to update the manifest for *myhero-ui*, so copy it from the templa
 cp k8s_myhero_ui.template k8s_myhero_ui.yml
 ```
 
-Edit *k8s_myhero_ui.yml* and update the image name, and environment variables for *myhero_spark_server* and *myhero_app_server* with the URLs for your DDNS hostnames (ie. http://...)
+Edit *k8s_myhero_ui.yml* and update the image name, and environment variables for *myhero_spark_server* and *myhero_app_server* with the URLs for your DDNS hostnames, starting with the `http://` prefix.
 
-Do the same with *myhero-spark*, copy from the template to the proper manifest name:
+Do the same with *myhero-spark*. Copy from the template to the proper manifest name:
 
 ```shell
 cp k8s_myhero_spark.template k8s_myhero_spark.yml
 ```
 
-Please edit *k8s_myhero_spark.yml* to update the image name and include your bot email (*myhero_spark_bot_email*), its token (*spark_token*) and DDNS hostname for spark (*myhero_spark_bot_url*).
+Now edit *k8s_myhero_spark.yml* to update the image name and include your bot email (*myhero_spark_bot_email*), its token (*spark_token*) and DDNS hostname for spark (*myhero_spark_bot_url*).
 
 We are now ready to deploy your application. Make sure to edit all your manifests and replace the image name with the ones you built.
 

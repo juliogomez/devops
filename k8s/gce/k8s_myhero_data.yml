@@ -15,12 +15,16 @@ spec:
     tier: data
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-data
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: data
   template:
     metadata:
       labels:
