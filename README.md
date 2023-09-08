@@ -2004,7 +2004,7 @@ For us we would like to have a scheduler (ie. k8s) help deploying our modern mic
 Let's try an easier way. Some of these providers offer the option of providing you with *managed* k8s service. This means they give you the nodes pre-installed so that you can focus only on operating the solution. So why not? We will choose a managed k8s service for this section.
 
 * GCP offers [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/) (GKE)
-* AWS has [Amazon Elastic Container Service for Kubernetes](https://aws.amazon.com/eks) (EKS) in preview currently
+* AWS has [Amazon Elastic Container Service for Kubernetes](https://aws.amazon.com/eks) (EKS)
 * Azure has [Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/) (AKS)
 
 ### GKE setup
