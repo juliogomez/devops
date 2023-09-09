@@ -2193,12 +2193,12 @@ Helm has 2 components: *client* (local agent that communicates with the server) 
 <img src="./images/helm-arch.png">
 </p>
 
-You will need to [install the Helm client in your workstation](https://github.com/kubernetes/helm/blob/master/docs/quickstart.md).
+You will need to [install the Helm client in your workstation](https://helm.sh/docs/intro/install/).
 
 As a Mac user you can install the Helm client with:
 
 ```shell
-brew install kubernetes-helm
+brew install helm
 ```
 
 For our tutorial we will use the k8s cluster we deployed on GCE, but of course you could also use the on-prem setup if you had the chance to build it.
@@ -2207,33 +2207,30 @@ Make sure your kubectl context points to the GCE cluster, and all your nodes are
 
 ```shell
 kubectl config get-contexts
+kubectl config current-context
 kubectl get nodes
-```
-
-Use your *helm* client to deploy the *tiller* server in your k8s cluster with a simple command:
-
-```shell
-helm init
 ```
 
 List all available *stable* charts (ie. packages):
 
 ```shell
-helm search
+helm search hub
 ```
 
 Or look for a specific one, like for example WordPress:
 
 ```shell
-helm search wordpress
+helm search hub wordpress
 ```
+
+(Note: before deploying anything using Helm, please make sure to delete any previous deploments, like myhero, using `kubectl delete -f .` from the `gce` folder)
 
 Let's use [WordPress](https://wordpress.org) as an example. As you probably know WP is an open-source web/blog platform. It is composed by a web server front-end and a database. If you wanted to deploy it manually you would at least need to manage and configure for interoperability two containers: one webserver and one database. 
 
 Helm helps you by providing a chart where everything is configured for you, so you can easily deploy the whole application with:
 
 ```shell
-helm install --name my-wp stable/wordpress
+helm install my-wp oci://registry-1.docker.io/bitnamicharts/wordpress
 ```
 
 You will see Helm returns some indications on how to access your WP deployment (URL, username and password).
@@ -2253,6 +2250,12 @@ kubectl get services
 Once the external IP address is populated, you can use to access your new WordPress deployment from your browser.
 
 Easy, huh?
+
+Let's now delete our release:
+
+```shell
+helm delete my-wp
+```
 
 Helm allows you to create your own *charts*, so why don't we create one for *myhero? That way we will not have to deal with all individual YAML files, but rather install it easily with a single command.
 
@@ -2275,7 +2278,7 @@ Go into the *templates* directory and delete all templates in there (that we wil
 
 ```shell
 cd myhero/templates
-rm *
+rm -rf *
 cp ../../../k8s/gce/*.yml .
 ```
 
@@ -2290,7 +2293,7 @@ ls
 Now you can deploy *myhero* with a single command:
 
 ```shell
-helm install --name helm-myhero myhero-0.1.0.tgz
+helm install helm-myhero myhero-0.1.0.tgz
 ```
 
 Watch pods, services and ingress being created:
@@ -2306,7 +2309,7 @@ Please remember if you want to access your app from Internet, you will need to m
 Once you are finished you may easily delete your myhero application:
 
 ```shell
-helm delete --purge helm-myhero
+helm delete helm-myhero
 ```
 
 ## Service Mesh
