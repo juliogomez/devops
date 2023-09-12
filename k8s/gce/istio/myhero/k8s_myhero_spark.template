@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
       - name: myhero-spark
-        image: juliocisco/myhero-spark-http:latest
+        image: juliocisco/myhero-spark:latest
         livenessProbe:
           httpGet:
             path: /health
