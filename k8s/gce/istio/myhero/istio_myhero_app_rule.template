@@ -9,6 +9,9 @@ spec:
   - myhero-gateway
   - mesh
   http:
-  - route:
+  - match:
+    - uri:
+        prefix: /options
+    route:
     - destination:
         host: myhero-app.myhero.svc.cluster.local

@@ -2337,12 +2337,10 @@ Additionally Istio provides useful capabilities around *failure recovery* to tol
 Depending on your environment (on-prem or Cloud) you will have to follow the instructions on [how to setup Istio with Kubernetes](https://istio.io/docs/setup/kubernetes/quick-start.html), and it will be installed in its own namespace (*istio-system*).
 
 ```
-curl -L https://git.io/getLatestIstio | sh -
-cd istio-1.2.2
+curl -L https://istio.io/downloadIstio | sh -
+cd istio-1.19.0
 export PATH=$PWD/bin:$PATH
-for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
-kubectl apply -f install/kubernetes/istio-demo.yaml
-cd ..
+istioctl install --set profile=demo -y
 ```
 
 Check everything is ready:
@@ -2352,7 +2350,23 @@ kubectl -n istio-system get svc
 kubectl -n istio-system get pods
 ```
 
-**Cool!** Istio is now ready in our system, let's give a try with our modern microservices-based example application: *myhero*.
+**Cool!** Istio is now ready in our system.
+
+As long as Istio includes its own ingress controller, it will get its own public IP address:
+
+```
+kubectl -n istio-system get svc istio-ingressgateway
+```
+
+Please copy the address under `EXTERNAL-IP` and use it to update your 3 DDNS entries (i.e. [noip](https://www.noip.com/))
+
+Before moving forward let's also add one more node to our GCP cluster, so it can accommodate the additional resources required by Istio's envoy proxies.
+
+```
+gcloud container clusters resize <your_cluster_name> --num-nodes 4
+```
+
+It's now time to give it a try with our modern microservices-based example application: *myhero*.
 
 This time we will deploy *myhero* in its own namespace so let's create it, label it for Istio injection (so that all pods in that namespace get a sidecar proxy container injected), and then deploy. For this example we assume you are using a Google Kubernetes Engine (GKE) managed cluster, but you could use any other option, including an on-prem setup:
 
@@ -2366,13 +2380,13 @@ kubectl label namespace myhero istio-injection=enabled
 kubectl get namespace -L istio-injection
 ```
 
-Complete the required information in all manifests with *.template* extension in the *myhero* and *routing* folders. Once done rename them from *.template* to *.yml*.
+Complete the required information in all manifests with *.template* extension in the *myhero* and *routing* folders. Once done rename them from *.template* to *.yml*
 
-Apply the ones in *myhero* folder for the initial setup:
+Apply the files in the *myhero* folder for the initial setup:
 
 ```
-kubectl apply -f myhero/istio*
-kubectl -n myhero apply -f myhero/k8s_myhero*
+for f in myhero/istio*; do kubectl apply -f $f; done
+for f in myhero/k8s_myhero*; do kubectl -n myhero apply -f $f; done
 ```
 
 If you take a look at the new pods, you will immediately notice that they include 2 containers, instead of just 1 as before (ie. READY 2/2):
@@ -2381,7 +2395,7 @@ If you take a look at the new pods, you will immediately notice that they includ
 kubectl -n myhero get pods
 ```
 
-You will be able to access *myhero* public IP address from your own browser and see the application working. Those new sidecar proxy containers that are intercepting all I/O are transparent to the service.
+You will be able to access *myhero* public IP address from your own browser and see the application working. Those new sidecar proxy containers are intercepting all I/O, and are transparent to the service.
 
 For our capabilities demonstration today we will focus on some specific *traffic management* use cases, although Istio provides multiple security and telemetry capabilities as well.
 

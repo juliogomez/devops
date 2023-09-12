@@ -1,10 +1,14 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-ernst
   namespace: myhero
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: ernst
   template:
     metadata:
       labels:
@@ -23,7 +27,7 @@ spec:
             value: myhero-data
           - name: myhero_data_key
             value: SecureData
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           limits:
             cpu: 200m

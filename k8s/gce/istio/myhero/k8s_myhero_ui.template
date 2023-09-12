@@ -16,13 +16,18 @@ spec:
     tier: ui
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-ui-v1
   namespace: myhero
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: ui
+      version: v1
   template:
     metadata:
       labels:
@@ -63,13 +68,18 @@ spec:
             memory: 48M
       restartPolicy: Always
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-ui-v2
   namespace: myhero
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: ui
+      version: v2
   template:
     metadata:
       labels:
@@ -110,13 +120,18 @@ spec:
             memory: 48M
       restartPolicy: Always
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-ui-v3
   namespace: myhero
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: ui
+      version: v3
   template:
     metadata:
       labels:

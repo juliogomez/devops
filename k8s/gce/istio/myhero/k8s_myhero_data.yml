@@ -9,20 +9,24 @@ metadata:
 spec:
   ports:
   - port: 80
-#    name: http
+    name: http
     targetPort: http
   selector:
     app: myhero
     tier: data
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-data
   namespace: myhero
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: data
   template:
     metadata:
       labels:
@@ -51,7 +55,7 @@ spec:
         env:
           - name: myhero_data_key
             value: SecureData
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           limits:
             cpu: 200m

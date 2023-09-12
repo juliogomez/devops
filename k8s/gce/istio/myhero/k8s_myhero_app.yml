@@ -16,18 +16,23 @@ spec:
     tier: app
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-app
   namespace: myhero
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: myhero
+      tier: app
   template:
     metadata:
       labels:
         app: myhero
         tier: app
+        istio: ingressgateway
     spec:
       containers:
       - name: myhero-app
@@ -55,13 +60,14 @@ spec:
             value: "1883"
           - name: myhero_app_mode
             value: queue
+#            value: direct
           - name: myhero_data_srv
             value: myhero-data
           - name: myhero_data_key
             value: SecureData
           - name: myhero_app_key
             value: SecureApp
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           limits:
             cpu: 200m

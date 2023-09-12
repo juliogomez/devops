@@ -14,15 +14,19 @@ spec:
   selector:
     app: myhero
     tier: spark
-  type: NodePort
+  type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-spark
   namespace: myhero
 spec:
-  replicas: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: spark
   template:
     metadata:
       labels:

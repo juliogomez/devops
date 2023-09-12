@@ -17,13 +17,17 @@ spec:
     tier: mosca
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-mosca
   namespace: myhero
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: mosca
   template:
     metadata:
       labels:
@@ -48,7 +52,7 @@ spec:
 #            port: 1883
 #          initialDelaySeconds: 5
 #          periodSeconds: 5
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           limits:
             cpu: 200m
