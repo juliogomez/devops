@@ -838,7 +838,7 @@ Let's start by installing k3s in your master RPi node. Log in from your workstat
 curl -sfL https://get.k3s.io | sh -
 ```
 
-We need to generate a `kubeconfig` file so we can use `kubectl` commands:
+We need to generate a `kubeconfig` file so we can run `kubectl` commands from the master node:
 
 ```
 export KUBECONFIG=~/.kube/config
@@ -861,7 +861,7 @@ Before going to the other RPi boards please note down the value of the token in 
 sudo cat /var/lib/rancher/k3s/server/node-token
 ```
 
-Let's now configure the rest of RPi boards as worker nodes, by specifying their IP addresses (192.168.1.101-103) and the master node IP address (192.168.1.100):
+Let's now configure the rest of RPi boards as worker nodes, using the master node IP address (192.168.1.100) and its token:
 
 ```shell
 curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.100:6443 K3S_TOKEN=<YOUR_TOKEN> sh -
@@ -873,13 +873,13 @@ In a minute you should see all of them up and running:
 kubectl get nodes
 ```
 
-To make it easier to manage the cluster from your own workstation, without having to log into the master RPi, let's copy the `kubeconfig` file from your laptop:
+To make it easier to manage the cluster from your own workstation, without having to log into the master RPi, let's copy the `kubeconfig` file by running this command from your laptop:
 
 ```shell
 scp pi@192.168.1.100:~/.kube/config ~/.kube/config
 ```
 
-__That's all__... if you are a fast typer you can go from ZERO to a configured kubernetes cluster in 30 seconds.
+__That's all__... if you are a fast typer you can go from ZERO to a configured kubernetes cluster in 3 minutes.
 
 <p align="center"> 
 <img src="https://media.giphy.com/media/bh4jzePjmd9iE/giphy.gif">
