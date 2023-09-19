@@ -719,11 +719,29 @@ For less than $300 you are all set to build a tiny and quiet, but fully-function
 
 From the hardware perspective it is quite straight-forward, as you only need to mount the RPi boards on the case, connect all power cables to the power supply, and Ethernet cables to the switch. That's it.
 
-Now for the software we need to run a number of tasks, some of them on all nodes but some of them only on certain ones, so please pay attention to the following instructions. Many thanks to [Carlos](https://twitter.com/carlosedp) for his guidance on k8s over ARM.
+Now for the software we need to run a number of tasks, some of them on all nodes and some of them only on certain ones, so please pay attention to the following instructions.
 
 __For all nodes__
 
-* Flash the microSD card with a Raspbian image. You may go [here](https://downloads.raspberrypi.org/raspbian_lite/images/) and download the latest version. Then download [Etcher](https://etcher.io/), install it in your workstation and flash your card with the Raspbian image you just downloaded. As long as SSH is disabled by default you would not be able to access your RPi unless you used a USB keyboard and HDMI monitor. Luckily there is a workaround in case you do not have any of these: once your card is flashed, access it from a terminal window and create an empty file called *ssh (in Mac you may just run `touch ssh` from your terminal). This will allow you to run a *headless* install (without terminal and keyboard) of your RPi. Insert the microSD card in the RPi and power it. Connect your workstation to a port in the switch and run: 
+* Flash the microSD card with a Raspbian image. You may go [here](https://www.raspberrypi.com/software/operating-systems/) and download the _Legacy - Lite_ version. Then download [Etcher](https://etcher.io/), install it in your workstation and flash your card with the Raspbian image you just downloaded. 
+
+  As long as SSH is disabled by default you would not be able to access your RPi unless you used a USB keyboard and HDMI monitor. Luckily there is a workaround in case you do not have any of these: once your card is flashed, access it from a terminal window (`cd /Volumes/boot`) and create an empty file called *ssh* (in Mac you may just run `touch ssh` from your terminal). This will allow you to run a *headless* install (without terminal and keyboard) of your RPi. 
+
+  _cgroups_ are required to run containers in your RPi boards, but unfortunately they are disabled by default in the latest OS versions. In order to enable them please edit the `cmdline.txt` file in the same location and __append to the same line__ the following content:
+
+  ```
+  cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+  ```
+
+  The resulting line should like similar to this one:
+
+  ```
+  console=serial0,115200 console=tty1 root=PARTUUID=858acf0e-02 rootfstype=ext4 fsck.repair=yes rootwait quiet init=/usr/lib/raspi-config/init_resize.sh cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+  ```
+
+  You can now go back to your home directory (`cd`), and eject the micro-SD volume from _Finder_.
+
+  Insert the microSD card in the RPi and power it. Connect your workstation to a port in the switch and run: 
 
   ```shell
   ssh pi@raspberry.local
@@ -732,25 +750,6 @@ __For all nodes__
   (default password is *raspberry*)
 
   You are in!
-
-* Now you need to do some basic configuration on your RPi.
-
-  ```shell
-  sudo raspi-config
-  ```
-
-  You will access its configuration menu. There you will need to change the default password. Then under *network options* change *hostname* for each RPi board to 'master', 'worker-01', 'worker-02' and 'worker-03'. Under localisation options change locale to your preferred value (ie. en_GB.UTF-8). Select your *timezone*, *keyboard configuration*, and change your *WiFi country*. Under *interfacing options* enable SSH access. Under *advanced options* expand your filesystem so that the whole microSD card is used by the system. You may now finish. There are a couple of locale variables that are not automatically set, so please run: 
-  
-  ```shell
-  sudo vi /etc/default/locale
-  ```
-
-  and add the following lines:
-
-  ```console
-  LANGUAGE=en_GB.UTF-8
-  LC_ALL=en_GB.UTF-8
-  ```
 
 * Create a script to set the hostname, IP address and DNS server:
 
@@ -783,7 +782,13 @@ __For all nodes__
   EOT
   ```
 
-* Run the following script:
+* Change the permissions to make the file executable:
+
+  ```shell
+  chmod 744 hostname_and_ip.sh
+  ```
+
+* Now run the script:
 
   ```shell
   ./hostname_and_ip.sh <hostname> <IP> <default_GW>
@@ -822,28 +827,24 @@ Moving forward to the next step, there are 2 ways of installing kubernetes in yo
 
 ### Installing Kubernetes the _easy_ way
 
-[k3s](https://k3s.io/) is an easy-to-install, lightweight but fully-compliant, kubernetes distribution (40MB single binary and 512MB RAM) optimized for ARM architectures, like our RPi setup. It does not include several heavy components that might not be really necessary in a common setup, like legacy features, embedded plugins, and other things like... Docker. Yes, you read well. It does not include Docker. What!?! Well, it includes a better option: a low-level component called [containerd](https://containerd.io/), much lighter than Docker.
+[k3s](https://k3s.io/) is an easy-to-install, lightweight but fully-compliant, kubernetes distribution (40MB single binary and 512MB RAM) optimized for ARM architectures, like our RPi setup. It does not include several heavy components that might not be really necessary in a common setup, like legacy features, embedded plugins, and other things like... Docker. Yes, you read well. It does not include Docker. What!?! Well, it includes a different run-time engine: a low-level component called [containerd](https://containerd.io/), much lighter than Docker.
 
 Sounds like a great option for our small cluster, right? Time to get our hands dirty!
 
-To make installation as simple and quick as possible we will use a tool called [k3sup](https://k3sup.dev/). So, let's get started by running the following steps from your workstation.
 
-First you need to install `k3sup`:
+Let's start by installing k3s in your master RPi node. Log in from your workstation with `ssh pi@master.local` and then run:
 
 ```shell
-curl -sLS https://get.k3sup.dev | sh
+curl -sfL https://get.k3s.io | sh -
 ```
 
-Then you can install k3s in your master RPi node (ie. with IP 192.168.1.100):
+We need to generate a `kubeconfig` file so we can use `kubectl` commands:
 
-```shell
-k3sup install --ip 192.168.1.100 --user pi
 ```
-
-Save the `kubeconfig` file in your local directory, and start using it (make sure specify the complete path to the file):
-
-```shell
-export KUBECONFIG=~/Downloads/kubeconfig
+export KUBECONFIG=~/.kube/config
+mkdir ~/.kube 2> /dev/null
+sudo k3s kubectl config view --raw > "$KUBECONFIG"
+chmod 600 "$KUBECONFIG"
 ```
 
 In a minute you should be able to see your kubernetes master node up and ready:
@@ -854,18 +855,28 @@ kubectl get nodes
 
 __wow__, that was quick, huh?
 
+Before going to the other RPi boards please note down the value of the token in your master node. You will need it to link the worker nodes to the same cluster:
+
+```shell
+sudo cat /var/lib/rancher/k3s/server/node-token
+```
+
 Let's now configure the rest of RPi boards as worker nodes, by specifying their IP addresses (192.168.1.101-103) and the master node IP address (192.168.1.100):
 
 ```shell
-k3sup join --ip 192.168.1.101 --server-ip 192.168.1.100 --user pi
-k3sup join --ip 192.168.1.102 --server-ip 192.168.1.100 --user pi
-k3sup join --ip 192.168.1.103 --server-ip 192.168.1.100 --user pi
+curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.100:6443 K3S_TOKEN=<YOUR_TOKEN> sh -
 ```
 
 In a minute you should see all of them up and running:
 
 ```shell
 kubectl get nodes
+```
+
+To make it easier to manage the cluster from your own workstation, without having to log into the master RPi, let's copy the `kubeconfig` file from your laptop:
+
+```shell
+scp pi@192.168.1.100:~/.kube/config ~/.kube/config
 ```
 
 __That's all__... if you are a fast typer you can go from ZERO to a configured kubernetes cluster in 30 seconds.
@@ -2634,7 +2645,7 @@ You might even decide to automatically deploy your new code into the production 
 <img src="./images/CDep.png">
 </p>
 
-Relies on *Continuous Integration* and *Continuous Deployment* to automatically release code into production as soon as it is ready. This would mean a *constant* flow of new features into production.
+It relies on *Continuous Integration* and *Continuous Deployment* to automatically release code into production as soon as it is ready. This would mean a *constant* flow of new features into production.
 
 The adjective *continuous*, applied to each of these phases, means that each code change will translate into a single deployment. Automation, flexible infrastructure and modular architectures will make it possible.
 
