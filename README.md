@@ -730,13 +730,13 @@ __For all nodes__
   _cgroups_ are required to run containers in your RPi boards, but unfortunately they are disabled by default in the latest OS versions. In order to enable them please edit the `cmdline.txt` file in the same location and __append to the same line__ the following content:
 
   ```
-  cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+  cgroup_memory=1 cgroup_enable=memory
   ```
 
   The resulting line should like similar to this one:
 
   ```
-  console=serial0,115200 console=tty1 root=PARTUUID=858acf0e-02 rootfstype=ext4 fsck.repair=yes rootwait quiet init=/usr/lib/raspi-config/init_resize.sh cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+  console=serial0,115200 console=tty1 root=PARTUUID=858acf0e-02 rootfstype=ext4 fsck.repair=yes rootwait quiet init=/usr/lib/raspi-config/init_resize.sh cgroup_memory=1 cgroup_enable=memory
   ```
 
   You can now go back to your home directory (`cd`), and eject the micro-SD volume from _Finder_.
