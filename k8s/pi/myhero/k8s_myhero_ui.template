@@ -15,12 +15,16 @@ spec:
     tier: ui
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-ui
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: myhero
+      tier: ui
   template:
     metadata:
       labels:
@@ -29,7 +33,7 @@ spec:
     spec:
       containers:
       - name: myhero-ui
-        image: juliocisco/pi-myhero-ui:latest
+        image: juliocisco/pi_myhero_ui:latest
         livenessProbe:
           httpGet:
             path: /
@@ -48,9 +52,9 @@ spec:
           protocol: TCP
         env:
           - name: myhero_spark_server
-            value: 
+            value: http://YOUR_SPARK_DNS_NAME
           - name: myhero_app_server
-            value: 
+            value: http://YOUR_APP_DNS_NAME
           - name: myhero_app_key
             value: SecureApp
         imagePullPolicy: Always

@@ -53,7 +53,7 @@ spec:
         env:
           - name: myhero_data_key
             value: SecureData
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           limits:
             cpu: 200m

@@ -21,7 +21,7 @@ kind: Deployment
 metadata:
   name: myhero-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: myhero
@@ -39,6 +39,7 @@ spec:
           failureThreshold: 5
           httpGet:
             path: /health
+#            path: /hero_list
             port: 5000
             scheme: HTTP
           initialDelaySeconds: 5
@@ -48,6 +49,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /health
+#            path: /hero_list
             port: 5000
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -68,7 +70,7 @@ spec:
             value: SecureData
           - name: myhero_app_key
             value: SecureApp
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           limits:
             cpu: 200m

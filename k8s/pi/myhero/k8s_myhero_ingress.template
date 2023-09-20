@@ -1,29 +1,39 @@
----
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: myhero-ingress
-  namespace: default
 spec:
+  ingressClassName: traefik
   rules:
-  - host: 
+  - host: YOUR_SERVEO_NET_UI_URL
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: myhero-ui
-          servicePort: 80
-  - host: 
+          service:
+            name: myhero-ui
+            port:
+              number: 80
+
+  - host: YOUR_SERVEO_NET_APP_URL
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: myhero-app
-          servicePort: 80
-  - host: 
+          service:
+            name: myhero-app
+            port:
+              number: 80
+  
+  - host: YOUR_SERVEO_NET_SPARK_URL
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: myhero-spark
-          servicePort: 80
+          service:
+            name: myhero-spark
+            port:
+              number: 80

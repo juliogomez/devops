@@ -15,12 +15,16 @@ spec:
     tier: spark
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-spark
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: spark
   template:
     metadata:
       labels:
@@ -29,13 +33,17 @@ spec:
     spec:
       containers:
       - name: myhero-spark
-        image: juliocisco/pi-myhero-spark:latest
+        image: juliocisco/pi_myhero_spark:latest
         livenessProbe:
+          failureThreshold: 5
           httpGet:
             path: /health
             port: 5000
+            scheme: HTTP
           initialDelaySeconds: 5
           periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /health
@@ -52,11 +60,11 @@ spec:
           - name: myhero_app_key
             value: SecureApp
           - name: myhero_spark_bot_email
-            value: 
+            value: YOUR_SPARK_EMAIL 
           - name: spark_token
-            value:
+            value: YOUR_SPARK_TOKEN
           - name: myhero_spark_bot_url
-            value: 
+            value: http://YOUR_SPARK_DNS_NAME 
           - name: myhero_spark_bot_secret
             value: SecureBot
         imagePullPolicy: Always
