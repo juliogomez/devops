@@ -108,7 +108,7 @@ Sometimes developers work on a common server for a number of individuals, but qu
 
 ## Containers and Docker
 
-We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/Linux_containers). And enter the current *de facto* runtime engine, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](http://learninglabs.cisco.com/lab/docker-101/step/1) and [Docker 201](http://learninglabs.cisco.com/lab/docker-201/step/1), to  get some really nice foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to manage them.
+We would need something that packages and isolates software from the underlying dependencies. Enter [containers](https://en.wikipedia.org/wiki/LXC). And enter the current *de facto* runtime engine, [Docker](https://www.docker.com/what-docker). We will not go through the specifics of containers in this tutorial, but it would be good for you to review [their website](https://www.docker.com), [this magnificent training](http://container.training/intro-fullday.yml.html), and the following two Learning Labs: [Docker 101](https://developer.cisco.com/learning/tracks/containers/containers-intro-1/) and [Docker 201](https://developer.cisco.com/learning/tracks/containers/containers-intro-2/), to  get some really nice foundational hands-on experience. Once completed you will have a good understanding of what Docker containers are and how to manage them.
 
 But containers are not only another virtualisation technology. The packaging and portability layer they provide perfectly fits the needs of modern application architectures based on *microservices*. These are small pieces of software designed to implement a certain subset of functionalities, and interact with other microservices via [APIs](https://en.wikipedia.org/wiki/Application_programming_interface). This is a really powerful approach to software development, as it allows developers to make the most of Cloud native services, and design modular elastic applications that can automatically scale up or down dynamically, based on predefined conditions evaluated in real-time.
 
@@ -118,9 +118,9 @@ On top of that microservices provide fault isolation, so that a failure or bug i
 
 ## Modern application development with containers
 
-First things first: if you want to understand how *modern* developers work in their own workstations, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker) and get [Docker Community Edition](https://www.docker.com/community-edition). When you are done open a terminal in your workstation (ie. terminal or iterm for Mac, Command Prompt or PowerShell on Windows), and please check that Docker is correctly installed in your system with `docker version`. Finally, go to "Docker Preferences" - "File Sharing", and include the `/Users` directory so that later on we can mount directories from your workstation into Docker container volumes.
+First things first: if you want to understand how *modern* developers work in their own workstations, you will definitely need to install Docker on yours. Please visit [Docker download](https://www.docker.com/get-docker), get [Docker Personal](https://www.docker.com/products/personal/) and install it. Once done open a terminal in your workstation. Please note that for the whole document I will be using [iterm2](https://www.iterm2.com) on a Mac system, but you should be able to use any other similar tool and obtain an equivalent output in your own system. For Windows you can use Command Prompt or PowerShell.
 
-Please note that for this document I will use a Mac and [iterm2](https://www.iterm2.com) but you should be able to use any other similar tool and obtain an equivalent output in your own system. For Windows you can use Command Prompt or PowerShell.
+From your terminal check that Docker is correctly installed in your system with `docker version`. Finally, go to "Docker Preferences" - "File Sharing", and include the `/Users` directory so that later on we can mount directories from your workstation into Docker container volumes.
 
 Now we need a microservices-based application, but instead of developing one from scratch we will leverage an existing one. And while we are at it we will be able to determine who is the best superhero!
 
@@ -135,7 +135,7 @@ As the diagram indicates *myhero* has three layers: Data, Applications and Prese
 * *Application* layer, composed by three different microservices. The first and main one is the middleware that processes votes from several user interfaces, and stores them in the Data layer. It includes a variable number of load-balanced containers depending on the needs of the system. The second and third microservices in this layer (*mosca* and *ernst*) are optional, and implement a queueing system to alleviate the pressure when there are multiple votes waiting to be stored in the Data layer.
 * *Presentation* layer, composed by several microservices that interact directly with end users. We will use two of them: a Web User Interface for users to vote via a webpage, and a Webex (previously known as Spark) Interface for users to vote via Webex (whether from the App or from the Webex website). Each one of these microservices will also be composed by a variable number of load-balanced containers depending on the required load for each of them.
 
-Once you understand the architecture of *myhero* let's get the source code for its three main microservices (*myhero-ui*, *myhero-app* and *myhero-data*) and build a simplified version in our workstation.
+Once you understand the architecture of *myhero* let's get the source code for its three main microservices (*myhero-ui*, *myhero-app* and *myhero-data*) and build a simplified version (without queueing) in our workstation.
 
 <p align="center"> 
 <img src="./images/myhero-simple.png">
@@ -176,13 +176,13 @@ git clone https://github.com/juliogomez/devops
 
 ## Your first container
 
-Let's start with *myhero-data*, so in your terminal run:
+Let's start by going into the *myhero-data* directory:
 
 ```shell
 cd myhero_data
 ```
 
-And then to see its contents:
+And then see its content:
 
 ```shell
 ls
@@ -192,7 +192,7 @@ The *myhero_data/myhero_data* directory stores all the Python code that implemen
 
 We are more interested in the *docker-compose.yml* file. While you check its content you might be interested in learning about its [YAML format](https://en.wikipedia.org/wiki/YAML).
 
-Please edit you `docker-compose.yml` and replace the image *name* in *\<name>/\<image>* with your own DockerHub username (if you don't have one you can easily register and get one [here](https://hub.docker.com/)):
+Please edit you `docker-compose.yml` file and replace the image *name* in *\<your_DockerHub_user>/myhero-data* with your own DockerHub username (if you don't have one you can easily register and get one [here](https://hub.docker.com/)):
 
 ```yaml
 version: '2'
@@ -209,7 +209,7 @@ services:
      -  myhero_data_dir=/app/data/
 ```
 
-[docker-compose](https://docs.docker.com/compose/overview/) is a tool to define and run Docker applications. It should be included by default in your standard Docker CE workstation installation, and you can check if it is correctly installed in your system by running:
+[docker-compose](https://docs.docker.com/compose/overview/) is a tool to define and run Docker applications. It should be included by default in your standard Docker Personal installation, and you can check if it is correctly installed in your system by running:
 
 ```shell
 docker-compose version
@@ -225,7 +225,7 @@ As you can see that *docker-compose.yml* file specifies a number of parameters o
 * *image* defines the name of the image to create when building it.
 * *ports* defines the required mapping of the port where the container provides its service (for *myhero-data* that is 5000, but this port is only accessible from other containers, not from external systems like our workstation terminal), to the port we want to use in our computer to access that service (in this case port 15000). This way we can access the service provided by this container via calls to `localhost:15000`.
 * *volumes* maps a directory in your workstation (in this case the local directory, identified by ".") to a directory inside the container (/app/data in this case). This mapping provides a simple method for data persistency, as all votes will be stored by the container in its */app/data* directory, which is the same as the local directory for *myhero-data* in your workstation. No matter what happens to your *myhero-data* container, your voting data will always be available in your computer. If you kill the container and create a new one, it will still be able to access the same data, so you do not loose any of your votes.
-* *environment* defines a couple of variables we want to pass to the container. Why did we not include these values in the code itself, and that way avoid having to define them here? Because there are certain guidelines that we want to follow when developing modern software, things we have learned that work better and provide better results and improved security like in this case. You may learn about them by visiting [12factor](https://12factor.net), and you will see [number III](https://12factor.net/config) talks about how configuration values should be stored in environment variables. This helps us reusing exactly the same code in different environments (ie. dev, qa or prod), but run it differently based on environment variables. It also provides better security as you can upload your software to a public repo without including any confidential secrets or configuration. For example in this case with *myhero-data* you have cloned a public repo with all code, but we will now provide a couple of environment variables. The first one is the private shared *key* ('myhero_data_key') that other containers (like *myhero-app*) should use to interact with it. As long as this container will eventually be running in a public environment you want to make sure that its data are only available to a certain subset of other containers. This shared key provide this kind of authentication. You will see we assign it the value of a variable called *MYHERO_DATA_KEY*, which is defined in the *.env* file also available in your local directory. We have pre-populated that file with a sample key for you to use (check it out and you will see it has a value of *DevData*), but you could modify that *.env* file with your own customised value. You would just need to make sure that other containers use that same value when trying to access *myhero-data* container. For now let's leave it like this. The second environment variable defined in our *docker-compose.yml* file is 'myhero_data_dir' and we have assigned it the name of the directory where we would like the code to store all data. This parameter gives us the flexibility to later on change very easily the location where our container stores its voting data, if we need to.
+* *environment* defines a couple of variables we want to pass to the container. Why did we not include these values in the code itself, and that way avoid having to define them here? The reason is there are certain guidelines that we want to follow when developing modern software, things we have learned that work better and provide better results and improved security, like in this case. You may learn about them by visiting [12factor](https://12factor.net), and you will see [number III](https://12factor.net/config) talks about how configuration values should be stored in environment variables. This helps us reusing exactly the same code in different environments (i.e. dev, qa or prod), but run it differently based on environment variables. It also provides better security as you can upload your software to a public repo without including any confidential secrets or configuration. For example in this case with *myhero-data* you have cloned a public repo with all code, but we will now provide a couple of environment variables. The first one is the private shared *key* ('myhero_data_key') that other containers (like *myhero-app*) should use to interact with it. As long as this container will eventually be running in a public environment you want to make sure that its data are only available to a certain subset of other containers. This shared key provide this kind of authentication. You will see we assign it the value of a variable called *MYHERO_DATA_KEY*, which is defined in the *.env* file also available in your local directory. We have pre-populated that file with a sample key for you to use (check it out and you will see it has a value of *DevData*), but you could modify that *.env* file with your own customised value. You would just need to make sure that other containers use that same value when trying to access *myhero-data* container. For now let's leave it like this. The second environment variable defined in our *docker-compose.yml* file is 'myhero_data_dir' and we have assigned it the name of the directory where we would like the code to store all data. This parameter gives us the flexibility to easily change the location where our container stores its voting data.
 
 <p align="center"> 
 <img src="https://media.giphy.com/media/l3q2Ph0I1osaagoQE/giphy.gif">
@@ -261,7 +261,7 @@ Each one of these lines define a sequential step to create your own image. *FROM
 
 So when *docker-compose.yml* includes a line that says `build: .` that means docker-compose should look for a file called *Dockerfile* in the local directory, and create an image by running all the steps defined in it.
 
-(Note: as a curiosity you will find a couple of *.txt* files in your *myhero-data* directory. *myhero_options.txt* is the source for superhero options that you can vote, and  *votes.txt* is where the microservice stores all received votes. Not the best database implementation, but perfectly valid for our demonstration.)
+(Note: as a curiosity you will find a couple of *.txt* files in your *myhero-data* directory: *myhero_options.txt* is the source for superhero options that you can vote, and  *votes.txt* is where the microservice stores all received votes. Not the best database implementation... but perfectly valid for our demonstration.)
 
 Fantastic! Now that you understand this whole process and the interaction between *docker-compose.yml* and *Dockerfile* it is time to actually build the image and run our first *myhero-data* container. 
 
@@ -301,9 +301,11 @@ It is easier to understand with an example, so let's interact with our *myhero-d
 
 So let's go ahead and emulate an API call to our *myhero-data* container and see if it answers correctly. From your second terminal window run:
 
-```json
+```shell
 curl -X GET -H "key: DevData" http://localhost:15000/options
+```
 
+```json
 {
     "options": [
         "Captain Cloud",
@@ -328,9 +330,11 @@ You should get a [JSON](https://en.wikipedia.org/wiki/JSON) file with a list of 
 
 You can use *curl* for additional tasks, like voting (using the POST method instead of GET):
 
-```json
+```shell
 curl -X POST -H "key: DevData" http://localhost:15000/vote/Deadpool
+```
 
+```json
 {
   "result": "1"
 }
@@ -338,9 +342,11 @@ curl -X POST -H "key: DevData" http://localhost:15000/vote/Deadpool
 
 You can also review the summary results for all votes (GET method again):
 
-```json
+```shell
 curl -X GET -H "key: DevData" http://localhost:15000/results
+```
 
+```json
 {
   "Captain Cloud": 1,
   "Deadpool": 1
@@ -395,9 +401,11 @@ curl -X POST -H "key: DevApp" http://localhost:15001/vote/Superman
 
 Or getting the results (please note the */v2/*, as the initial voting specification was deprecated):
 
-```json
+```shell
 curl -X GET -H "key: DevApp" http://localhost:15001/v2/results
+```
 
+```json
 {
   "Captain Cloud": 1,
   "Deadpool": 1,
@@ -415,7 +423,7 @@ As you can see we have had to use *DevApp* instead of *DevData*, because we are 
 
 So just to make it clear once again, from our workstation terminal we are requesting the voting options to *myhero-app* and, as long as that information is in a different container, *myhero-app* is requesting *myhero-data* to provide it. *myhero-data* returns the JSON file to *myhero-app*, and *myhero-app* forwards it to our terminal.
 
-Nice, let's now do the same for the third and last of our containers, *myhero-ui*.
+Nice, let's now do the same for the third and last of our containers: *myhero-ui*.
 
 Please go to its own directory where you cloned the content from the repo in GitHub:
 
@@ -427,7 +435,7 @@ There you will see a very similar file and directory structure, only in this cas
 
 For now let's just review the *docker-compose.yml* file, and this time it should be *really* familiar to you. It just maps a different port in your workstation (15080) to port 80 in the container (80 is the default port for web servers like this UI frontpage). And then you have your environment variables. Something that might catch your attention is that they define the *app_server* and *spark_server* by referring to *localhost:workstation_port* instead of *container_name:container_port*.
 
-This is a consequence of the way AngularJS works. If you are not familiar with this programming language that is 0k, but you will need to understand this important implication. Services implemented as AngularJS applications run *client-side*. That means that the only interaction from the browser to the web server is to download HTML, CSS, images and JavaScript code. All the actual logic and code running happens client-side, in the browser itself. This is really important for our application, because *myhero-ui* will be that webserver providing our workstation's browser with everything it needs. And then the browser will access directly *myhero-app*. That is why we need to provide an externally accessible address of our *myhero-app* container, in the form of an environment variable.
+This is a consequence of the way AngularJS works. If you are not familiar with this programming language that is 0k, but you will need to understand this important implication. Services implemented as AngularJS applications run *client-side*. That means that the only interaction from the browser to the web server is to download HTML, CSS, images and JavaScript code. All the actual logic and code running happens client-side, in the browser itself. This is really important for our application, because *myhero-ui* will be that webserver providing our workstation's browser with everything it needs. And then the browser will access *myhero-app* directly. That is why we need to provide an externally accessible address of our *myhero-app* container, in the form of an environment variable.
 
 <p align="center"> 
 <img src="./images/myhero-angular.png">
@@ -483,7 +491,7 @@ Save it and refresh your browser (ie. shift+refresh in Safari). Changes are not 
 
 Before creating the new *myhero-ui*, please stop the old one. Go to your previous terminal window (the third one you opened) and press *ctrl+c* to stop the running container.
 
-Now go back to the fourth terminal window and run:
+Then run:
 
 ```shell
 docker-compose up --build
@@ -542,7 +550,7 @@ We can easily overcome this challenge by using a CLI tool called [ngrok](https:/
 <img src="./images/myhero-spark-ngrok.png">
 </p>
 
-You just need to [download ngrok](ngrok.com/download) and install it in your workstation. Then from you terminal window run:
+You just need to [download ngrok](https://ngrok.com/download) and install it in your workstation. Then from you terminal window run:
 
 ```shell
 ngrok http 15003
@@ -581,7 +589,7 @@ See *myhero-spark* image being built and a container instantiate based on it. Le
 **Open a new terminal** (seventh one) and now you can ask your *myhero-spark* container to invite your Webex user to vote. Run:
 
 ```shell
-curl http://<ngrok_url>/hello/<your_WebEx_Teams_email>
+curl http://<ngrok_url>/hello/<your_personal_WebEx_email>
 ```
 
 You will automatically get a new message in your Webex application, asking if you would like to vote. Any answer you provide will make the bot respond with the set of commands accepted by the bot. You can see the available options with "/options", vote with "/vote" and the name of a superhero, and see the results with "/results".
