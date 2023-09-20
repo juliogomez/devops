@@ -677,7 +677,6 @@ In any case on-prem environments are very common and they provide total flexibil
 
 Don't worry if you have no hardware at all to build your own datacenter. There are several alternatives that might be of interest to you to start learning:
 
-* [Katacoda kubernetes playground](http://katacoda.com/courses/kubernetes/playground): very basic k8s cluster with just 1 master + 1 worker nodes, pre-configured, accessible via web-based terminal, and valid for quick tests, as the environment is very short-lived (5-10 mins).
 * [play-with-kubernetes](https://labs.play-with-k8s.com/): basic k8s cluster with multiple Docker-based nodes ([Docker in Docker](https://hub.docker.com/_/docker/)), you need to initialize all different nodes and required networking yourself, accessible via web-based terminal, short-lived (4-hours).
 
 ### No hardware for you?
