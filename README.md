@@ -1560,11 +1560,11 @@ Now you should have both *myhero-mosca* and *myhero-ernst* correctly deployed in
 
 The only missing part would be to tell *myhero-app* to start using *myhero-mosca* instead of sending votes directly to *myhero-data*.
 
-In order to accomplish this you just need to edit your *k8s_myhero_app.yml* and *uncomment* (**remove** the # character at the beginning of the line) *myhero_app_mode* environment variable:
+In order to accomplish this you just need to edit your *k8s_myhero_app.yml* and change the `value` field for `myhero_app_mode` from `direct` to `queue`.
 
 ```yaml
-#          - name: myhero_app_mode
-#            value: queue
+          - name: myhero_app_mode
+            value: queue
 ```
 
 Then you apply that file again with:
