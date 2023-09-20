@@ -1326,13 +1326,13 @@ Kubernetes [Ingress](https://kubernetes.io/docs/concepts/services-networking/ing
 
 In order for *ingress* resources to run in our cluster we will need to install an Ingress controller. There are several options available, native from public Cloud providers (ie. GCE) or private to be deployed on-prem (ie. Nginx), so we will use our personal preference: [Traefik](https://traefik.io). It is an ingress controller that can act as a reverse proxy/loadbalancer on the service layer of Kubernetes. Traefik exposes services to the outside world.
 
-But Traefik needs to be deployed itself as a kubernetes *LoadBalancer* service. [LoadBalancers](https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer) use an external IP that will load-balance to all pods belonging to that specific service, no matter what node they reside in. This service work automatically when working with public Cloud Providers (like GCP, AWS or Azure), but configuring it in our on-prem setup would not provide any additional benefit because we would never get any public IP address. If you think about it your nodes reside in a LAN segment so they could never receive a *public* IP address.
+But Traefik needs to be deployed itself as a kubernetes *LoadBalancer* service. [LoadBalancers](https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer) use an external IP that will load-balance to all pods belonging to that specific service, no matter what node they reside in. This service works automatically when using public Cloud Providers (like GCP, AWS or Azure), but configuring it in our on-prem setup would not provide any additional benefit because we would never get any public IP address. If you think about it, your nodes reside on a LAN segment so they could never receive a *public* IP address.
 
 But what if we could use a *LoadBalancer* to obtain a *private* IP address that actually load-balances to every pod in our service? That is actually what Traefik needs to run in our setup.
 
 [MetalLB](https://metallb.universe.tf) provides us with exactly that. It is a LoadBalancer implementation for bare metal k8s clusters. You define a pool of IP address it can serve, and it automatically load-balances all traffic addressed to them.
 
-(Note: if you installed your kubernetes cluster _the easy way_ with `k3sup` you don't need to install MetalLB nor Traefik, as k3s includes a pre-configured Traefik installation by default. Please go ahead and jump to the next section!)
+(Note: if you installed your kubernetes cluster _the easy way_ with `k3s` you don't need to install MetalLB nor Traefik, as k3s includes a pre-configured Traefik installation by default. Please go ahead and [jump to the next section on installing ingress resources](https://github.com/juliogomez/devops#ingress-resources))
 
 Let's install MetalLB in your cluster. Connect to your master node and run:
 
@@ -1498,7 +1498,7 @@ cp k8s_myhero_spark.template k8s_myhero_spark.yml
 vi k8s_myhero_spark.yml
 ```
 
-In this case you will need to provide *myhero_spark_bot_email*, *spark_token*, *myhero_spark_bot_url*. The first two fields will be the ones you got from [Webex for Developers website](https://developer.webex.com/index.html) when you created your bot. The third field will be *myhero-spark* public URL, again based on the info from noip that you configured: *http://\<spark-hostname>:<home_router_port>*
+In this case you will need to provide *myhero_spark_bot_email*, *spark_token*, *myhero_spark_bot_url*. The first two fields will be the ones you got from [Webex for Developers website](https://developer.webex.com/) when you created your bot. The third field will be *myhero-spark* public URL, again based on the info from noip that you configured: *http://\<spark-hostname>:<home_router_port>*
 
 With that you can now save the file and apply it:
 
@@ -1550,8 +1550,8 @@ For the *consumer* service that processes votes we will need to build it the sam
 cd ../../../..
 git clone https://github.com/juliogomez/myhero_ernst.git
 cd myhero_ernst
-docker build -t <your_DockerHub_user>/pi-myhero-ernst .
-docker push <your_DockerHub_user>/pi-myhero-ernst
+docker build -t <your_DockerHub_user>/pi_myhero_ernst .
+docker push <your_DockerHub_user>/pi_myhero_ernst
 cd ../devops/k8s/pi/myhero
 kubectl apply -f k8s_myhero_ernst.yml
 ```
@@ -1982,7 +1982,7 @@ myhero-spark   NodePort    10.43.188.95    <none>        80:32753/TCP     3d17h
 myhero-ui      NodePort    10.43.8.88      <none>        80:32728/TCP     3d17h
 ```
 
-From your master node you will have to create one tunnel for each microservice, specifying the _\<URL>:\<port>_ (ie. _app_julio:80_) and port 80 in your master node as _<dest_IP>:\<port>_ (ie. _192.168.1.100:80_):
+From your master node you will have to create one tunnel for each microservice, specifying the _\<URL>:\<port>_ (ie. _app_julio:80_) and port 80 in your master node as _<dest_IP>:\<port>_ (ie. _192.168.1.100:80_). You can do that with individual commands in separate terminals:
 
 ```shell
 ssh -R ui_julio:80:192.168.1.100:80 serveo.net
@@ -1990,7 +1990,15 @@ ssh -R spark_julio:80:192.168.1.100:80 serveo.net
 ssh -R app_julio:80:192.168.1.100:80 serveo.net
 ```
 
-These commands will create 3 tunnels from the serveo servers to your cluster master node, so that all traffic going to the following URLs is sent to port 80 in your master node:
+Or alternatively you can do it with a single command:
+
+```shell
+autossh -f -M 0 -R ui_julio:80:192.168.1.100:80 -R app_julio:80:192.168.1.100:80 -R spark_julio:80:192.168.1.100:80 serveo.net
+```
+
+(Note: as long as this last command will be running as a process in the background, you can always kill it with `pkill -3 autossh`)
+
+In both cases, these commands will create 3 tunnels from the serveo servers to your cluster master node, so that all traffic going to the following URLs is sent to port 80 in your master node:
 
 * _ui_julio.serveo.net_
 * _spark_julio.serveo.net_
@@ -2008,13 +2016,13 @@ And that takes us exactly to __challenge #2__: how can we _fan out_ traffic goin
 
 For point __B)__ we will need to find a way to isolate our cluster, so that it does not depend on the upstream router IP addressing scheme. Ideally you would like your cluster LAN segment to be private, and not shared with the office environment, so the best way to accomplish this is... adding a __router__ to our setup! It will be able to _route_ between your private LAN segment and the office one, allowing you to manage your cluster IP addresses independently from the office network.
 
-Of course, the main requirement for this router will be do what we need it to do, but also... to be _tiny_. There are many different options, but I chose [this one](https://www.amazon.es/dp/B0777L5YN6) (40g, 5x5x2 cm).
+Of course, the main requirement for this router will be do what we need it to do, but also... to be _tiny_. There are many different options, but I chose [this one](https://www.gl-inet.com/products/gl-ar300m/) (40g, 5x5x2 cm).
 
 <p align="center"> 
 <img src="https://media.giphy.com/media/RJo6Uas77p4zzcEj5I/giphy.gif">
 </p>
 
-The Ethernet cable previously going from your cluster switch to the home router, will now be connected to your new _tiny_ router. And the WAN port from the _tiny_ router will go to the upstream router. 
+The Ethernet cable previously going from your cluster switch to the home router, will now be connected to your _tiny_ router. And the WAN port from the _tiny_ router will go to the upstream router. 
 
 The great thing about this setup is that, as long as the cluster LAN segment does not overlap the upstream router LAN subnet, __it will work no matter where you are!__
 

@@ -15,12 +15,16 @@ spec:
     tier: mosca
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-mosca
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: mosca
   template:
     metadata:
       labels:

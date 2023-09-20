@@ -1,10 +1,14 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-ernst
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: ernst
   template:
     metadata:
       labels:
@@ -13,7 +17,7 @@ spec:
     spec:
       containers:
       - name: myhero-ernst
-        image: juliocisco/pi-myhero-ernst:latest
+        image: juliocisco/pi_myhero_ernst:latest
         env:
           - name: myhero_mqtt_host
             value: myhero-mosca

@@ -39,7 +39,6 @@ spec:
           failureThreshold: 5
           httpGet:
             path: /health
-#            path: /hero_list
             port: 5000
             scheme: HTTP
           initialDelaySeconds: 5
@@ -49,7 +48,6 @@ spec:
         readinessProbe:
           httpGet:
             path: /health
-#            path: /hero_list
             port: 5000
           initialDelaySeconds: 5
           periodSeconds: 5
