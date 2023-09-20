@@ -15,12 +15,16 @@ spec:
     tier: data
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-data
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: myhero
+      tier: data
   template:
     metadata:
       labels:
@@ -29,7 +33,7 @@ spec:
     spec:
       containers:
       - name: myhero-data
-        image: juliocisco/pi-myhero-data:latest
+        image: juliocisco/pi_myhero_data:latest
         livenessProbe:
           httpGet:
             path: /hero_list

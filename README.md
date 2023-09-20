@@ -1099,20 +1099,15 @@ We will need to install some additional tools, but considering that most Kuberne
 * [git CLI](https://git-scm.com/book/en/v2/Getting-Started-The-Command-Line)
 
   ```shell
+  sudo apt-get update
   sudo apt-get install git
   ```
 
 * [docker-compose](https://docs.docker.com/compose/)
 
   ```shell
-  sudo apt-get update
-  sudo apt-get install -y apt-transport-https
-  echo "deb https://packagecloud.io/Hypriot/Schatzkiste/debian/ jessie main" | sudo tee /etc/apt/sources.list.d/
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 37BBEE3F7AD95B3F
-  sudo apt-get update
   sudo apt-get install docker-compose
   ```
-  (note: don't worry if they specified key does not work, just confirm when running the last command to install *docker-compose*)
 
 ### Architecture-specific images
 
@@ -1148,6 +1143,24 @@ Please clone also the repo hosting the content of this tutorial, as you will nee
 
 ```shell
 git clone https://github.com/juliogomez/devops
+```
+
+Let's now enable the `pi` user to run docker, by adding it to the `docker` group:
+```shell
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+You will also need to login to [DockerHub](https://hub.docker.com/) from your master node:
+
+```shell
+docker login
+```
+
+If you get a message saying there was an error saving your credentials, please install a credential helper like _pass_ and try again: 
+
+```shell
+sudo apt install gnupg2 pass
 ```
 
 Now you should be able to simply run `docker build` inside each *myhero* directory. Please note we are naming them **pi-myhero-** ... to differentiate them from the Mac versions we created before. You may now push your images to DockerHub, so they are available to be used in our Production environment (please remember to replace *<your_DockerHub_username>* with your own DockerHub username).
@@ -1255,7 +1268,7 @@ For our two *myhero* services you will see they are both configured as type *Nod
 Let's take a look at an example, and start by testing our new *myhero-data* service. We will leverage the same `curl` command we used for testing our development environment on workstations.
 
 ```shell
-curl -X GET -H "key: SecureData" http://worker-02.local:30122/options
+curl -X GET -H "key: SecureData" http://worker-02.local:<MYHERO_DATA_PORT>/options
 ```
 
 You should get the list of voting options. As you can see we are querying one of the worker nodes, but any node would work exactly the same. That is because k8s cluster nodes are all connected, and NodePort reserves that specific port in all nodes.
@@ -1263,16 +1276,17 @@ You should get the list of voting options. As you can see we are querying one of
 Now let's query *myhero-app* in a different node, and using its own service *NodePort*:
 
 ```shell
-curl -X GET -H "key: SecureApp" http://worker-03.local:31238/options
+curl -X GET -H "key: SecureApp" http://worker-03.local:<MYHERO_APP_PORT>/options
 ```
 
-You should get the same list of voting options again, although this time your request was routed by *myhero-app* towards *myhero-data*.
+You should get the same list of voting options again, although this time your request was routed via *myhero-app* towards *myhero-data*.
 
 We can also try voting, and checking the results, with:
 
 ```shell
-curl -X POST -H "key: SecureApp" http://worker-03.local:31238/vote/Deadpool
-curl -X GET -H "key: SecureApp" http://worker-01.local:31238/v2/results
+curl -X GET -H "key: SecureApp" http://worker-01.local:<MYHERO_APP_PORT>/v2/results
+curl -X POST -H "key: SecureApp" http://worker-03.local:<MYHERO_APP_PORT>/vote/Deadpool
+curl -X GET -H "key: SecureApp" http://worker-01.local:<MYHERO_APP_PORT>/v2/results
 ```
 
 *myhero-app* also works well!

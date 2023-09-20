@@ -9,18 +9,23 @@ metadata:
 spec:
   ports:
   - port: 80
+    name: http
     targetPort: 5000
   selector:
     app: myhero
     tier: app
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myhero-app
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: myhero
+      tier: app
   template:
     metadata:
       labels:
@@ -29,13 +34,17 @@ spec:
     spec:
       containers:
       - name: myhero-app
-        image: juliocisco/pi-myhero-app:latest
+        image: juliocisco/pi_myhero_app:latest
         livenessProbe:
+          failureThreshold: 5
           httpGet:
             path: /health
             port: 5000
+            scheme: HTTP
           initialDelaySeconds: 5
           periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /health
@@ -51,8 +60,8 @@ spec:
             value: myhero-mosca
           - name: myhero_mqtt_port
             value: "1883"
-#          - name: myhero_app_mode
-#            value: queue
+          - name: myhero_app_mode
+            value: direct
           - name: myhero_data_srv
             value: myhero-data
           - name: myhero_data_key
