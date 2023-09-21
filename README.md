@@ -677,6 +677,7 @@ In any case on-prem environments are very common and they provide total flexibil
 
 Don't worry if you have no hardware at all to build your own datacenter. There are several alternatives that might be of interest to you to start learning:
 
+* [killercoda](https://killercoda.com/playgrounds/scenario/kubernetes): simple k8s cluster setup with two 2GB nodes.
 * [play-with-kubernetes](https://labs.play-with-k8s.com/): basic k8s cluster with multiple Docker-based nodes ([Docker in Docker](https://hub.docker.com/_/docker/)), you need to initialize all different nodes and required networking yourself, accessible via web-based terminal, short-lived (4-hours).
 
 ### No hardware for you?
@@ -2716,7 +2717,7 @@ An important remark is that its chart is not [stable](https://github.com/kuberne
 So you will need to add the *incubator* repository to Helm:
 
 ```shell
-helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+helm repo add incubator https://charts.helm.sh/incubator
 ```
 
 You will also need to create a DNS entry that points to the GoGS LoadBalancer public IP address, so choose its name now and make sure it is available.
@@ -2742,7 +2743,7 @@ serverRootUrl: http://<GoGS_public_URL>/
 Save the file and you are ready to install GoGS:
 
 ```shell
-helm install --name my-gogs -f values.yaml incubator/gogs
+helm install my-gogs -f values.yaml incubator/gogs
 ```
 
 You will see a couple of messages from the helm install, on how to access your GoGS deployment, and how you need to register a first user (who, by the way, will become *admin*).
@@ -2791,16 +2792,27 @@ Copy the template file:
 cp values.template values.yaml
 ```
 
-And edit *values.yaml* to configure the public URL you configured in DNS for your Drone server:
+And edit *values.yaml* to configure the public URLs you configured in DNS for your Drone and Gogs servers:
 
 ```yaml
-DRONE_HOST: "http://<drone_public_URL>"
+DRONE_SERVER_HOST: "<drone_public_URL>"
+DRONE_GOGS_SERVER: "<gogs_public_URL>"
+```
+
+In the same file, you will also need to change the service type from `ClusterIP` to `LoadBalancer`, and for convenience let's use port 80:
+
+```yaml
+service:
+  type: LoadBalancer
+  port: 80
 ```
 
 Now you can install Drone. It is also available as container images, so again we will be able to use our k8s cluster to deploy it. And again Helm can help us with this task:
 
 ```shell
-helm install --name my-drone -f values.yaml stable/drone
+helm repo add drone https://charts.drone.io
+helm repo update
+helm install my-drone -f values.yaml drone/drone
 ```
 
 Wait until you get an external public IP address for Drone (ctrl+c to exit):
@@ -2827,7 +2839,9 @@ You may now point your browser to Drone public URL (the one you configured in yo
 
 You are now in! You will see that it automatically shows the repository you created in GoGS. Everything works!
 
-In order to interact with Drone from your workstation you will need to [install Drone CLI](http://docs.drone.io/cli-installation/), and then configure it. You can get your token from Drone web interface, clicking on the 3-line list icon on the top right.
+In order to interact with Drone from your workstation you will need to [install Drone CLI](http://docs.drone.io/cli-installation/), and then configure it. 
+
+For our next step you will need the Drone token. You can get it from Drone's web interface, clicking on the icon placed at the bottom left part of the screen.
 
 ```shell
 export DRONE_SERVER=http://<Drone_DNS_entry>
@@ -2856,7 +2870,7 @@ First thing you will need to do is create repositories in GoGS for each one of i
 
 (note: you may now delete the *my_test* repo we created to verify the integration of GoGS and Drone)
 
-For each one of them, go into its own directory inside *myhero*, replace the existing origin with the one in GoGS and push the code (you will need to provide your GoGS username and password). You may find below how you would do it for *myhero-ui*, but you will need to do the same for all of them:
+For each one of them, go into its own directory in your workstation (inside the *myhero* folder), replace the existing origin with the one in GoGS and push the code (you will need to provide your GoGS username and password). You may find below how you would do it for *myhero-ui*, but you will need to do the same for all of them:
 
 ```shell
 cd myhero/myhero_ui
@@ -2867,7 +2881,7 @@ git push -u origin master
 
 Now your *myhero_ui* code has been uploaded to its own repo in GoGS.
 
-You may go to Drone web interface and refresh it to see the new repos show up. Activate all of them by clicking on the *switch* icon to the right of their names.
+You may go to Drone web interface and SYNC it to see the new repos show up. Activate all of them by clicking individually on each one of them, and then on _Activate Repository_.
 
 Activating these repos means that Drone will get a notification from GoGS when the content of a repo is updated. Not only that, Drone will also get the pipeline definition file *included inside the repo*. That file will define the sequential steps Drone needs to follow for the code included in that specific repo.
 
@@ -2883,11 +2897,11 @@ Our pipeline definition file will explicitly determine the different phases that
 
 In our case, when new code is pushed to our repo we would like Drone to:
 
-* Clone the updated repository from GoGS
-* Build an updated Docker image based on the new code and Dockerfile included in the repo, and associate a unique tag to it
-* Publish the new image to DockerHub
-* Update the application deployment in our k8s cluster, with containers using the new image that was just published
-* Notify us on pipeline execution results
+* Clone the updated repository from GoGS.
+* Build an updated Docker image based on the new code and the Dockerfile included in the repo, and associate a unique tag to it.
+* Publish the new image to DockerHub.
+* Update the application deployment in our k8s cluster, with containers using the new image that was just published.
+* Notify us on pipeline execution results.
 
 For each one of these phases you will be able to use [Drone plugins](http://plugins.drone.io), so we have selected some plugins for the specific tasks we have defined in our pipeline. These plugins require you to provide some information in order to automate its activities.
 
@@ -2896,10 +2910,10 @@ For the *Publish* phase you will need to include your Dockerhub username and pas
 ```shell
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
-  --name docker_username --value <your_dockerhub_user>
+  --name docker_username --data <your_dockerhub_user>
 drone secret add \
   --repository <GoGS_username>/myhero_ui \
-  --name docker_password --value <your_dockerhub_password>
+  --name docker_password --data <your_dockerhub_password>
 ```
 
 For the *Notify* phase we would like to use Webex, and let the system tell us when builds are complete and if they are successful or not. So please add this token (yes, you will need *that* specific token) and your Webex e-mail address, again in the form of Drone secrets:

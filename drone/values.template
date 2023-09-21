@@ -1,183 +1,267 @@
-appVersion: "0.8.4"
+# -- Mapping between IP and hostnames that will be injected as entries in the pod's hosts files
+# https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/
+hostAliases: []
+  # - ip: 10.20.30.40
+  #   hostnames:
+  #   - gitea-127.0.0.1.sslip.io
 
-images:
-  ## The official drone (server) image, change tag to use a different version.
-  ## ref: https://hub.docker.com/r/drone/drone/tags/
-  ##
-  server:
-    repository: "docker.io/drone/drone"
-    tag: 0.8.4
-    pullPolicy: IfNotPresent
+image:
+  registry: docker.io
+  repository: drone/drone
+  tag: 2.12.1
+  pullPolicy: IfNotPresent
 
-  ## The official drone (agent) image, change tag to use a different version.
-  ## ref: https://hub.docker.com/r/drone/agent/tags/
-  ##
-  agent:
-    repository: "docker.io/drone/agent"
-    tag: 0.8.4
-    pullPolicy: IfNotPresent
+## If you need to pull images from a private Docker image repository, pass in the name
+## of a Kubernetes Secret that contains the needed secret. For more details, see:
+## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+##
+imagePullSecrets: []
+# - name: "image-pull-secret"
 
-  ## The official docker (dind) image, change tag to use a different version.
-  ## ref: https://hub.docker.com/r/library/docker/tags/
-  ##
-  dind:
-    repository: "docker.io/library/docker"
-    tag: 17.12.0-ce-dind
-    pullPolicy: IfNotPresent
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Drone server does not interact with the Kubernetes API server
+automountServiceAccountToken: false
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+## Add extra annotations to the Drone server pods here. See below example for
+## Prometheus scrape annotations.
+##
+podAnnotations: {}
+#  prometheus.io/scrape: "true"
+#  prometheus.io/port: "80"
+
+updateStrategy: {}
 
 service:
-  httpPort: 80
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+  nodePort:
 
-  ## If service.type is not set to NodePort, the following statement
-  ## will be ignored.
-  ##
-  # nodePort: 32015
-
-  ## Service type can be set to ClusterIP, NodePort or LoadBalancer.
-  ##
-  type: LoadBalancer
-
+## If you'd like to create an ingress in front of the Drone server, you can enable it
+## here. Please refer to your service provider's documenatation for any configuration
+## that is specific to their ingress implementation.
+## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
-  ## If true, Drone Ingress will be created.
-  ##
   enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
 
-  ## Drone Ingress annotations
-  ##
-  # annotations:
-  #   kubernetes.io/ingress.class: nginx
-  #   kubernetes.io/tls-acme: 'true'
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
 
-  ## Drone hostnames must be provided if Ingress is enabled
-  ##
-  # hosts:
-  #   - drone.domain.io
-
-  ## Drone Ingress TLS configuration secrets
-  ## Must be manually created in the namespace
-  ##
-  # tls:
-  #   - secretName: drone-tls
-  #     hosts:
-  #       - drone.domain.io
-
-server:
-  ## If not set, it will be autofilled with the cluster host.
-  ## Host must be in "<scheme>://<hostname>" format.
-  ##
-  # host: "https://drone.domain.io"
-
-  ## Drone server configuration.
-  ## Values in here get injected as environment variables.
-  ## ref: http://readme.drone.io/admin/installation-reference
-  ##
-  env:
-    DRONE_DEBUG: "false"
-    DRONE_DATABASE_DRIVER: "sqlite3"
-    DRONE_DATABASE_DATASOURCE: "/var/lib/drone/drone.sqlite"
-
-    ## Drone requires some environment variables to bootstrap the
-    ## git service or it won't start up.
-    ## Uncomment this and add your own custom configuration.
-    ##
-    DRONE_PROVIDER: "gogs"
-    DRONE_OPEN: "true"
-    DRONE_HOST: "http://<drone_public_URL>"
-    DRONE_GOGS: "true"
-    DRONE_GOGS_URL: "http://my-gogs-gogs"
-    # DRONE_GITHUB: "true"
-    # DRONE_ORGS: "my-github-org,my-other-github-org"
-    # DRONE_ADMIN:"admin-1,admin-2"
-    # DRONE_GITHUB_CLIENT: "github-oauth2-client-id"
-    # DRONE_GITHUB_SECRET: "github-oauth2-client-secret"
-
-  ## CPU and memory limits for drone server
-  ##
-  resources: {}
-  #  requests:
-  #    memory: 32Mi
-  #    cpu: 40m
-  #  limits:
-  #    memory: 2Gi
-  #    cpu: 1
-
-  ## Pod scheduling preferences.
-  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-  ##
-  affinity: {}
-
-agent:
-  ## Drone agent configuration.
-  ## Values in here get injected as environment variables.
-  ## ref: http://readme.drone.io/admin/installation-reference
-  ##
-  env:
-    DRONE_DEBUG: "false"
-
-  ## Number of drone agent replicas
-  replicas: 1
-
-  ## CPU and memory limits for drone agent
-  ##
-  resources: {}
-  #  requests:
-  #    memory: 32Mi
-  #    cpu: 40m
-  #  limits:
-  #    memory: 2Gi
-  #    cpu: 1
-
-  ## Pod scheduling preferences.
-  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-  ##
-  affinity: {}
-
-dind:
-  ## Enable or disable DinD
-  ## If disabled, the drone agent will spawn docker containers on the host. Pay
-  ## attention to the fact that we can't enforce resource constraints in that case.
-  ##
-  enabled: true
-
-  ## Docker storage driver.
-  ## Your DinD instance should be using the same driver as your host.
-  ## ref: https://docs.docker.com/engine/userguide/storagedriver/selectadriver/
-  ##
-  driver: overlay2
-
-  ## CPU and memory limits for dind
-  ##
-  resources: {}
-  #  requests:
-  #    memory: 32Mi
-  #    cpu: 40m
-  #  limits:
-  #    memory: 2Gi
-  #    cpu: 1
-
-## Enable persistence using Persistent Volume Claims
-## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+## If you'd like to force the Drone server to run on a specific node or set of nodes,
+## set a selector here.
 ##
-persistence:
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+## If you'd like to make additional files or volumes available to Drone, declare additional
+## Volumes here per the Pod spec's "volumes" section.
+## Ref: https://kubernetes.io/docs/concepts/storage/volumes/
+##
+extraVolumes: []
+## If you have declared extra volumes, mount them here, per the Pod Container's
+## "volumeMounts" section.
+##
+extraVolumeMounts: []
+## If you would like to add additional containers to the deployment, declare them here.
+##
+extraContainers: []
+
+persistentVolume:
+  ## If you are using SQLite as your DB for Drone, it is recommended to enable persistence. If
+  ## enabled, the Chart will create a PersistentVolumeClaim to store its state in. If you are
+  ## using a DB other than SQLite, set this to false to avoid allocating unused storage.
+  ## If set to false, Drone will use an emptyDir instead, which is ephemeral.
+  ##
   enabled: true
 
-  ## A manually managed Persistent Volume and Claim
-  ## Requires persistence.enabled: true
-  ## If defined, PVC must be created manually before volume will be bound
-  # existingClaim:
+  ## Drone server data Persistent Volume access modes
+  ## Must match those of existing PV or dynamic provisioner
+  ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  accessModes:
+    - ReadWriteOnce
 
-  ## rabbitmq data Persistent Volume Storage Class
+  ## Drone server data Persistent Volume annotations
+  ##
+  annotations: {}
+
+  ## If you'd like to bring your own PVC for persisting Drone state, pass the name of the
+  ## created + ready PVC here. If set, this Chart will not create the default PVC.
+  ## Requires server.persistentVolume.enabled: true
+  ##
+  existingClaim: ""
+
+  ## Drone server data Persistent Volume mount root path
+  ##
+  mountPath: /data
+
+  ## Drone server data Persistent Volume size
+  ##
+  size: 8Gi
+
+  ## Drone server data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
   ## If set to "-", storageClassName: "", which disables dynamic provisioning
   ## If undefined (the default) or set to null, no storageClassName spec is
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  # storageClass: "-"
-  accessMode: ReadWriteOnce
-  size: 1Gi
+  storageClass: ""
 
-## Uncomment this if you want to set a specific shared secret between
-## the agents and servers, otherwise this will be auto-generated.
+  ## Drone server data Persistent Volume Binding Mode
+  ## If defined, volumeMode: <volumeMode>
+  ## If empty (the default) or set to null, no volumeBindingMode spec is
+  ## set, choosing the default mode.
+  ##
+  volumeMode: ""
+
+  ## Subdirectory of Drone server data Persistent Volume to mount
+  ## Useful if the volume's root directory is not empty
+  ##
+  subPath: ""
+
+## If persistentVolume.enabled is set to false, Drone will mount an emptyDir instead of
+## a PVC for any state that it needs to persist.
 ##
-# sharedSecret: supersecret
+emptyDir:
+  ## Total space to request for the emptyDir. An empty value here means no limit.
+  sizeLimit: ""
+
+## If you'd like to provide your own Kubernetes Secret object instead of passing your values
+## in un-encrypted, pass in the name of a created + populated Secret in the same Namespace
+## as the Drone server. All secrets within this configmap will be mounted as environment
+## variables, with each key/value mapping to a corresponding environment variable on the
+## Drone server.
+##
+extraSecretNamesForEnvFrom: []
+# - my-drone-secrets
+
+## The keys within the "env" map are mounted as environment variables on the Drone server pod.
+## See the full reference of Drone server environment variables here:
+## Ref: https://docs.drone.io/installation/reference/
+##
+env:
+  ## REQUIRED: Set the user-visible Drone hostname, sans protocol.
+  ## Ref: https://docs.drone.io/installation/reference/drone-server-host/
+  ##
+  DRONE_SERVER_HOST: "<YOUR_DRONE_PUBLIC_URL"
+  ## The protocol to pair with the value in DRONE_SERVER_HOST (http or https).
+  ## Ref: https://docs.drone.io/installation/reference/drone-server-proto/
+  ##
+  DRONE_SERVER_PROTO: http
+
+  ## REQUIRED: Set the secret secret token that the Drone server and its Runners will use
+  ## to authenticate. This is commented out in order to leave you the ability to set the
+  ## key via a separately provisioned secret (see existingSecretName above).
+  ## Ref: https://docs.drone.io/installation/reference/drone-rpc-secret/
+  ##
+  # DRONE_RPC_SECRET:
+
+  ## If you'd like to use a DB other than SQLite (the default), set a driver + DSN here.
+  ## Ref: https://docs.drone.io/installation/storage/database/
+  ##
+  # DRONE_DATABASE_DRIVER:
+  # DRONE_DATABASE_DATASOURCE:
+
+  ## If you are going to store build secrets in the Drone database, it is suggested that
+  ## you set a database encryption secret. This must be set before any secrets are stored
+  ## in the database.
+  ## Ref: https://docs.drone.io/installation/storage/encryption/
+  ##
+  # DRONE_DATABASE_SECRET:
+
+  ## If you are using self-hosted GitHub or GitLab, you'll need to set this to true.
+  ## Ref: https://docs.drone.io/installation/reference/drone-git-always-auth/
+  ##
+  # DRONE_GIT_ALWAYS_AUTH: false
+
+  ## ===================================================================================
+  ##                         Provider Directives (select ONE)
+  ## -----------------------------------------------------------------------------------
+  ## Select one provider (and only one). Refer to the corresponding documentation link
+  ## before filling the values in. Also note that you can use the 'secretMounts' value
+  ## if you'd rather not have secrets in Kubernetes Secret instead of a ConfigMap.
+  ## ===================================================================================
+
+  ## GitHub-specific variables. See the provider docs here:
+  ## Ref: https://docs.drone.io/installation/providers/github/
+  ##
+  # DRONE_GITHUB_CLIENT_ID:
+  # DRONE_GITHUB_CLIENT_SECRET:
+
+  ## GitLab-specific variables. See the provider docs here:
+  ## Ref: https://docs.drone.io/installation/providers/gitlab/
+  ##
+  # DRONE_GITLAB_CLIENT_ID:
+  # DRONE_GITLAB_CLIENT_SECRET:
+  # DRONE_GITLAB_SERVER:
+
+  ## Bitbucket Cloud-specific variables. See the provider docs here:
+  ## Ref: https://docs.drone.io/installation/providers/bitbucket-cloud/
+  ##
+  # DRONE_BITBUCKET_CLIENT_ID:
+  # DRONE_BITBUCKET_CLIENT_SECRET:
+
+  ## Bitbucket-specific variables. See the provider docs here:
+  ## Ref: https://docs.drone.io/installation/providers/bitbucket-server/
+  ##
+  # DRONE_GIT_USERNAME:
+  # DRONE_GIT_PASSWORD:
+  # DRONE_STASH_CONSUMER_KEY:
+  # DRONE_STASH_PRIVATE_KEY:
+  # DRONE_STASH_SERVER:
+
+  ## Gitea-specific variables. See the provider docs here:
+  ## Ref: https://docs.drone.io/installation/providers/gitea/
+  ##
+  # DRONE_GITEA_CLIENT_ID:
+  # DRONE_GITEA_CLIENT_SECRET:
+  # DRONE_GITEA_SERVER:
+
+  ## Gogs-specific variables. See the provider docs here:
+  ## Ref: https://docs.drone.io/installation/providers/gogs/
+  ##
+  DRONE_GOGS_SERVER: http://<YOUR_GOGS_PUBLIC_URL>
