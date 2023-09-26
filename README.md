@@ -57,7 +57,6 @@
         - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
         - [Pipeline implementation](#pipeline-implementation)
         - [Running your pipeline](#running-your-pipeline)
-        - [Pipeline on-premises](#pipeline-on-premises)
 - [Additional tools](#additional-tools)
     - [Draft](#draft)
     - [Telepresence](#telepresence)
@@ -2817,7 +2816,7 @@ Access your deployed *myhero-ui* web interface via its ingress DDNS (i.e. ui-jul
 <img src="./images/myhero-ui-only.png">
 </p>
 
-As per the web page above you can see the current heading is "Make your voice heard!". Let's change the code in our repository so it reads "Make your voice HEARD!!!".
+As per the web page above you can see the current heading is "Make your voice heard!". Let's change the code in our repository so it reads "Make your voice HEARD!".
 
 This change is equivalent to any other change you made, as a developer, in your code. Our pipeline does not differentiate the type of change, it just detects that the repo changed and executes the pipeline.
 
@@ -2891,7 +2890,7 @@ This will automatically trigger a new build and deployment update. Once complete
 <img src="./images/myhero-ui-only-2.png">
 </p>
 
-Please notice the heading has changed to "Make your voice HEARD!!!".
+Please notice the heading has changed to "Make your voice HEARD!".
 
 This means that just by pushing new code to your repo, it automatically triggered the whole pipeline process that ended up with your deployment being updated! How cool is that??
 
@@ -2904,48 +2903,6 @@ You may now start to see how different life would be for a DevOps team that impl
 Every new feature would be tracked by a Version Control Server, then implemented in a new image, tested, and translated into its own deployment. Everything automatic and based on containers to eliminate dependency issues.
 
 __This looks like a new world!__
-
-Please click [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/juliogomez/devops/master/demos/myhero_CICD.html) to see a demo of the CICD pipeline working on our _myhero_ application.
-
-### Pipeline on-premises
-
-If you want to deploy CI/CD/CD in your own on-prem setup you will need to do things a little bit different. Once GoGS and Drone are installed via Helm and ready, you will need to define your pipeline. It will be really similar to the one you did for GKE, but will need a different Drone plugin for the *Deploy* phase.
-
-We will use [this Drone plugin for on-premises Kubernetes deployments](http://plugins.drone.io/mactynow/drone-kubernetes/).
-
-If you created a specific namespace for your *myhero* deployment (ie. *myhero*) you will not be able to use the default service account, because by default it cannot update deployments in other namespaces. Instead, you will need to create a *custom service account* with the appropriate permissions (*Role* and *RoleBinding*, or *ClusterRole* and *ClusterRoleBinding* if you need access across namespaces using the same service account).
-
-In your Kubernetes *master* node please run:
-
-```shell
-cd devops/drone
-kubectl apply -f on-prem-rbac.yaml
-```
-
-Once the service account is created, you will need to extract the *token* for that service account:
-
-```shell
-kubectl -n myhero get secrets
-# Substitute XXXXX below with the correct one from the above command
-kubectl -n myhero get secret/drone-deploy-token-XXXXX -o yaml | egrep 'token:'
-echo [ your k8s base64 encoded token ] | base64 -d && echo''
-```
-
-Now from your Dev workstation you need to edit the *.drone.yml* file in your *myhero_ui* directory and replace the *Deploy* phase with the following content:
-
-```yaml
-  Deploy:
-    image: quay.io/honestbee/drone-kubernetes
-    deployment: myhero-ui
-    repo: juliocisco/myhero-ui
-    kubernetes_server: https://<your_k8s_master>
-    kubernetes_token: <your_k8s_token>
-    container: myhero-ui
-    namespace: myhero
-    tag: ${DRONE_COMMIT}
-```
-
-You are now ready to test your on-premises pipeline, the same way you did it in the previous section.
 
 ---
 
