@@ -53,10 +53,7 @@
     - [Introduction](#introduction)
     - [What is CI/CD/CD](#what-is-cicdcd)
     - [Pipeline infrastructure](#pipeline-infrastructure)
-        - [Version Control Server](#version-control-server)
-        - [Integration Server](#integration-server)
     - [Working with pipelines](#working-with-pipelines)
-        - [Pipeline setup](#pipeline-setup)
         - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
         - [Pipeline implementation](#pipeline-implementation)
         - [Running your pipeline](#running-your-pipeline)
@@ -2685,182 +2682,23 @@ The adjective *continuous*, applied to each of these phases, means that each cod
 
 ## Pipeline infrastructure
 
-In order to accomplish the goal of integrating, delivering and deploying code in a continuous way, we need to build an architecture that is flexible enough to accommodate all requirements while remaining as standard as possible.
+In order to accomplish the goal of integrating, delivering and deploying code in a continuous way, we need to build an architecture that is flexible enough to accommodate all requirements while remaining as standard as possible. You might want to use separate elements for each component, and have an architecture that includes a *Version Control Server* managing code contributions from multiple developer systems into code repositories. It communicates with an *Integration Server* that follows a pre-defined pipeline of activities for each piece of code. These include testing code (ie. syntax, functional, performance testing, etc), triggering artifacts creation, publishing artifacts to a *Container Registry*, and even automatically creating deployments into a *Container Scheduler*.
 
 <p align="center"> 
 <img src="./images/CICDCD-infra.png">
 </p>
 
-The proposed architecture includes a *Version Control Server* that manages code contributions from multiple developer systems into code repositories. It communicates with an *Integration Server* that follows a pre-defined pipeline of activities for each piece of code. These include testing code (ie. syntax, functional, performance testing, etc), triggering artifacts creation, publishing artifacts to a *Container Registry*, and even automatically creating deployments into a *Container Scheduler*.
-
-You can choose the specific implementations you prefer to use for each of these elements. For our tutorial we have chosen the following:
-
-* Version Control Server: GoGS
-* Integration Server: Drone
-* Container Registry: DockerHub
-* Container Scheduler: Kubernetes cluster (the one we deployed on GKE)
+These days there are other options that provide a much more integrated off-the-shelf solution, like [GitHub Actions](https://github.com/features/actions). As you can see below it includes all the features provided by both the version control server and the integration server.
 
 <p align="center"> 
-<img src="./images/CICDCD-infra2.png">
+<img src="./images/CICDCD-infra3.png">
 </p>
 
-So we will use a Google Kubernetes Cluster (GKE) for our testing in this section.
-
-### Version Control Server
-
-We could have our developers use [GitHub](https://github.com) for source code version control. But if you like open-source alternatives you might also be interested in exploring a very simple, painless, private, self-hosted Git service, like [GoGS](https://gogs.io).
-
-GoGS is available on containers (server and [Postgres](https://en.wikipedia.org/wiki/PostgreSQL) database), and you can easily deploy it into your k8s cluster with Helm. That means your version control server will be just another deployment in the same cluster where your applications reside. This is an important point: even though GoGS is functionally a separate entity from the scheduler, it is in fact deployed inside the scheduler.
-
-An important remark is that its chart is not [stable](https://github.com/kubernetes/charts/tree/master/stable) yet, but rather resides under [incubator charts](https://github.com/kubernetes/charts/tree/master/incubator). You may find it [here](https://github.com/kubernetes/charts/tree/master/incubator/gogs).
-
-So you will need to add the *incubator* repository to Helm:
-
-```shell
-helm repo add incubator https://charts.helm.sh/incubator
-```
-
-You will also need to create a DNS entry that points to the GoGS LoadBalancer public IP address, so choose its name now and make sure it is available.
-
-Now go into GoGS directory:
-
-```shell
-cd gogs
-```
-
-Rename *values.template* to *values.yml*:
-
-```shell
-mv values.template values.yml
-```
-
-And edit *values.yml* to configure the following values to make sure your GoGS installation uses it in its repo cloning syntax:
-
-```yaml
-serverRootUrl: http://<GoGS_public_URL>/
-```
-
-Save the file and you are ready to install GoGS:
-
-```shell
-helm install my-gogs -f values.yaml incubator/gogs
-```
-
-You will see a couple of messages from the helm install, on how to access your GoGS deployment, and how you need to register a first user (who, by the way, will become *admin*).
-
-Please verify that both required pods (*gogs* and *postgresql*) are running and ready 1/1:
-
-```shell
-kubectl get pods
-```
-
-Wait until you get an external public IP address (ctrl+c to exit):
-
-```shell
-kubectl get service my-gogs-gogs -w
-```
-
-Now is the time to associate that public IP address to the DNS entry we mentioned before.
-
-Once done, please verify the DNS entry has been correctly propagated:
-
-```shell
-dig <GoGS_DNS_entry> @8.8.8.8 +short
-```
-
-Point your workstation browser to that IP, your GoGS server is now ready!
-
-Register your first user (it will also become *admin* for the server) and log into GoGS with your credentials. You might want to use the same username you use in GitHub for consistency.
-
-You can create a new repository called *my-test*, just to verify the integration is working later on.
-
-### Integration Server
-
-There are several different options to implement your Integration Server. A very common options is [Jenkins](https://jenkins.io), but we have decided to use a different one called [Drone](https://drone.io). The main reason is that Drone allows you to include the pipeline definition in your Git repo, instead of having to define the pipeline in the Integration server itself.
-
-In a couple of minutes you will need to create a DNS entry that points to Drone LoadBalancer public IP address, so choose now the name you prefer and make sure it is available in your DNS.
-
-Now go into the Drone directory:
-
-```shell
-cd ../drone
-```
-
-Copy the template file:
-
-```shell
-cp values.template values.yaml
-```
-
-And edit *values.yaml* to configure the public URLs you configured in DNS for your Drone and Gogs servers:
-
-```yaml
-DRONE_SERVER_HOST: "<drone_public_URL>"
-DRONE_GOGS_SERVER: "<gogs_public_URL>"
-```
-
-In the same file, you will also need to change the service type from `ClusterIP` to `LoadBalancer`, and for convenience let's use port 80:
-
-```yaml
-service:
-  type: LoadBalancer
-  port: 80
-```
-
-Now you can install Drone. It is also available as container images, so again we will be able to use our k8s cluster to deploy it. And again Helm can help us with this task:
-
-```shell
-helm repo add drone https://charts.drone.io
-helm repo update
-helm install my-drone -f values.yaml drone/drone
-```
-
-Wait until you get an external public IP address for Drone (ctrl+c to exit):
-
-```shell
-kubectl get service my-drone-drone -w
-```
-
-Now is the time to associate that public IP address to the DNS entry we mentioned before.
-
-Verify the DNS entry for Drone has propagated correctly:
-
-```shell
-dig <Drone_DNS_entry> @8.8.8.8 +short
-```
-
-And wait until your Drone pods are running and completely ready:
-
-```shell
-kubectl get pods
-```
-
-You may now point your browser to Drone public URL (the one you configured in your DNS), and login with your GoGS credentials.
-
-You are now in! You will see that it automatically shows the repository you created in GoGS. Everything works!
-
-In order to interact with Drone from your workstation you will need to [install Drone CLI](http://docs.drone.io/cli-installation/), and then configure it. 
-
-For our next step you will need the Drone token. You can get it from Drone's web interface, clicking on the icon placed at the bottom left part of the screen.
-
-```shell
-export DRONE_SERVER=http://<Drone_DNS_entry>
-export DRONE_TOKEN=<TOKEN>
-```
-
-Check that it is working fine:
-
-```shell
-drone info
-```
+For our testing we will use a Google Kubernetes (GKE) Cluster.
 
 ## Working with pipelines
 
-Let's use our new CI/CD/CD pipeline infrastructure for *myhero*.
-
-### Pipeline setup
-
-First thing you will need to do is create repositories in GoGS for each one of its microservices:
+Let's use our new CI/CD/CD pipeline infrastructure with *myhero*. For our testing we will be using the GitHub repositories you already created for the different microservices:
 
 * myhero_ui
 * myhero_app
@@ -2868,137 +2706,100 @@ First thing you will need to do is create repositories in GoGS for each one of i
 * myhero_spark
 * myhero_ernst
 
-(note: you may now delete the *my_test* repo we created to verify the integration of GoGS and Drone)
-
-For each one of them, go into its own directory in your workstation (inside the *myhero* folder), replace the existing origin with the one in GoGS and push the code (you will need to provide your GoGS username and password). You may find below how you would do it for *myhero-ui*, but you will need to do the same for all of them:
-
-```shell
-cd myhero/myhero_ui
-git remote remove origin
-git remote add origin http://<GoGS_IP>/<GoGS_username>/myhero_ui.git
-git push -u origin master
-```
-
-Now your *myhero_ui* code has been uploaded to its own repo in GoGS.
-
-You may go to Drone web interface and SYNC it to see the new repos show up. Activate all of them by clicking individually on each one of them, and then on _Activate Repository_.
-
-Activating these repos means that Drone will get a notification from GoGS when the content of a repo is updated. Not only that, Drone will also get the pipeline definition file *included inside the repo*. That file will define the sequential steps Drone needs to follow for the code included in that specific repo.
-
-From Drone CLI in your workstation, you may now verify that all repos are active:
-
-```shell
-drone repo ls
-```
-
 ### Pipeline definition and requirements
 
 Our pipeline definition file will explicitly determine the different phases that code in the repo will go through when updated. Those include examples like *Test*, *Publish* or *Deploy*, depending on your specific requirements.
 
-In our case, when new code is pushed to our repo we would like Drone to:
+In our case, when new code is pushed to our repo we would like our pipeline to:
 
-* Clone the updated repository from GoGS.
-* Build an updated Docker image based on the new code and the Dockerfile included in the repo, and associate a unique tag to it.
-* Publish the new image to DockerHub.
-* Update the application deployment in our k8s cluster, with containers using the new image that was just published.
-* Notify us on pipeline execution results.
+* Authenticate with Google Cloud and its Kubernetes managed service GKE.
+* Generate the required `kubeconfig` file to manage your cluster.
+* Authenticate with Dockerhub.
+* Build a new Docker image with the proposed changes and associate a unique tag to it.
+* Publish the new image to Dockerhub.
+* Customize the kubernetes manifests to use the new image.
+* Update the application deployments in the k8s cluster, so they use the newly generated image.
 
-For each one of these phases you will be able to use [Drone plugins](http://plugins.drone.io), so we have selected some plugins for the specific tasks we have defined in our pipeline. These plugins require you to provide some information in order to automate its activities.
+For each one of these phases you will need to provide some relevant information in order to automate its activities. As long as this type of information should not be in clear text, you will have to provision it as _secrets_ in [GitHub](https://github.com/). Just login there with your username and password, click on your code repo (i.e. *myhero_ui*), go to _Settings_, click on _Secrets and variables_ - _Actions_, and then _New repository secret_.
 
-For the *Publish* phase you will need to include your Dockerhub username and password, so that the system can automatically publish new images. As long as this type of information should not be in clear text, let's use Drone secrets (for that specific GoGS directory):
+For Dockerhub login you will need to create the following secrets, with the appropriate values for your own account:
+* DOCKER_USERNAME
+* DOCKER_PASSWORD
 
-```shell
-drone secret add \
-  --repository <GoGS_username>/myhero_ui \
-  --name docker_username --data <your_dockerhub_user>
-drone secret add \
-  --repository <GoGS_username>/myhero_ui \
-  --name docker_password --data <your_dockerhub_password>
+For GKE you will need to include two more secrets:
+* GKE_PROJECT
+* GCP_CREDENTIALS
+
+You may obtain your *GKE_PROJECT* using the following command and noting down the provided _PROJECT_ID_:
+
+```
+gcloud projects list
 ```
 
-For the *Notify* phase we would like to use Webex, and let the system tell us when builds are complete and if they are successful or not. So please add this token (yes, you will need *that* specific token) and your Webex e-mail address, again in the form of Drone secrets:
+Getting your *GCP_CREDENTIALS* requires a little bit more work. First you need to enable the required APIS:
 
-```shell
-drone secret add \
-  --repository <GoGS_username>/myhero_ui \
-  --name SPARK_TOKEN --value MDNiNTc0YTUtYTNmNC00N2EzLTg0MGUtZGFkMDYyZjI4YTYxMjhkY2EwNzgtOGYx
-drone secret add \
-  --repository <GoGS_username>/myhero_ui \
-  --name PERSONEMAIL --value <your_WebEx_Teams_email>
+```
+gcloud services enable \
+        containerregistry.googleapis.com \
+        container.googleapis.com
 ```
 
-For the *Deploy* phase we will use a Drone plugin called [drone-gke](https://github.com/NYTimes/drone-gke), designed to update existing deployments in Google Kubernetes Engine clusters. In order to do it this plugin needs you to provide the credentials [JSON](https://en.wikipedia.org/wiki/JSON) file of a Google service account to authenticate.
+Then you need to create a [Service Account](https://cloud.google.com/iam/docs/service-account-overview) the pipeline can use to manage infra in your name:
 
-You can learn how to create a service account [here](https://cloud.google.com/iam/docs/creating-managing-service-accounts#iam-service-accounts-create-console). Once done please download the resulting JSON file into your *myhero_ui* directory, and add it as a *secret* for your GoGS repo (remember to replace your GoGS_username and JSON filename)
-
-```shell
-drone secret add \
-  --event push \
-  --event pull_request \
-  --event tag \
-  --event deployment \
-  --repository <GoGS_username>/myhero_ui \
-  --name GOOGLE_CREDENTIALS \
-  --value @<JSON_filename>
+```
+gcloud iam service-accounts create <your_SA_name>
 ```
 
-Please check all secrets are correctly configured now:
+Now you'll need to assign the right set of admin permissions for that service account:
 
-```shell
-drone secret ls --repository <GoGS_username>/myhero_ui
+```
+gcloud projects add-iam-policy-binding <your_project_name> --member=serviceAccount:<your_SA_name>@<your_project_name>.iam.gserviceaccount.com --role=roles/container.admin
+gcloud projects add-iam-policy-binding <your_project_name> --member=serviceAccount:<your_SA_name>@<your_project_name>.iam.gserviceaccount.com --role=roles/storage.admin
+gcloud projects add-iam-policy-binding <your_project_name> --member=serviceAccount:<your_SA_name>@<your_project_name>.iam.gserviceaccount.com --role=roles/container.clusterViewer
+```
+
+Finally you can obtain the required keys in the `key.json` file:
+
+```
+gcloud iam service-accounts keys create key.json --iam-account=<your_SA_name>@<your_project_name>.iam.gserviceaccount.com
+```
+
+You can now copy and paste the content of that file into the *GCP_CREDENTIALS* GitHub secret value:
+
+```
+cat key.json
 ```
 
 ### Pipeline implementation
 
-You will find a template for your pipeline definition inside *myhero_ui* directory, in a file called *.drone.template*. Please copy it to it required name (*.drone.yml*).
+For our demonstration we will focus on just one microservice, *myhero_ui*. As long as it serves HTTP it will be very easy to check the effects of our pipeline, just by clicking refresh in the browser.
+
+In the *myhero_ui* directory (_.github/workflows/gke-update.template_) you will find a template for your pipeline definition. Let's make a copy and change the extension to be a proper manifest.
 
 ```shell
 cd myhero_ui
-cp .drone.template .drone.yml
+cp .github/workflows/gke-update.template .github/workflows/gke-update.yaml
 ```
 
-*.drone.yml* defines all required sequential steps in our pipeline, so please review it carefully. You will need to replace the following fields:
+*gke-update.yaml* defines all required sequential steps in our pipeline, so please review it carefully. You will need to replace the following environment variables, under _env_:
 
-* Under *Publish* replace your DockerHub username in the image repository name (*repo*)
-* Under *Deploy* replace zone, cluster and project, with the values from `gcloud container clusters list` (*Name* is *cluster*, *Location* is *zone*), and `gcloud projects list` (*Project_ID* is *project*)
-* Under *Deploy*-*vars* replace your DockerHub username in the image repository name
-
-*.drone.yml* needs a deployment definition file, so you will also need to copy the template files for *myhero-ui* deployment to the required names. These files will be used to define how *myhero-ui* will be deployed in GKE k8s cluster:
-
-```shell
-cp k8s_myhero_ui.template k8s_myhero_ui.yml
-cp k8s_myhero_ui.sec.template k8s_myhero_ui.sec.yml
-```
-
-The first file (*k8s_myhero_ui.yml*) is very similar to the one we used previously to deploy this microservice on GKE. So the same as you did before, please complete the missing values of *myhero-spark* and *myhero-app* public URLs, the ones you configured in the DNS. The only difference you will find is that this version of the file defines the *image name* as a parameter. We will pass this parameter from the pipeline definition file (*.drone.yml*), based on the image name we build in the previous *Publish* phase.
-
-The second file (*k8s_myhero_ui.sec.yml*) defines the Drone secrets (token and cert) required by the drone-gke plugin we use in the *Deploy* phase of our pipeline definition (*.drone.yml*). You will need to include the values for *api-token* and *p12-cert*. In order to get these values first check your list of secrets:
-
-```shell
-kubectl get secrets
-```
-
-Pick the one storing the drone token and extract the required values  (remember to replace the exact secret name with your specific one):
-
-```shell
-kubectl get secret/drone-deploy-token-XXXXX -o yaml | egrep 'ca.crt:|token:'
-```
-
-Copy and paste each one of those *long strings* into the required fields of *k8s_myhero_ui.sec.yml* file (*token* is *api-token*, and *ca.crt* is *p12-cert*) and save it.
+* GKE_CLUSTER: use the _NAME_ field from `gcloud container clusters list`
+* GKE_ZONE: use the _LOCATION_ field from `gcloud container clusters list`
+* DOCKERHUB_NAME: use your own dockerhub username
 
 We are all set!
 
 ### Running your pipeline
 
-The Drone plugin used during the *Deploy* phase of our pipeline will *update an already existing deployment*, so before running our pipeline for the first time, let's create the required initial deployment in our GKE k8s cluster.
+The pipeline will *update an already existing deployment*, so before running our pipeline for the first time, let's create the required initial deployment in our GKE k8s cluster.
 
 ```shell
-kubectl apply -f ../devops/k8s/gce/k8s_myhero_ui.yml
+kubectl apply -f ../devops/k8s/gce/.
 ```
 
 Now our pipeline will be able to update the existing deployment with new images generated from changes to the source code.
 
-Any new Git push to GoGS *myhero_ui* repo will automatically trigger its pipeline. For our first one we will need to add all modified files to the Git repo, commit and push to the GoGS server.
+Any new `git push` to the *myhero_ui* repo will automatically trigger its pipeline. For our first one we will need to add all modified files to the Git repo, commit and push.
 
 ```shell
 git add .
@@ -3006,35 +2807,15 @@ git commit -m "Required files for pipeline execution"
 git push -u origin master
 ```
 
-Due to the integration we configured between the GoGS and Drone servers, a webhook will automatically trigger a new build in the Drone server. You may see it happening in real time via the Drone web user interface in your browser.
+Using your browser, please go to your *myhero_ui* GitHub repo and click on _Actions_, where you will be able to click on the workflow/pipeline started by your _git push_. Clicking on the name of the step will allow you to see it running in real time, including the outputs required to debug in case of error.
 
-<p align="center"> 
-<img src="./images/drone-web.png">
-</p>
+Let's see it working with new app code. We will change the *myhero-ui* microservice code and see how it goes through the pipeline and is automatically deployed.
 
-Once completed you will receive a Webex message from the *CICD Build Bot* saying your build was successful.
-
-<p align="center"> 
-<img src="./images/spark-build.png">
-</p>
-
-Let's see it working with new code. We will change *myhero-ui* microservice code and see how it goes through the pipeline and is automatically deployed.
-
-Access your deployed *myhero-ui* web interface via its service public IP address:
-
-```shell
-kubectl get svc myhero-ui
-```
-
-Point your browser to that external IP address and you will see something like this:
+Access your deployed *myhero-ui* web interface via its ingress DDNS (i.e. ui-julio.ddns.net) and you will see something like this:
 
 <p align="center"> 
 <img src="./images/myhero-ui-only.png">
 </p>
-
-As you can see there is no info on the available superheroes to vote, or what are the current standings. The reason is that we have only deployed *myhero-ui*, and none of the other microservices required to have a working application.
-
-If your cluster has enough resources to deploy all the other microservices feel free to go for it. GKE clusters default configuration use 3 nodes of the [default node machine type (n1-standard-1)](https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-architecture#node_machine_type). We used this configuration and it does not support the complete *myhero* deployment with the desired number of replicas per microservice, and the GoGS and Drone servers. So instead of deploying every *myhero* microservices we will work with just one of them (*myhero-ui*), and demonstrate pipeline capabilities all the same.
 
 As per the web page above you can see the current heading is "Make your voice heard!". Let's change the code in our repository so it reads "Make your voice HEARD!!!".
 
@@ -3050,7 +2831,7 @@ There you need to edit the *main.html* and make the mentioned change in the text
 
 Once done save the file and check if Git has detected the change:
 
-```
+```shell
 git status
 On branch master
 Your branch is up-to-date with 'origin/master'.
@@ -3071,7 +2852,7 @@ git add main.html
 
 You can see how Git is now waiting for this file change to be committed:
 
-```
+```shell 
 git status
 On branch master
 Your branch is up-to-date with 'origin/master'.
@@ -3083,27 +2864,28 @@ Changes to be committed:
 
 Commit this change:
 
-```
-git commit -m "update main.html"
+```shell
+git commit -m "update main.html from heard to HEARD"
 [master e95bb1c] update main.html
  1 file changed
-````
+```
 
 And now push it to the repo defined as *origin* (you may check it refers to your GoGS server with `git remote show origin`):
 
-```
+```shell
 git push -u origin master
-Counting objects: 5, done.
-Delta compression using up to 8 threads.
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 10 threads
 Compressing objects: 100% (5/5), done.
-Writing objects: 100% (5/5), 430 bytes | 0 bytes/s, done.
-Total 5 (delta 4), reused 0 (delta 0)
-To http://gogs.XXXXXXXX.com/julio/myhero_ui.git
-   382cf86..e95bb1c  master -> master
-Branch master set up to track remote branch master from origin.
+Writing objects: 100% (5/5), 426 bytes | 426.00 KiB/s, done.
+Total 5 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To https://github.com/juliogomez/myhero_ui.git
+   1d30d1b..1f0a670  master -> master
 ```
 
-This will automatically trigger a new build and deployment update. If you refresh your browser you should see now something like this:
+This will automatically trigger a new build and deployment update. Once completed, ff you refresh your browser you should see now something like this:
 
 <p align="center"> 
 <img src="./images/myhero-ui-only-2.png">
