@@ -60,8 +60,6 @@
 - [Additional tools](#additional-tools)
     - [Draft](#draft)
     - [Telepresence](#telepresence)
-        - [Direct connectivity](#direct-connectivity)
-        - [Intercept](#intercept)
     - [Okteto](#okteto)
 - [Serverless](#serverless)
     - [OpenFaaS](#openfaas)
@@ -3066,7 +3064,7 @@ When you are ready let's try Telepresence in a couple different ways:
 * Direct connectivity from your local environment to the the existing remote deployments.
 * Intercept and redirect all traffic coming in and out from an existing remote deployment, and send it to a local one.
 
-### Direct connectivity
+1. Direct connectivity
 
 In the first case you have full connectivity from your local environment, as if it were directly connected to the remote cluster. You can interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our workstation. But with Telepresence we can do it!
 
@@ -3093,7 +3091,7 @@ curl http://myhero-ui.default
 
 As you can see the local Alpine deployment can query existing microservices using k8s service names, that are only accessible by other containers inside the remote k8s cluster.
 
-### Intercept
+2. Intercept
 
 For the second case Telepresence allows you to intercept all traffic coming in and out of an existing remote deployment in your k8s cluster, and send that traffice to a local deployment in your workstation, where you can work **live**.
 
