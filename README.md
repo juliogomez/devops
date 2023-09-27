@@ -60,8 +60,8 @@
 - [Additional tools](#additional-tools)
     - [Draft](#draft)
     - [Telepresence](#telepresence)
-        - [Additional deployment](#additional-deployment)
-        - [Swap deployments](#swap-deployments)
+        - [Direct connectivity](#direct-connectivity)
+        - [Intercept](#intercept)
     - [Okteto](#okteto)
     - [Cockpit](#cockpit)
 - [Serverless](#serverless)
@@ -2719,7 +2719,7 @@ In our case, when new code is pushed to our repo we would like our pipeline to:
 * Customize the kubernetes manifests to use the new image.
 * Update the application deployments in the k8s cluster, so they use the newly generated image.
 
-For each one of these phases you will need to provide some relevant information in order to automate its activities. As long as this type of information should not be in clear text, you will have to provision it as _secrets_ in [GitHub](https://github.com/). Just login there with your username and password, click on your code repo (i.e. *myhero_ui*), go to _Settings_, click on _Secrets and variables_ - _Actions_, and then _New repository secret_.
+And of course you will need to provide some relevant information for the pipeline to be able to execute all of these actions. As long as this type of information should not be in clear text, you will have to provision it as _secrets_ in [GitHub](https://github.com/). Just login there with your username and password, click on your code repo (i.e. *myhero_ui*), go to _Settings_, click on _Secrets and variables_ - _Actions_, and then _New repository secret_.
 
 For Dockerhub login you will need to create the following secrets, with the appropriate values for your own account:
 * DOCKER_USERNAME
@@ -2771,7 +2771,7 @@ cat key.json
 
 ### Pipeline implementation
 
-For our demonstration we will focus on just one microservice, *myhero_ui*. As long as it serves HTTP it will be very easy to check the effects of our pipeline, just by clicking refresh in the browser.
+For our demonstration we will focus on just one microservice, *myhero_ui*. As long as it serves HTTP it will be very easy to check the effects of our pipeline, just by clicking refresh in your browser.
 
 In the *myhero_ui* directory (_.github/workflows/gke-update.template_) you will find a template for your pipeline definition. Let's make a copy and change the extension to be a proper manifest.
 
@@ -2828,7 +2828,7 @@ cd app/views
 
 There you need to edit the *main.html* and make the mentioned change in the text you will find there.
 
-Once done save the file and check if Git has detected the change:
+Once done, please save the file and check if Git has detected the change:
 
 ```shell
 git status
@@ -2914,7 +2914,7 @@ But there are additional tools to address certain needs, that provide multiple b
 
 ## Draft
 
-[Draft](https://draft.sh) enables developers to easily build applications and run them in k8s. It helps by hiding the complexity of building images, publishing them and creating the deployments. That way developers can focus on code. With only a couple of commands (`draft create` and `draft up`) they are good to go!
+[Draft](https://draft.sh) enables developers to easily build applications and run them on k8s. It helps by hiding the complexity of building images, publishing them and creating the deployments. That way developers can focus on code. With only a couple of commands (`draft create` and `draft up`) they are good to go.
 
 Let's imagine there was a team working on our *myhero-data* microservice. They would be [python](https://www.python.org) coders constantly expanding its functionality and testing that it works fine. They would need to test it before going to Production, but testing it correctly implies deploying into a similar k8s cluster. However these coders should not be concerned about k8s management, they just want to code!
 
@@ -2922,15 +2922,18 @@ So once their code is ready they could use Draft to automatically detect the pro
 
 Let's get it working!
 
-First [install Draft](https://github.com/azure/draft). If you choose to use minikube you will have a 1-node k8s cluster running in your own workstation for testing. Otherwise you can use any k8s cluster from a Cloud provider.
+If you choose to use minikube you will have a 1-node k8s cluster running in your own workstation for testing. Otherwise you can use any k8s cluster from a Cloud provider.
 
 Please make sure you have Docker running locally in your workstation, as it will be needed to automatically build and publish your images.
 
-Now go to *devops-tutorial* create a new *draft* directory, clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
+First [install Draft](https://github.com/azure/draft#installation). 
+
+Now go to *devops-tutorial* and create a new *draft* directory. Clone there the *myhero_data* repo and rename it to *myherodata* (draft does not support the **_** character in deployment names):
 
 ```shell
 cd devops-tutorial
 mkdir draft
+cd draft
 git clone https://github.com/juliogomez/myhero_data.git
 mv myhero_data myherodata
 ```
@@ -3033,74 +3036,90 @@ How cool is that?!
 
 Let's give it a try to see how it works.
 
-First you need to [install it](https://www.telepresence.io/reference/install), and it will automatically work with the k8s cluster active in your kubectl configuration.
+First you need to [install the telepresence CLI](https://www.telepresence.io/reference/install) in your workstation, and it will automatically work with the k8s cluster active in your kubectl configuration.
 
-By now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to comment with **#** two lines in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. Please make sure to configure *myhero-ui* and *myhero-app* as LoadBalancer, so that they both get public IP addresses.
+Then you need to install Telepresence traffic manager in your cluster:
+
+```shell
+telepresence helm install
+```
+
+Connect to your cluster:
+
+```shell
+telepresence connect
+```
+
+And now you should be able to see all your _myhero_ services available:
+
+```shell
+telepresence list
+```
+
+Telepresence is readyy now to be used!
+
+By now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler and save on cluster CPU resources, let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to change the value from _queue_ to _direct_ in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. 
 
 When you are ready you can try Telepresence in a couple of different ways:
 
-* Additional local deployment that communicates with the existing remote ones.
-* Replace an existing remote deployment with a local one.
+* Direct connectivity from your local environment to the the existing remote deployments.
+* Intercept and redirect all traffic coming in and out from an existing remote deployment, and send it to a local one.
 
-### Additional deployment
+### Direct connectivity
 
-In the first case you could run an additional container locally, and have full connectivity to the remote cluster, as if it were actually there. Let's try with *Alpine* and make it interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our workstation. But with Telepresence we can do it!
-
-Start by running Alpine with Telepresence:
+In the first case you have full connectivity from your local environment, as if it were directly connected to the remote cluster. You can interact **directly** with *myhero-data* and *myhero-app* using their service names. Please note these service names are only reachable **inside** the cluster, never from an external system like our workstation. But with Telepresence we can do it!
 
 ```shell
-telepresence --docker-run -i -t alpine /bin/sh
+curl -X GET -H "key: SecureData" http://myhero-data.default/options
+curl -X GET -H "key: SecureApp" http://myhero-app.default/options
+curl http://myhero-ui.default
+```
+
+You can also try direct connectivity from a local container (i.e. _alpine_), using those same commands. 
+
+```shell
+docker run --rm -it alpine /bin/sh
 ```
 
 And now from inside the Alpine container you may interact directly with the already deployed *myhero* containers:
 
 ```shell
 apk add --no-cache curl
-curl -X GET -H "key: SecureData" http://myhero-data/options
-curl -X GET -H "key: SecureApp" http://myhero-app/options
-curl http://myhero-ui
+curl -X GET -H "key: SecureData" http://myhero-data.default/options
+curl -X GET -H "key: SecureApp" http://myhero-app.default/options
+curl http://myhero-ui.default
 ```
 
-As you can see the additional Alpine deployment can query existing microservices using k8s service names, that are only accessible by other containers inside the k8s cluster.
+As you can see the local Alpine deployment can query existing microservices using k8s service names, that are only accessible by other containers inside the remote k8s cluster.
 
-### Swap deployments
+### Intercept
 
-For the second case Telepresence allows you to replace an existing remote deployment in your k8s cluster, with a local one in your workstation where you can work **live**.
+For the second case Telepresence allows you to intercept all traffic coming in and out of an existing remote deployment in your k8s cluster, and send it to a local one in your workstation where you can work **live**.
 
-We will replace the *myhero-ui* microservice running in your k8s cluster with a new *myhero-ui* service deployed locally in your workstation.
-
-Before running the new local deployment please find out what is the public IP address assigned to *myhero-app* in your k8s cluster (you will need it as a parameter when you run the new *myhero-ui*):
-
-```shell
-kubectl get service myhero-app
-```
-
-Now you can replace the remotely deployed *myhero-ui* with your own local *myhero-ui* (please make sure to replace the public IP address of *myhero-app* provided as an environment variable in the command below):
+We will do this with the *myhero-ui* microservice running in your k8s cluster, so traffic is sent to a new *myhero-ui* service deployed __locally__ in your workstation.
 
 ```shell
 cd myhero_ui/app
-telepresence --swap-deployment myhero-ui --expose 80 --docker-run -p=80 -v $(pwd):/usr/share/nginx/html -e "myhero_app_server=http://<myhero-app_public_IP>" -e "myhero_app_key=SecureApp" <your_DockerHub_user>/myhero-ui
+telepresence intercept myhero-ui --port 80 --env-file ./tpui.env --docker-run -- --rm -p=80 -v $(pwd):/usr/share/nginx/html <your_dockerhub_id>/myhero-ui
 ```
 
-Parameters indicate what is the port used by the remote deployment (*-expose*), what port uses the local container (*-p*), mapping of the application directory from the local host to the container, required environment variables (*myhero-app* URL or public address, and shared private key), and finally your *myhero-ui* image.
+Parameters indicate:
+* Service to be intercepted.
+* Port used by the remote deployment.
+* File name to store environment variables to be used by local deployment (*myhero-app* URL and shared private key).
+* Port used by the local container (*-p*).
+* Mapping of the application directory from the local host to the container.
+* Container image to use for the local deployment.
 
-You will probably be asked by your workstation password to allow the creation of a new local container. And finally the terminal will start logging your local *myhero-ui* execution.
+On success, the terminal window will start logging your local *myhero-ui* execution. Point your browser to the *myhero_ui* DDNS URL and you should see *myhero* app working as before.
 
-Open a new terminal and check the public IP address of your *myhero-ui* service:
-
-```shell
-kubectl get service myhero-ui
-```
-
-Now point your browser to that Public IP address and you should see *myhero* app working as before.
-
-From the second terminal window go to the application directory:
+From the second terminal window you opened, go to the application directory:
 
 ```shell
 cd myhero_ui/app/views
 ```
 
-Let's modify the code of our *myhero-ui* microservice frontpage, by editing *main.html*:
+Let's modify our *myhero-ui* microservice frontpage code, by editing *main.html*:
 
 ```shell
 vi main.html
@@ -3118,11 +3137,11 @@ Modify it by swapping *voice* to *VOICE*:
 <h3>Make your VOICE heard!</h3>
 ```
 
-Save the file. Please note this is just an example of a simple change in the code, but everything would work in the same way for any other change.
+Save the file. Please note this is just an example of a simple change in the code, but everything would work all the same for any other change.
 
-Refresh your browser and you will automatically see the updated header (shift+refresh for a hard refresh) from your **local** *myhero-ui*.
+Refresh your browser and you will automatically see the updated header (shift+refresh for a hard refresh) obtained from your **local** *myhero-ui*.
 
-Let's review what is happening: requests going to *myhero-ui* service **public** IP address are automatically redirected to your **local** *myhero-ui* deployment (where you are developing *live*), which in turn transparently interact with all the other *myhero* microservices deployed in the **remote** k8s cluster.
+Let's review what is happening: requests going to *myhero-ui* service **public** IP address are automatically redirected to your **local** *myhero-ui* deployment (where you are developing *live*), which in turn transparently interacts with all the other *myhero* microservices deployed in the **remote** k8s cluster.
 
 __Ain't it amazing?!?__
 
@@ -3134,7 +3153,7 @@ docker build -t <your_DockerHub_user>/myhero-ui
 docker push <your_DockerHub_user>/myhero-ui
 ```
 
-When you are done testing your local deployment, go to your first terminal window and press ctrl+c to stop Telepresence. You might get asked for your workstation password again, to exit the local container. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
+When you are done testing your local deployment, go to your second terminal window and run `telepresence leave myhero-ui` to stop intercepting. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
 
 ## Okteto
 
