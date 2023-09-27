@@ -3032,11 +3032,11 @@ How cool is that?!
 
 ## Telepresence
 
-[Telepresence](https://www.telepresence.io) allows you to work from your workstation like you were *inside* a remote k8s cluster. This way you can easily do *live* debugging and testing of a service locally, while it is automatically connected to a remote k8s cluster. For example you could develop on that local service and have it connnected to other remote services deployed in Production.
+[Telepresence](https://www.telepresence.io) allows you to work from your workstation like you were *inside* a remote k8s cluster. This way you can easily do *live* debugging and testing of a service locally, while it behaves as if it were directly connected to a remote k8s cluster. For example you could develop on a local service and have it connnected to other remote services deployed in Production.
 
 Let's give it a try to see how it works.
 
-First you need to [install the telepresence CLI](https://www.telepresence.io/reference/install) in your workstation, and it will automatically work with the k8s cluster active in your kubectl configuration.
+First you will need to [install the telepresence CLI](https://www.telepresence.io/reference/install) in your workstation, and it will automatically work with the k8s cluster active in your kubectl configuration.
 
 Then you need to install Telepresence traffic manager in your cluster:
 
@@ -3050,17 +3050,17 @@ Connect to your cluster:
 telepresence connect
 ```
 
-And now you should be able to see all your _myhero_ services available:
+Now you should be able to see all your _myhero_ services available:
 
 ```shell
 telepresence list
 ```
 
-Telepresence is readyy now to be used!
+Telepresence is ready now to be used!
 
 By now you should already know how to get a full *myhero* deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler and save on cluster CPU resources, let's configure it in 'direct' mode, so no *myhero-mosca* or *myhero-ernst* is required. Remember you just need to change the value from _queue_ to _direct_ in *k8s_myhero_app.yml* (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: *myhero-ui*, *myhero-app* and *myhero-data*. 
 
-When you are ready you can try Telepresence in a couple of different ways:
+When you are ready let's try Telepresence in a couple different ways:
 
 * Direct connectivity from your local environment to the the existing remote deployments.
 * Intercept and redirect all traffic coming in and out from an existing remote deployment, and send it to a local one.
@@ -3075,13 +3075,13 @@ curl -X GET -H "key: SecureApp" http://myhero-app.default/options
 curl http://myhero-ui.default
 ```
 
-You can also try direct connectivity from a local container (i.e. _alpine_), using those same commands. 
+You can also try direct connectivity from a container (i.e. _alpine_) running locally in your workstation:
 
 ```shell
 docker run --rm -it alpine /bin/sh
 ```
 
-And now from inside the Alpine container you may interact directly with the already deployed *myhero* containers:
+Now from the Alpine container you may interact directly with the already deployed *myhero* containers in your remote cluster:
 
 ```shell
 apk add --no-cache curl
@@ -3094,7 +3094,7 @@ As you can see the local Alpine deployment can query existing microservices usin
 
 ### Intercept
 
-For the second case Telepresence allows you to intercept all traffic coming in and out of an existing remote deployment in your k8s cluster, and send it to a local one in your workstation where you can work **live**.
+For the second case Telepresence allows you to intercept all traffic coming in and out of an existing remote deployment in your k8s cluster, and send that traffice to a local deployment in your workstation, where you can work **live**.
 
 We will do this with the *myhero-ui* microservice running in your k8s cluster, so traffic is sent to a new *myhero-ui* service deployed __locally__ in your workstation.
 
@@ -3103,7 +3103,7 @@ cd myhero_ui/app
 telepresence intercept myhero-ui --port 80 --env-file ./tpui.env --docker-run -- --rm -p=80 -v $(pwd):/usr/share/nginx/html <your_dockerhub_id>/myhero-ui
 ```
 
-Parameters indicate:
+Those telepresence command parameters provide the following information:
 * Service to be intercepted.
 * Port used by the remote deployment.
 * File name to store environment variables to be used by local deployment (*myhero-app* URL and shared private key).
@@ -3111,7 +3111,7 @@ Parameters indicate:
 * Mapping of the application directory from the local host to the container.
 * Container image to use for the local deployment.
 
-On success, the terminal window will start logging your local *myhero-ui* execution. Point your browser to the *myhero_ui* DDNS URL and you should see *myhero* app working as before.
+On success the terminal window will start logging your local *myhero-ui* execution. Point your browser to the *myhero_ui* DDNS URL and you should see *myhero* app working as before.
 
 From the second terminal window you opened, go to the application directory:
 
