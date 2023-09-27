@@ -3158,7 +3158,7 @@ When you are done testing your local deployment, go to your second terminal wind
 Once finished done you may uninstall all telepresence agents in your remote deployments, and quit the daemon:
 
 ```shell
-telepresence uninstall --all-agents
+telepresence uninstall --everything
 telepresence quit
 ```
 
@@ -3168,63 +3168,57 @@ telepresence quit
 
 Too good to be true? Let's give it a try!
 
-First you need to [install it](https://okteto.com/docs/getting-started/installation/), and it will automatically work with the k8s cluster active in your kubectl configuration.
+First you need to [install it](https://www.okteto.com/docs/getting-started/#installing-okteto-cli), and it will automatically work with the k8s cluster active in your kubectl configuration.
 
-By now you should already know how to get a full _myhero_ deployment working on your GKE cluster, so please go ahead and do it yourself. To make it simpler please configure it in 'direct' mode, so no _myhero-mosca_ or _myhero-ernst_ is required. Remember you just need to comment with # two lines in _k8s_myhero_app.yml_ (under 'env' - 'myhero_app_mode'). After deployment you should have the 3 required microservices: _myhero-ui_, _myhero-app_ and _myhero-data_. Please make sure to configure _myhero-ui_ and _myhero-app_ as LoadBalancer, so they both get public IP addresses. Once the application is working we can try okteto.
+By now you should already know how to get a full _myhero_ deployment working on your GKE cluster, so please go ahead and do it yourself. After deployment you should have the 3 required microservices: _myhero-ui_, _myhero-app_ and _myhero-data_. Once the application is working we can try okteto.
 
 Let's say we are AngularJS developers, and we have been assigned to work on the web front-end microservice (_myhero-ui_).
 
-First thing we would need to do is cloning the repo, and get into the resulting directory:
+If you don't have the repo yet, first thing you will need to do is to clone it and then get into the resulting directory:
 
-```
-$ git clone https://github.com/juliogomez/myhero_ui.git
-$ cd myhero_ui
-```
-
-Please make sure you have defined the following required 3 variables:
-
-```
-$ export myhero_spark_server=<your_spark_url>
-$ export myhero_app_server=<your_api_url>
-$ export myhero_app_key=<your_key_to_communicate_with_app_server>
+```shell
+git clone https://github.com/juliogomez/myhero_ui.git
+cd myhero_ui
 ```
 
-Okteto will automatically detect the programming language used in the repo and create the new `okteto.yml` manifest, specifying the deployment target, working directory, port forwarding and some scripts.
+Please make sure you have defined the following required 3 environment variables:
 
-We will need to make some changes to make that file work in our setup:
+```shell
+export myhero_spark_server=<your_spark_url>
+export myhero_app_server=<your_api_url>
+export myhero_app_key=<your_key_to_communicate_with_app_server>
+```
 
-* Change the deployment name from `myheroui` to `myhero-ui`
-* Configure it to automatically install and start the code, including the following `command: ["yarn", "start"]`
-* Port mapping: if you take a look at our front-end's `package.json` file, you will see it starts an HTTP server in port 8000, so we should change the mapping from `3000:3000` to `3000:8000`
-
-For the microservice deployment we already have our own _myhero-ui_ manifest, and for this demo we will replace the existing front-end microservice with a new one. We could also create a different deployment and work in parallel with the production one. For your convenience the _myhero-ui_ repo includes an already modified manifest you can use for this demo.
+Okteto will automatically detect the programming language used in the repo and create the new `okteto.yml` manifest, specifying the deployment target, working directory, and some scripts. For your convenience the _myhero-ui_ repo includes an already modified manifest (`okteto.yml`) you can use for this demo.
 
 Now you should be good to activate your cloud native development environment.
 
 ```
-$ okteto up --namespace myhero --file okteto_myhero-ui.yml
- ✓  Environment activated!
-    Ports:
-       3000 -> 8000
-    Cluster:     gke_test-project-191216_europe-west1-b_example-cluster
-    Namespace:   myhero
-    Deployment:  myhero-ui
+$ okteto up
+ i  Using default @ gke_test-project-191216_europe-southwest1-a_mycluster as context
+ i  'myhero_ui' was already deployed. To redeploy run 'okteto deploy' or 'okteto up --deploy'
+ i  Images were already built. To rebuild your images run 'okteto build' or 'okteto deploy --build'
+ ✓  Persistent volume successfully attached
+ ✓  Images successfully pulled
+ ✓  Files synchronized
+    Context:   gke_test-project-191216_europe-southwest1-a_mycluster
+    Namespace: default
+    Name:      myhero-ui
 
-yarn run v1.12.3
+yarn run v1.15.2
 $ npm install
-npm WARN notice [SECURITY] ecstatic has the following vulnerability: 1 moderate. Go here for more details: https://nodesecurity.io/advisories?search=ecstatic&version=1.4.1 - Run `npm i npm@latest -g` to upgrade your npm version, and then `npm audit` to get more info.
-npm notice created a lockfile as package-lock.json. You should commit this file.
-added 24 packages from 27 contributors and audited 24 packages in 5.825s
-found 1 moderate severity vulnerability
+audited 21 packages in 1.906s
+found 7 vulnerabilities (2 moderate, 4 high, 1 critical)
   run `npm audit fix` to fix them, or `npm audit` for details
-$ http-server -a localhost -p 8000 -c-1 ./app
+$ http-server -p 80 -c-1 ./app
 Starting up http-server, serving ./app
 Available on:
-  http://localhost:8000
+  http://127.0.0.1:80
+  http://10.88.0.19:80
 Hit CTRL-C to stop the server
 ```
 
-This process replaces the existing _myhero-ui_ container deployment in the kubernetes cluster, with our new one. It will also synchronize files from your workstation to the development environment, and perform the required port forwarding. You may access this new web front-end deployment by browsing to http://localhost:3000/
+This process replaces the existing _myhero-ui_ container deployment in the kubernetes cluster, with our new one. It will also synchronize files from your workstation to the development environment, and perform the required port forwarding. You may access this new web front-end deployment accessing your usual public DDNS URL for _myhero-ui_ from your browser.
 
 As a developer please use your favourite IDE (or even just `vi`) in your local workstation to edit, for example, the file defining the front page (`./app/views/main.html`).
 
@@ -3244,7 +3238,7 @@ Developers can now easily test how their software changes behave when deployed a
 Once you get over this overwhelming and amazing experience, you may disable your cloud native environment by pressing `Ctrl+C` and then `Ctrl+D` in your terminal window. From there you can remove your deployment and replace it with the original one, with:
 
 ```
-$ okteto down -n myhero -f okteto_myhero-ui.yml -v
+$ okteto down
 ```
 
 ## Cockpit
