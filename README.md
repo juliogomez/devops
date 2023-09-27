@@ -3155,6 +3155,13 @@ docker push <your_DockerHub_user>/myhero-ui
 
 When you are done testing your local deployment, go to your second terminal window and run `telepresence leave myhero-ui` to stop intercepting. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
 
+Once finished done you may uninstall all telepresence agents in your remote deployments, and quit the daemon:
+
+```shell
+telepresence uninstall --all-agents
+telepresence quit
+```
+
 ## Okteto
 
 [Okteto](https://okteto.com/) offers developers the ability to locally code with their own tools, and test their software live on containers deployed in a real remote kubernetes cluster, with no required knowledge about docker containers or kubernetes. 
