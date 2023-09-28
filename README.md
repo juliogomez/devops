@@ -62,7 +62,6 @@
     - [Okteto](#okteto)
 - [Serverless](#serverless)
     - [OpenFaaS](#openfaas)
-    - [Kubeless](#kubeless)
     - [Fission](#fission)
 - [Conclusions](#conclusions)
 
@@ -3152,7 +3151,6 @@ Well, there are a number of initiatives driving solutions exactly in this direct
 In this series we will explore the following FaaS over k8s solutions and actually put them to work in our evaluation environment:
 * OpenFaaS
 * Fission
-* Kubeless
 
 <p align="center"> 
 <img src="./images/serverless_landscape.png">
@@ -3311,7 +3309,7 @@ This will create a _callme.yml_ manifest and a new folder named _callme_ with th
 image: juliocisco/callme:latest
 ```
 
-The _handler.py_ file in the _callme_ folder would include the code for our function. Let's include some simple code that returns the input you provide to your function. Edit _handler.py_ to include this:
+The _handler.py_ file in the _callme_ folder would include the code for our function. Let's include some simple code that returns the input you provide to your function. Edit _handler.py_ to look like this:
 
 ```
 def handle(req):
@@ -3339,107 +3337,6 @@ curl $OPENFAAS_URL/function/callme -d "it's ME here!"
 __It works!__
   
 As you can see OpenFaaS is easy to deploy, very k8s friendly with its own namespaces & functions deployments, and a great starting point with templates to deploy your own code. 
-
-## Kubeless
-
-Same as with other FaaS engines you will need to install first its own CLI. For example with OSX:
-
-```
-export OS=$(uname -s| tr '[:upper:]' '[:lower:]')
-curl -OL https://github.com/kubeless/kubeless/releases/download/$RELEASE/kubeless_$OS-amd64.zip && \
-  unzip kubeless_$OS-amd64.zip && \
-  sudo mv bundles/kubeless_$OS-amd64/kubeless /usr/local/bin/
-```
-
-Now you need to create a new namespace that will be used specifically for Kubeless:
-
-```
-kubectl create ns kubeless
-```
-
-And finally deploy the latest Kubeless release in the new namespace:
-
-```
-export RELEASE=$(curl -s https://api.github.com/repos/kubeless/kubeless/releases/latest | grep tag_name | cut -d '"' -f 4)
-kubectl create -f https://github.com/kubeless/kubeless/releases/download/$RELEASE/kubeless-$RELEASE.yaml
-```
-
-Check the deployment is 0k:
-
-```
-$ kubectl get deployment -n kubeless
-NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
-kubeless-controller-manager   1/1     1            1           4m51s
-```
-
-Kubeless is now fully deployed in your k8s cluster… that was easy!
-
-So let’s create our first function now, we will do it in python this time. Create a file called _test.py_ and include this content:
-
-```
-def hello(event, context):
-  print event
-  return event['data']
-```
-
-As you can see it is a very simple program that returns the same data it receives.
-
-Let’s deploy it with:
-
-```
-kubeless function deploy hello --runtime python2.7 \
-                                --from-file test.py \
-                                --handler test.hello
-```
-
-Wait until it shows up as READY:
-
-```
-$ kubeless function ls hello
-NAME 	NAMESPACE	HANDLER   	RUNTIME  	DEPENDENCIES	STATUS
-hello	default  	test.hello	python2.7	            	1/1 READY
-```
-
-__Your function is now deployed on Kubeless!__
-
-You can see the pod running in the _default_ namespace:
-
-```
-$ kubectl get pods
-NAME                     READY   STATUS    RESTARTS   AGE
-hello-55f6478db6-d72fz   1/1     Running   0          4m49s
-```
-
-One big difference with Kubeless is that during the installation process it creates a new [Custom Resource Definition](https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/) (CRD) native to k8s, so that functions can be managed like standard k8s objects:
-
-```
-$ kubectl get functions
-NAME    AGE
-hello   9m25s
-```
-
-<p align="center"> 
-<img src="https://media.giphy.com/media/l378xw31ztiHQi1YA/giphy.gif">
-</p>
-
-0k, let’s see if our new function works with:
-
-```
-$ kubeless function call hello --data 'Hello world'
-Hello world
-```
-
-Nice, it works fine!
-
-For our Kubeless deployment we did not configure any externally accessible IP address via a LoadBalancer service, so we will test HTTP access using _kubectl proxy_:
-
-```
-kubectl proxy -p 8080 &
-curl -L --data 'Hi there!' \
-  localhost:8080/api/v1/namespaces/default/services/hello:http-function-port/proxy/
-```
-
-Fantastic, our function is now readily available for everyone to access it. Well done!
 
 ## Fission
 
