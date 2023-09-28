@@ -3338,53 +3338,61 @@ __It works!__
   
 As you can see OpenFaaS is easy to deploy, very k8s friendly with its own namespaces & functions deployments, and a great starting point with templates to deploy your own code. 
 
+Once you are finished with your testing please feel free to uninstall OpenFaaS:
+
+```shell
+helm delete -n openfaas openfaas
+```
+
 ## Fission
 
-Let’s start by installing fission in its own namespace:
+Another great example of FaaS over kubernetes is Fission, let’s start by [installing it](https://fission.io/docs/installation/)), and specifically for GKE:
 
-```
-kubectl create namespace fission
-helm install --namespace fission --name-template fission \
-    https://github.com/fission/fission/releases/download/1.9.0/fission-all-1.9.0.tgz
+```shell
+export FISSION_NAMESPACE="fission"
+kubectl create namespace $FISSION_NAMESPACE
+kubectl create -k "github.com/fission/fission/crds/v1?ref=v1.19.0"
+helm repo add fission-charts https://fission.github.io/fission-charts/
+helm repo update
+helm install --version v1.19.0 --namespace $FISSION_NAMESPACE fission fission-charts/fission-all
 ```
 
 The output will show you how to install the fission client CLI. For example with OSX:
 
-```
-curl -Lo fission https://github.com/fission/fission/releases/download/1.9.0/fission-cli-osx && chmod +x fission && sudo mv fission /usr/local/bin/
-```
-
-There are 3 different namespaces that have been created for fission:
-* fission
-* fission-builder
-* fission-function
-
-```
-kubectl get namespace
+```shell
+curl -Lo fission https://github.com/fission/fission/releases/download/v1.19.0/fission-v1.19.0-darwin-amd64 && chmod +x fission && sudo mv fission /usr/local/bin/
 ```
 
-The _fission_ namespace includes all the different pods deployed for the framework itself:
+Check that it is installed properly with:
 
+```shell
+fission version
+fission check
 ```
+
+The _fission_ namespace includes all the different pods deployed for the framework itself, please wait for all of them to be _ready_:
+
+```shell
 kubectl get pods -n fission
 ```
 
-The other 2 namespaces are empty for now as there are no functions deployed yet.
+Now that the fission environment is completely set up you are now ready to start working on your first function. We will start by creating a new environment for the specific programming language you would like to use in your function. For our example, this time we will use NodeJS:
 
-Now that the fission environment is completely set up you are now ready to start working on your first function. We will start by creating a new environment for the specific programming language you would like to use in your function. For our example we will use NodeJS:
-
-```
+```shell
 fission env create --name nodejs --image fission/node-env
 ```
 
-You may now take a look at the _fission-function_ namespace and see now it includes 3 pods for that new environment you just deployed.
+You may now take a look at the _default_ namespace and see now it includes 3 pods for that new environment you just deployed.
+
+```shell
+kubectl get pods -n default
+```
 
 ```
-$ kubectl get pods -n fission-function
-NAME                                                READY   STATUS    RESTARTS   AGE
-poolmgr-nodejs-default-144232726-5579665886-bwkxc   2/2     Running   0          3m27s
-poolmgr-nodejs-default-144232726-5579665886-qctgh   2/2     Running   0          3m27s
-poolmgr-nodejs-default-144232726-5579665886-qxdmw   2/2     Running   0          3m27s
+NAME                                               READY   STATUS    RESTARTS        AGE
+poolmgr-nodejs-default-11717550-58fc5566fc-cgbp2   2/2     Running   0               95s
+poolmgr-nodejs-default-11717550-58fc5566fc-mlg6f   2/2     Running   0               95s
+poolmgr-nodejs-default-11717550-58fc5566fc-xdsmm   2/2     Running   0               95s
 ```
 
 Wait a minute… I have not deployed any code yet, and there are already pods running in the system!?
@@ -3397,30 +3405,36 @@ Yep, that’s an important difference when comparing fission with other FaaS eng
 
 Let’s download a simple _hello-world_ javascript app we can use for our demo, and save it to a local file called _hello.js_:
 
-```
-curl https://raw.githubusercontent.com/fission/fission/master/examples/nodejs/hello.js > hello.js
+```shell
+curl -LO https://raw.githubusercontent.com/fission/examples/main/nodejs/hello.js
 ```
 
-Take a look at its content and you will see it is as simple as returning a “hello, world!” message. We will use it to create a new function in the already deployed nodejs environment. In fission that means _registering_ the function with the available environment (`--env nodejs`).
+Take a look at its content (`cat hello.js`) and you will see it is as simple as returning a “hello, world!” message. We will use it to create a new function in the already deployed nodejs environment. In fission that means _registering_ the function with the available environment (`--env nodejs`).
 
-```
+```shell
 fission function create --name hello --env nodejs --code hello.js
 ```
 
-You will see no changes in the _fission-function_ namespace, as the environment pods were already deployed, but now your app code has been included there.
+You will see no changes in the _default_ namespace, as the environment pods were already deployed, but now your app code has been included there.
 
 You may list the deployed functions with:
 
+```shell
+fission function list
 ```
-$ fission function list
-NAME  ENV    EXECUTORTYPE MINSCALE MAXSCALE MINCPU MAXCPU MINMEMORY MAXMEMORY TARGETCPU SECRETS CONFIGMAPS
-hello nodejs poolmgr      0        0        0      0      0         0         0
+
+```
+NAME  ENV    EXECUTORTYPE MINSCALE MAXSCALE MINCPU MAXCPU MINMEMORY MAXMEMORY SECRETS CONFIGMAPS NAMESPACE
+hello nodejs poolmgr      0        0        0      0      0         0                            default
 ```
 
 You may now invoke your function by running:
 
+```shell
+fission function test --name hello
 ```
-$ fission function test --name hello
+
+```
 hello, world!
 ```
 
@@ -3430,25 +3444,33 @@ In order to access this function via a HTTP endpoint let's take a look at the ex
 
 ```
 $ kubectl get svc router -n fission
-NAME     TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)        AGE
-router   LoadBalancer   10.31.240.5   104.155.113.47   80:30668/TCP   25m
+NAME     TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
+router   LoadBalancer   10.92.4.196   34.175.68.7   80:31014/TCP   86m
 ```
 
-But before accessing the endpoint we need to accommodate another requirement for fission: [_triggers_](https://docs.fission.io/docs/triggers/). Functions in fission are invoked only when an event happens, and that's what they call a _trigger_. Before being able to access that new function you need to create a trigger. In our case we will create a trigger that invokes our hello function when the URL path _/hello_ is accessed.
+But before accessing the endpoint we need to accommodate another requirement for fission: [_triggers_](https://fission.io/docs/usage/triggers/). Functions in fission are invoked only when an event happens, and that's what they call a _trigger_. Before being able to access that new function you need to create a trigger. In our case we will create a trigger that invokes our hello function when the URL path _/hello_ is accessed.
+
+```shell
+fission route create --name hello --method GET --url /hello --function hello
+```
 
 ```
-$ fission route create --method GET --url /hello --function hello
-trigger '027634d8-44a6-4eba-9354-cd28e55beb69' created
+trigger 'hello' created
 ```
 
 You may now access the URL path where the function resides:
 
-```
-$ curl http://104.155.113.47/hello
-hello, world!
+```shell
+curl http://34.175.68.7/hello
 ```
 
 It works, well done!
+
+When you're done with your testing please feel free to [uninstall Fission](https://fission.io/docs/installation/uninstallation/):
+
+```shell
+helm uninstall fission -n fission
+```
 
 __By now you should have a good understanding on how to get started with several different FaaS engines over kubernetes, so please keep exploring! Serverless is here to stay and nobody likes lock-in!__
 
