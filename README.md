@@ -3125,7 +3125,7 @@ $ okteto down
 
 # Serverless
 
-By now you might be wondering how do developers deal with so much complexity around containers, micro-services, schedulers, service meshes, etc… on top of their core knowledge about programming languages and software architectures. It sounds like way too much, huh? That’s exactly how they feel and they main reason why everyone looks for ways to let them focus just on their code.
+By now you might be wondering how do developers deal with so much complexity around containers, micro-services, schedulers, service meshes, etc… on top of their core knowledge about programming languages and software architectures. It sounds like way too much, huh? That’s exactly how they feel and the main reason why everyone's constantly looking for ways to let them focus just on their code.
 
 <p align="center"> 
 <img src="./images/serverless_confused.png">
@@ -3141,15 +3141,15 @@ Most Cloud providers have an offering in the serverless arena (ie. [AWS Lambda](
 
 If you have worked with native offerings from your own Cloud provider, probably you have noticed that it is really easy to bring your data in and build your application there. But it is not that easy to migrate it out to a different environment when you need to. The main reason is that many of the service constructs you will use to implement your application are native to the specific provider you chose. So when the moment comes to move your workloads somewhere else you basically need to rebuild your app with similar constructs available from your new favourite provider. And that’s exactly the moment when everybody wonders: “wouldn’t it be cool to have a way to transparently migrate my code to a new environment?”. That’s what we call __portability__.
 
-In the world of containers and microservices, portability is one of the main benefits of running your workloads on Kubernetes (aka k8s). No matter what provider you use, __k8s is k8s__. Whatever you build in a certain environment will be easily migrated to a different one. So why not using that same approach to serverless? And in fact, as long as k8s is a de-facto standard for DevOps practices, why not run a FaaS engine on top of it? That way it would benefit from k8s portability natively.
+In the world of containers and microservices, portability is one of the main benefits of running your workloads on Kubernetes (aka k8s). No matter what provider you use, __k8s is k8s__. Whatever you build in a certain environment will be easily migrated to a different one. So why don't we use that same approach for serverless? Actually, as long as k8s is a de-facto standard for DevOps practices, why not run a FaaS engine on top of it? That way it would benefit from k8s portability natively.
 
-Well, there are a number of initiatives driving solutions exactly in this direction (FaaS on top of k8s) so in this blog I would like to review some of them with you and see how they compare. And as per the goal of this series we’ll evaluate them by getting our hands dirty to get some hands-on experience. You will have the final word on what works best for your environment!
+Well, there are a number of initiatives driving solutions exactly in this direction (FaaS on top of k8s) so in this section I would like to review some solutions and see how they compare. And as per the goal of this document we’ll evaluate them by getting some hands-on experience. You will have the final word on what works best for your environment!
 
 <p align="center"> 
 <img src="./images/serverless_einstein.png">
 </p>
 
-In this series we will explore 3 different FaaS over k8s solutions and actually put them to work in our evaluation environment:
+In this series we will explore the following FaaS over k8s solutions and actually put them to work in our evaluation environment:
 * OpenFaaS
 * Fission
 * Kubeless
@@ -3158,7 +3158,7 @@ In this series we will explore 3 different FaaS over k8s solutions and actually 
 <img src="./images/serverless_landscape.png">
 </p>
 
-For our tests you can choose your favourite managed k8s offering, I will go with [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine) but please feel free to use the one you prefer. That’s exactly the point of using FaaS over k8s… __portability__. You may learn more about how to use GKE in [one of my past posts](https://blogs.cisco.com/developer/leverage-public-cloud).
+For our tests you can choose your favourite managed k8s offering, I will go with [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine) but please feel free to use the one you prefer. That’s exactly the point of using FaaS over k8s… __portability__.
 
 It’s time to start testing some of the most interesting FaaS engines available out there!
 
@@ -3166,61 +3166,63 @@ It’s time to start testing some of the most interesting FaaS engines available
 
 The first thing you will need to do is [installing OpenFaas CLI](https://github.com/openfaas/faas-cli) in your own workstation, so you can use it to build and deploy functions. In OSX for example you would install it with:
 
-```
+```shell
 brew install faas-cli
 ```
 
-The easiest way to install OpenFaaS is to use [arkade](https://github.com/alexellis/arkade), for example in OSX:
+The easiest way to install OpenFaaS is to use [arkade](https://github.com/alexellis/arkade), so please [install it](https://github.com/alexellis/arkade#getting-arkade) and then use arkade to install openfaas:
 
-```
-sudo curl -SLsf https://dl.get-arkade.dev/ | sudo sh
+```shell
 arkade install openfaas --load-balancer
 ```
 
 Using the `--load-balancer` option will give us an externally accessible IP address for the ‘gateway-external’ service (it might take a couple of minutes):
 
+```shell
+kubectl get svc gateway-external -n openfaas
 ```
-$ kubectl get svc gateway-external -n openfaas
+
+```
 NAME               TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)          AGE
 gateway-external   LoadBalancer   10.31.244.182   35.241.131.142   8080:32433/TCP   114s
 ```
 
-For convenience let’s assign that IP address to the required URL variable:
+For convenience let’s assign that IP address to the required URL variable (please make sure to replace the IP address in the command with the one you got for your own service):
 
-```
+```shell
 export OPENFAAS_URL=http://35.241.131.142:8080
 ```
 
 You might also want to check all your pods in the _openfaas_ namespace are running and readily available:
 
-```
+```shell
 kubectl get pods -n openfaas
 ```
 
 Time to login from your local workstation into the OpenFaaS deployment:
 
-```
+```shell
 PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)
 echo -n $PASSWORD | faas-cli login --username admin --password-stdin
 ```
 
-The OpenFaaS runtime engine is now setup and you are ready to start deploying your functions in it! For reference, function pods will be deployed in a different namespace named _openfaas-fn_.
+The OpenFaaS runtime engine is now setup and you are ready to start deploying your functions in it! For reference, function pods will be deployed in a different namespace called _openfaas-fn_.
 
-For our first test let’s use something simple as [figlet](http://www.figlet.org/), a simple program to make large letters out of a provided message. Deploying it is as simple as running the following command:
+For our first test we will use something simple as [figlet](http://www.figlet.org/), a simple program to make large letters out of a provided message. Deploying it is as simple as running the following command:
 
-```
+```shell
 faas-cli store deploy figlet
 ```
 
 You may check it has been deployed with:
 
-```
+```shell
 faas-cli list
 ```
 
 Now let’s see it working:
 
-```
+```shell
 echo "Hello Cisco" | faas-cli invoke figlet
 ```
 
@@ -3230,57 +3232,77 @@ echo "Hello Cisco" | faas-cli invoke figlet
 
 It’s working! But… what happened? Well, basically the _deploy_ command created a k8s deployment with a single replica in the _openfaas-fn_ namespace:
 
+```shell
+kubectl get deployment -n openfaas-fn
 ```
-$ kubectl get deployment -n openfaas-fn
+
+```
 NAME     READY   UP-TO-DATE   AVAILABLE   AGE
 figlet   1/1     1            1           40m
 ```
 
 And everytime you run a message through it the number of invocations grow:
 
+```shell
+echo "Hello again" | faas-cli invoke figlet
+faas-cli list
 ```
-$ faas-cli list
+
+```
 Function                      	Invocations    	Replicas
 figlet                        	2              	1
 ```
 
-You can also see the number of pod replicas based on the workload.
+As you can see it also displays the number of pod replicas based on the workload.
 
 Please feel free to explore other available apps:
 
-```
+```shell
 faas-cli store list
 ```
 
 Hopefully you are now excited and want to start deploying your own code as functions! If that's the case you may use the OpenFaaS CLI to find templates for the most common programming languages, running the following command:
 
-```
+```shell
 faas-cli template store list
 ```
 
 To download them to a local template folder you just need to run:
 
-```
+```shell
 faas-cli template pull
 ```
 
 With that you can start creating your functions and see the available template options:
 
+```shell
+faas-cli new --list
 ```
-$ faas-cli new --list
+
+```
 Languages available as templates:
 - csharp
 - dockerfile
 - go
 - java11
-- python
+- java11-vert-x
 - node
+- node14
+- node16
+- node17
+- node18
+- php7
+- php8
+- python
+- python3
+- python3-debian
+- ruby
 ```
 
-Let’s create a simple one using the node template:
+Let’s create a simple one using the _python_ template:
 
-```
-faas-cli new callme --lang node
+```shell
+faas-cli new callme --lang python
 ```
 
 This will create a _callme.yml_ manifest and a new folder named _callme_ with the template for your new function. Before anything else let’s edit the manifest and include your Dockerhub user-id before the resulting image name, so that it can be published correctly later. It should look similar to this:
@@ -3289,50 +3311,33 @@ This will create a _callme.yml_ manifest and a new folder named _callme_ with th
 image: juliocisco/callme:latest
 ```
 
-If you take a look at the _handler.js_ file in the _callme_ folder you will notice that the template code just returns a _status: “done”_ message. For your function you would include here your own code, but this is good enough for our demo.
-
-First thing you will need to do is to build the container image that includes your code. Please make sure you have Docker running locally in your workstation, as the build process will be run locally.
+The _handler.py_ file in the _callme_ folder would include the code for our function. Let's include some simple code that returns the input you provide to your function. Edit _handler.py_ to include this:
 
 ```
-faas-cli build -f callme.yml
+def handle(req):
+    print("Hello! You said: " + req)
 ```
 
-With that you can now publish the image to your repo (DockerHub by default):
+First thing you will need to do is to build and push the container image that includes your code to DockerHub. Please make sure you have Docker running locally in your workstation, as the build process will be run locally.
 
-```
-faas-cli push -f callme.yml
+```shell
+faas-cli publish -f callme.yml
 ```
 
 And finally you need to deploy a new pod in your k8s cluster using the published image:
 
-```
+```shell
 faas-cli deploy -f callme.yml
 ```
 
-Your new function is now deployed in OpenFaaS! Let’s invoke it and see if it works, we will pass it any input (today’s date in our case) and it should answer with the _status: “done”_ message.
+Your new function is now deployed in OpenFaaS and available now to be consumed from the outside world using the HTTP endpoint accessible via the LoadBalancer IP, let’s give it a try!
 
-```
-$ date | faas-cli invoke -f callme.yml callme
-{"status":"done"}
+```shell
+curl $OPENFAAS_URL/function/callme -d "it's ME here!"
 ```
 
 __It works!__
-
-This function is available now to be consumed from the outside world using the HTTP endpoint accessible via the LoadBalancer IP, let’s give it a try:
-
-```
-$ curl -X GET $OPENFAAS_URL/function/callme
-{"status":"done"}
-```
-
-Nice!
-
-You can of course use your browser as well:
-
-<p align="center"> 
-<img src="./images/serverless_browser.png">
-</p>
-
+  
 As you can see OpenFaaS is easy to deploy, very k8s friendly with its own namespaces & functions deployments, and a great starting point with templates to deploy your own code. 
 
 ## Kubeless
