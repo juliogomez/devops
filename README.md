@@ -61,6 +61,10 @@
     - [Telepresence](#telepresence)
     - [Okteto](#okteto)
 - [Serverless](#serverless)
+    - [Voting with your voice](#voting-with-your-voice)
+        - [AWS Lambda](#aws-lambda)
+        - [Alexa Skill](#alexa-skill)
+    - [Serverless on kubernetes](#serverless-on-kubernetes)
     - [OpenFaaS](#openfaas)
     - [Fission](#fission)
 - [Conclusions](#conclusions)
@@ -3136,7 +3140,53 @@ A very interesting approach to solve this challenge is __serverless (or Function
 <img src="./images/serverless_shared_model.png">
 </p>
 
-Most Cloud providers have an offering in the serverless arena (ie. [AWS Lambda](https://aws.amazon.com/lambda/), [Google Cloud Functions](https://cloud.google.com/functions), [Microsoft Azure Functions](https://azure.microsoft.com/en-us/services/functions/)) where you can just submit your code in one of the supported languages and they will take care of the rest. They will handle all the required microservices, have the orchestrator auto-scale them as needed, manage load-balancers, security, availability, caching, etc. And you will only pay for the number of times your code gets executed: if nobody uses your software you don’t pay a dime. Sounds really cool, huh? And it is. But _everything comes at a price_, and here you need to consider something called _lock-in_.
+Most Cloud providers have an offering in the serverless arena (ie. [AWS Lambda](https://aws.amazon.com/lambda/), [Google Cloud Functions](https://cloud.google.com/functions), [Microsoft Azure Functions](https://azure.microsoft.com/en-us/services/functions/)) where you can just submit your code in one of the supported languages and they will take care of the rest. They will handle all the required microservices, have the orchestrator auto-scale them as needed, manage load-balancers, security, availability, caching, etc. And you will only pay for the number of times your code gets executed: if nobody uses your software you don’t pay a dime. Sounds really cool, huh? Let's see it working.
+
+## Voting with your voice
+
+Before anything else please clone the *myhero_alexa* code repo:
+
+```shell
+git clone https://github.com/juliogomez/myhero_alexa.git
+```
+
+In this repo you will find everything you need to deploy a brand new user interface to vote... with your voice! We can build it using an Alexa skill that will interpret your commands and map them to a serverless function hosting the backend code.
+
+### AWS Lambda
+
+Let's start with the backend first. For our hands-on exercise with serverless we will use AWS Lambda, a service that allows you to run app code without having to deal with any kind of AWS infrastructure. You will need to follow these steps to create a function:
+
+1. Login to [AWS Lambda](https://aws.amazon.com/lambda/) with your credentials.
+2. Create a new function.
+3. Select _Author from scratch_, give it a _name_, and select `Python 3.8` as the _runtime_ (later versions might not be backwards compatible).
+4. Go to _Code_, click _Upload from_, choose _.zip file_ and upload the *myhero_function.zip* file included in the repo. Please feel free to explore its content, and specifically the `lambda_function.py` that implements all the required functions, and the `config.py` with the required parameters. Make sure to replace the `app_server` field in this last file, using the location of your own *myhero_app* microservice.
+6. You are now ready to click on _Deploy_.
+
+Now it's time to test it! Go to the *Test* section in your AWS Lambda function console, click on _Create new event_, give it a name and replace the _Event JSON_ field with the content provided in the `event.json` file included in the repo. Click on _Save_ and then _Test_. If your *myhero_app* microservice is up and accessible, under _Execution results_ you should see a response including all the interaction and welcome messages. Nice!
+
+Please copy and save your _Function ARN_, as we will need it later.
+
+You have a working serverless function, but instead of using a web browser or a bot to call it, let's use something cooler... like your voice!
+
+### Alexa Skill
+
+AWS offers you the option to create a voice-driven service called _an Alexa Skill_. We will create one the interprets voice commands and maps them to the _intents_ defined in your Lambda function. You will need to follow these steps to create a skill:
+
+1. Go to the _Alexa Developer Console_ and login with your AWS credentials.
+2. Click on _Create Skill_, give it a _Skill name_, set the locale to _English_, click on _Next_, choose type of experience to be _Games_, choose the default _Custom model_, and for the _Hosting Service_ choose _Provision your own_. Click on _Next_, pick the _Start from Scratch_ option, _Next_ again, and finally _Create Skill_. The system will create the initial voice model in a few seconds.
+3. In the _Build_ section go to _Invocations - Skill Invocation Name_ and choose a unique way using 2 words to invoke the skill using your voice.
+4. Go to _Interaction Model_ and, instead of defining the different intents manually, click on _JSON editor_ and import the `intents.json` file from the cloned repo. That will automatically provision the different intents, please review its content.
+5. Go to _Endpoint_ and write the _Function ARN_ from your Lambda function in the _Default Region_ field. Also, copy the _Skill ID_ for your new skill. Click on _Save_.
+6. Go back to your Lambda function definition and click on _Add trigger_. Use _Alexa_ as _Source_, paste the _Skill ID_ you just copied and click on _Add_. That way you have linked the Lambda function to the Alexa skill.
+7. Go back to your Alexa skill definition. Now it's time to test your new skill, so go to the _Test_ section. Select the _Development_ phase and from the _Alexa simulator_ you will be able to type (or talk) the different instructions (e.g. "Alexa, ask <your skill name> to vote for Batman").
+8. Go the _Distribution_ section and fill in the Skill _name_, summary and detailed _description_ fields, and most importantly the _Example phrases_ (e.g "Alexa, open<your skill name>", "Alexa, ask <your skill name> to vote for Batman", and "Alexa, ask <your skill name> what are the current standings"). For _Category_ choose _Education & Reference_. Include a couple of icons with the required size and click on _Save_. Under _Privacy & Compliance_ choose _No_ for all the questions and click on _Export compliance_. Click on _Save_.
+9. Finally go to the _Certification_ section and under _Validation_ click _Run_. Wait for the results and read the feedback. If there are no errors (just warnings might be fine) go to _Submission_ and click on _Submit for review_. This will start a process where AWS will review your skill and decide on its publication. It might several days so please be patient!
+
+Once your skill is published you will be able to use it from any Alexa device. You have just developed another user interface to interact with your _myhero_ application, congrats!
+
+## Serverless on kubernetes
+
+Apart from how cool the voice-enabled commands are, the code is running as a function in a Public Cloud native serverless environment... ain't that cool? It is! But _everything comes at a price_, and here you need to consider something called _lock-in_.
 
 If you have worked with native offerings from your own Cloud provider, probably you have noticed that it is really easy to bring your data in and build your application there. But it is not that easy to migrate it out to a different environment when you need to. The main reason is that many of the service constructs you will use to implement your application are native to the specific provider you chose. So when the moment comes to move your workloads somewhere else you basically need to rebuild your app with similar constructs available from your new favourite provider. And that’s exactly the moment when everybody wonders: “wouldn’t it be cool to have a way to transparently migrate my code to a new environment?”. That’s what we call __portability__.
 
@@ -3346,7 +3396,7 @@ helm delete -n openfaas openfaas
 
 ## Fission
 
-Another great example of FaaS over kubernetes is Fission, let’s start by [installing it](https://fission.io/docs/installation/)), and specifically for GKE:
+Another great example of FaaS over kubernetes is Fission, let’s start by [installing it](https://fission.io/docs/installation/), and specifically for GKE:
 
 ```shell
 export FISSION_NAMESPACE="fission"
