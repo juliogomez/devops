@@ -2977,7 +2977,7 @@ As you can see the local Alpine deployment can query existing microservices usin
 
 __Intercept__
 
-For the second case Telepresence allows you to intercept all traffic coming in and out of an existing remote deployment in your k8s cluster, and send that traffice to a local deployment in your workstation, where you can work **live**.
+For the second case, Telepresence allows you to intercept all traffic coming in and out of an existing remote deployment in your k8s cluster, and send that traffic to a local deployment in your workstation, where you can work **live**.
 
 We will do this with the *myhero-ui* microservice running in your k8s cluster, so traffic is sent to a new *myhero-ui* service deployed __locally__ in your workstation.
 
@@ -3036,12 +3036,18 @@ docker build -t <your_DockerHub_user>/myhero-ui
 docker push <your_DockerHub_user>/myhero-ui
 ```
 
-When you are done testing your local deployment, go to your second terminal window and run `telepresence leave myhero-ui` to stop intercepting. At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing everything remains as it was before we deployed our local instance with Telepresence. Really useful!
+When you are done testing your local deployment, go to your second terminal window and stop intercepting:
+
+```shell
+telepresence leave myhero-ui
+```
+
+At this point the remote k8s cluster will **automatically** restore the remote deployment with its own version of *myhero-ui*. That way, after testing, everything remains as it was before we deployed our local instance with Telepresence. Really useful!
 
 Once finished done you may uninstall all telepresence agents in your remote deployments, and quit the daemon:
 
 ```shell
-telepresence uninstall --everything
+telepresence helm uninstall
 telepresence quit
 ```
 
