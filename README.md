@@ -728,9 +728,33 @@ __For all nodes__
 
 * Flash the microSD card with a Raspbian image. You may go [here](https://www.raspberrypi.com/software/operating-systems/) and download the _Legacy - Lite_ version. Then download [Etcher](https://etcher.io/), install it in your workstation and flash your card with the Raspbian image you just downloaded. 
 
-  As long as SSH is disabled by default you would not be able to access your RPi unless you used a USB keyboard and HDMI monitor. Luckily there is a workaround in case you do not have any of these: once your card is flashed, access it from a terminal window (`cd /Volumes/boot`) and create an empty file called *ssh* (in Mac you may just run `touch ssh` from your terminal). This will allow you to run a *headless* install (without terminal and keyboard) of your RPi. 
+  As long as SSH is disabled by default you would not be able to access your RPi unless you used a USB keyboard and HDMI monitor. Luckily there is a workaround in case you do not have any of these: once your card is flashed, create an empty file called *ssh* 
 
-  _cgroups_ are required to run containers in your RPi boards, but unfortunately they are disabled by default in the latest OS versions. In order to enable them please edit the `cmdline.txt` file in the same location and __append to the same line__ the following content:
+  ```shell
+  touch /Volumes/boot/ssh
+  ```
+
+  Additionally you need to create a default user and password to login, so please create a new *userconf* file:
+
+  ```shell
+  vi /Volumes/boot/userconf
+  ```
+
+  And include the following content to define *pi* as username, and *raspberry* as password (that _strange_ line of characters comes from encrypting the password with `echo 'raspberry' | openssl passwd -6 -stdin` in a running RPi):
+
+  ```
+  pi:$6$gwRPlyOkMmTkQMX/$oa1peLhqfq6bu/tgRFykGBvXi5BkZPRcFf6jMXwRRSlsu1eju6Y.FM7wrDbJLVL5X/81aL//HDXh87OoQLmjo0
+  ```
+
+  This will allow you to run a *headless* install (without terminal and keyboard) of your RPi. 
+
+  _cgroups_ are required to run containers in your RPi boards, but unfortunately they are disabled by default in the latest OS versions. In order to enable them please edit the `cmdline.txt` file in the same location 
+  
+  ```shell
+  vi /Volumes/boot/cmdline.txt
+  ```
+  
+  And __append to the same line__ the following content:
 
   ```
   cgroup_memory=1 cgroup_enable=memory
@@ -742,7 +766,7 @@ __For all nodes__
   console=serial0,115200 console=tty1 root=PARTUUID=858acf0e-02 rootfstype=ext4 fsck.repair=yes rootwait quiet init=/usr/lib/raspi-config/init_resize.sh cgroup_memory=1 cgroup_enable=memory
   ```
 
-  You can now go back to your home directory (`cd`), and eject the micro-SD volume from _Finder_.
+  You can now eject the micro-SD volume from _Finder_.
 
   Insert the microSD card in the RPi and power it. Connect your workstation to a port in the switch and run: 
 
