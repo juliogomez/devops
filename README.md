@@ -57,7 +57,7 @@
         - [Pipeline definition and requirements](#pipeline-definition-and-requirements)
         - [Pipeline implementation](#pipeline-implementation)
         - [Running your pipeline](#running-your-pipeline)
-- [Additional tools](#additional-tools)
+- [The coolest DevOps tools](#the-coolest-devops-tools)
     - [Telepresence](#telepresence)
     - [Okteto](#okteto)
 - [Serverless](#serverless)
@@ -774,7 +774,8 @@ __For all nodes__
   ssh pi@raspberry.local
   ```
 
-  (default password is *raspberry*)
+  (note 1: default password is *raspberry*)
+  (note 2: depending on your OS version you might need to use _raspberrypi.lan_ instead of _raspberry.local_)
 
   You are in!
 
@@ -888,7 +889,7 @@ Before going to the other RPi boards please note down the value of the token in 
 sudo cat /var/lib/rancher/k3s/server/node-token
 ```
 
-Let's now configure the rest of RPi boards as worker nodes, using the master node IP address (192.168.1.100) and its token:
+Let's now configure the rest of RPi boards. Please SSH to each one of the 3 workers nodes and install k3s using the master node IP address (192.168.1.100) and its token:
 
 ```shell
 curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.100:6443 K3S_TOKEN=<YOUR_TOKEN> sh -
@@ -2931,7 +2932,7 @@ __This looks like a new world!__
 
 ---
 
-# Additional tools
+# The coolest DevOps tools
 
 Now you know how Developers and Operations teams work, what are some of the challenges they face, how to work around them and specifically how a CI/CD/CD pipeline might help.
 
