@@ -3076,6 +3076,91 @@ telepresence helm uninstall
 telepresence quit
 ```
 
+## mirrord
+
+[mirrord](https://mirrord.dev/) offers somehow similar capabilities to Telepresence, but there are some important differences to remark:
+
+* mirrord not only offers the ability to intercept traffic by replacing a remote pod with a local one, but also the possibility to duplicate traffic and send that copy to your local deployment.
+* While Telepresence requires you to use root access to run a persistent deployment in your remote cluster, mirrord operates with user-level ephemeral deployments that are automatically created and destroyed.
+* While Telepresence works at the network level (VPN via operator), mirrord works at the pod level. This means mirrord offers the ability to supports pods that are not exposed through a service.
+* With Telepresence you usually run Docker containers for your local deployment, while mirrord allows you to run your code on the local process level.
+* mirrord is easier to run, with no config around mount points or environment variables
+* Besides its native CLI, mirrord also offers plugins for IDEs like IntelliJ and VS Code, which makes it really convenient to use for developers.
+
+<p align="center"> 
+<img src="https://mirrord.dev/docs/overview/architecture/architecture.svg">
+</p>
+
+Let's see it working!
+
+As usual let's start by installing its CLI in our laptop:
+
+```shell
+brew install metalbear-co/mirrord/mirrord
+```
+
+With just that, we are immediately ready to explore two different use cases:
+* Mirror all traffic arriving to a remote service and send a copy to your local deployment.
+* Intercept/steal all traffic arriving to a remote service and send it to your local deployment.
+
+And as long as mirrord offers the capability to work with services that are not exposed through a service, this time we will work with our _myhero-data_ microservice, which is completely internal to the _myhero_ app.
+
+First make sure your _myhero_ app is deployed with the 3 required microservices (_myhero-ui_, _myhero-app_ and _myhero-data_) and working 0k from your browser.
+
+```shell
+kubectl get pods
+```
+
+Please make note of the name assigned to your _myhero-data_ pod, which should be something like `myhero-data-5cb79568f6-rrk7w` (the string after _myhero-data-_ will ofc be different).
+
+__Mirror__
+
+First we will send a copy of all traffic arriving to the remote _myhero-data_ pod, towards a local instance running in your laptop. From your *myhero_data* repository please run:
+
+```shell
+mirrord exec --target pod/myhero-data-5cb79568f6-rrk7w python2 myhero_data/myhero_data.py
+```
+
+As you can see we are not running locally any docker containers, but the application itself using the simplest python command... couldn't get any easier!
+
+Using your browser vote for the different superheroes and see those votes showing up in your terminal because of the replicated traffic:
+```
+127.0.0.1 - - [17/Nov/2023 11:36:22] "POST /vote/Deadpool HTTP/1.1" 200 -
+```
+
+Leave that terminal window running, open a new one and go to the same *myhero_data* repository. There you will be able to check that the votes from mirrored traffic are properly generating new entries in the database file:
+
+```shell
+cat votes.txt
+```
+
+You can also query your local service (running in port 5000 by default) to check votes:
+```shell
+curl -X GET -H "key: SecureData" http://127.0.0.1:5000/results
+```
+
+Please be aware that the resulting votes you can check from your browser are NOT the ones in your local system. The browser is showing the votes stored in the remote _myhero-data_ deployment, not the ones in the local one. You can verify this by editing your local _votes.txt_ file and remove some lines. You will see how the results shown in your browser do not change.
+
+Once done with your testing go back to the terminal window where you issued the `mirrord` command and press ctrl+c to stop it. The pod in the cluster will be automatically destroyed for you in a couple of minutes.
+
+__Steal__
+
+Now we will explore the option of _stealing_ all traffic so that it never arrives to the remote _myhero-data_ deployment, and have it delivered to your local one. We just have to add the `--steal` parameter to the previous command:
+
+```shell
+mirrord exec --steal --target pod/myhero-data-5cb79568f6-rrk7w python2 myhero_data/myhero_data.py
+```
+
+This time votes will not arrive at all to the _myhero-data_ microservice deployed in your remote cluster, but rather be sent to your local instance. Same as before you can vote for your favorite superhero and you will see those entries logged in your terminal. From a new one you can check the _votes.txt_ file, and verify that it shows the same values as reflected in the browser. That means your remote microservices are using your local _myhere-data_. 
+
+Feel free to edit the _votes.txt_ file where votes are stored, and remove some entries to see results immediately reflected in your browser.
+
+How cool is this? No local containers, no docker commands, no mapping volumes or env variables, no required root access, no need to install anything in the cluster... developers can just focus on their code!
+
+<p align="center"> 
+<img src="https://media.giphy.com/media/J8Iqja8CXfMw8/giphy.gif">
+</p>
+
 ## Okteto
 
 [Okteto](https://okteto.com/) offers developers the ability to locally code with their own tools, and test their software live on containers deployed in a real remote kubernetes cluster, with no required knowledge about docker containers or kubernetes. 
