@@ -3076,7 +3076,7 @@ telepresence helm uninstall
 telepresence quit
 ```
 
-## mirrord
+## Mirrord
 
 [mirrord](https://mirrord.dev/) offers somehow similar capabilities to Telepresence, but there are some important differences to remark:
 
