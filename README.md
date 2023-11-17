@@ -3161,6 +3161,8 @@ How cool is this? No local containers, no docker commands, no mapping volumes or
 <img src="https://media.giphy.com/media/J8Iqja8CXfMw8/giphy.gif">
 </p>
 
+Once you are done with your testing just go back to the terminal window where you were running the `mirrord` command and press ctrl+c to stop it. The additional pod will be automatically destroyed for you in a couple of minutes.
+
 ## Okteto
 
 [Okteto](https://okteto.com/) offers developers the ability to locally code with their own tools, and test their software live on containers deployed in a real remote kubernetes cluster, with no required knowledge about docker containers or kubernetes. 
