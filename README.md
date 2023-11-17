@@ -59,6 +59,7 @@
         - [Running your pipeline](#running-your-pipeline)
 - [The coolest DevOps tools](#the-coolest-devops-tools)
     - [Telepresence](#telepresence)
+    - [Mirrord](#mirrord)
     - [Okteto](#okteto)
 - [Serverless](#serverless)
     - [Voting with your voice](#voting-with-your-voice)
