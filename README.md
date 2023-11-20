@@ -625,7 +625,7 @@ Once completed everybody will be able to use those images and download them imme
 
 ## Microservices management
 
-When you are finished testing your new application please press Ctrl+C in each terminal to stop *myhero-data*, *myhere-app*, *myhero-ui* and *myhero-spark* containers. You may check they are not running anymore with:
+When you are finished testing your new application please press Ctrl+C in each terminal to stop *myhero-data*, *myhero-app*, *myhero-ui* and *myhero-spark* containers. You may check they are not running anymore with:
 
 ```shell
 docker ps
@@ -2328,6 +2328,7 @@ Go into *devops* directory and create a new helm directory there:
 ```shell
 cd devops
 mkdir helm
+cd helm
 ```
 
 Create a new helm chart:
@@ -3058,7 +3059,7 @@ When you are happy with all code changes you could rebuild and publish the image
 
 ```shell
 cd myhero-ui
-docker build -t <your_DockerHub_user>/myhero-ui
+docker build -t <your_DockerHub_user>/myhero-ui .
 docker push <your_DockerHub_user>/myhero-ui
 ```
 
@@ -3085,7 +3086,7 @@ telepresence quit
 * While Telepresence requires you to use root access to run a persistent deployment in your remote cluster, mirrord operates with user-level ephemeral deployments that are automatically created and destroyed.
 * While Telepresence works at the network level (VPN via operator), mirrord works at the pod level. This means mirrord offers the ability to supports pods that are not exposed through a service.
 * With Telepresence you usually run Docker containers for your local deployment, while mirrord allows you to run your code on the local process level.
-* mirrord is easier to run, with no config around mount points or environment variables
+* mirrord is easier to run, with no config around mount points or environment variables.
 * Besides its native CLI, mirrord also offers plugins for IDEs like IntelliJ and VS Code, which makes it really convenient to use for developers.
 
 <p align="center"> 
