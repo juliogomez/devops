@@ -120,7 +120,7 @@ From your terminal check that Docker is correctly installed in your system with 
 
 Now we need a microservices-based application, but instead of developing one from scratch we will leverage an existing one. And while we are at it we will be able to determine who is the best superhero!
 
-_myhero_ is an application developed by [Hank Preston](mailto:hapresto@cisco.com) for demonstration purposes. It is composed by several different microservices, developed in [AngularJS](https://angularjs.org) + [Python](https://www.python.org), and packaged with Docker containers. Basically it allows users to vote for their favorite superhero, and presents the summary results for all received votes.
+_myhero_ is an application developed by [Hank Preston](https://github.com/hpreston) for demonstration purposes. It is composed by several different microservices, developed in [AngularJS](https://angularjs.org) + [Python](https://www.python.org), and packaged with Docker containers. Basically it allows users to vote for their favorite superhero, and presents the summary results for all received votes.
 
 <p align="center"> 
 <img src="./images/myhero-arch.png">
@@ -600,7 +600,7 @@ Please click [here](https://htmlpreview.github.io/?https://raw.githubusercontent
 
 Now that your containers are working it would be a good moment to publish the images they are based on. You just built them and they are ready to be shared with colleagues so that they can enjoy *myhero* too!
 
-Before publishing them you will need to create a [DockerHub](https://hub.docker.com) account. It is simple and free, and it will allow you publish your images easily.
+Before publishing them you will need to create a [DockerHub](https://hub.docker.com) account. It is simple and free, and it will allow you to publish your images easily.
 
 Find out the names of your existing images by filtering the ones that contain *myhero*:
 
