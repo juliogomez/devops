@@ -6,6 +6,8 @@ k8s/pi/myhero/k8s_myhero_ingress.yml
 k8s/gce/k8s_myhero_ingress.yml
 k8s/gce/k8s_myhero_tropo.template
 helm
+drone
+gogs
 drone/values.yaml
 drone/secrets.txt
 gogs/values.yaml
