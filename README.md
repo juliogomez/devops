@@ -2401,7 +2401,7 @@ Depending on your environment (on-prem or Cloud) you will have to follow the ins
 
 ```
 curl -L https://istio.io/downloadIstio | sh -
-cd istio-1.19.0
+cd istio-1.<XX>.0
 export PATH=$PWD/bin:$PATH
 istioctl install --set profile=demo -y
 ```
@@ -2443,9 +2443,9 @@ kubectl label namespace myhero istio-injection=enabled
 kubectl get namespace -L istio-injection
 ```
 
-Complete the required information in all manifests with *.template* extension in the *myhero* and *routing* folders. Once done rename them from *.template* to *.yml*
+Complete the required information in all manifests in the *myhero* and *routing* folders. Once done, rename *.template* files to *.yml*
 
-Apply the files in the *myhero* folder for the initial setup:
+Deploy the manifests in the *myhero* folder for the initial setup:
 
 ```
 for f in myhero/istio*; do kubectl apply -f $f; done

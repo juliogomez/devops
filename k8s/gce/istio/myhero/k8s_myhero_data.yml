@@ -9,7 +9,7 @@ metadata:
 spec:
   ports:
   - port: 80
-    name: http
+    name: tcp	# myhero-data does not serve http, but tcp
     targetPort: http
   selector:
     app: myhero

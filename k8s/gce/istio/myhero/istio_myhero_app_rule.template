@@ -1,4 +1,4 @@
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   name: myhero-app
@@ -9,9 +9,6 @@ spec:
   - myhero-gateway
   - mesh
   http:
-  - match:
-    - uri:
-        prefix: /options
-    route:
+  - route:
     - destination:
         host: myhero-app.myhero.svc.cluster.local
