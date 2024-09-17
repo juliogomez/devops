@@ -2511,7 +2511,7 @@ kubectl apply -f 2-ui_inject_delay.yml
 
 Refresh your browser and you will experience a slower response time. That way you can test how your application microservices handle unexpected response time delays. If you review the manifest you will notice you can define what specific traffic will be affected by this rule. In our case we are using 100% of traffic to simplify the example.
 
-Maybe you are wondering why the total delay experienced by the end user is much higher than 5 seconds... more like in the 20-25 seconds range. Well, let's dig in a little bit. From IE, Chrome or Firefox press *Ctrl+Shift+I* or *Alt+Cmd+I* to enter the *Developer tools*, go to tab *Network* and refresh your browser. You will be able to see the 5 seconds delay **for each request**, and the accumulated total to explain why users get a much slower response time.
+Maybe you are wondering why the total delay experienced by the end user is much higher than 5 seconds... more like in the 20-25 seconds range. Well, let's dig in a little bit. From IE, Chrome or Firefox press *Ctrl+Shift+I* or *Opt+Cmd+I* to enter the *Developer tools*, go to tab *Network* and refresh your browser. You will be able to see the 5 seconds delay **for each request**, and the accumulated total to explain why users get a much slower response time.
 
 Remove the injected delay:
 
