@@ -2895,7 +2895,7 @@ git commit -m "update main.html from heard to HEARD"
  1 file changed
 ```
 
-And now push it to the repo defined as *origin* (you may check it refers to your GoGS server with `git remote show origin`):
+And now push it to the repo defined as *origin* (you may check it refers to your GitHub server with `git remote show origin`):
 
 ```shell
 git push -u origin master
